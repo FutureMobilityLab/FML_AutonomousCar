@@ -1,0 +1,10 @@
+*.aux
+*.fdb_latexmk
+*.log
+*.synctex.gz
+*.fls
+
+.idea
+**.idea
+.idea/**
+/**/.idea/*
