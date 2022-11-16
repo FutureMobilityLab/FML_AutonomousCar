@@ -112,6 +112,21 @@ if __name__ == "__main__":
 
     viz_grid = np.zeros(shape=size)
 
+    shortest_path = []
+
+    for coords in path:
+
+        ctr = 0
+
+        for c in path:
+
+            if c == coords:
+                ctr += 1
+
+        if ctr >1:
+            shortest_path.append(coords)
+
+
 
 
     for idx in path:
@@ -120,3 +135,7 @@ if __name__ == "__main__":
         viz_grid[row][col] = 5
 
     print(viz_grid)
+
+    print()
+
+    print(set(shortest_path))
