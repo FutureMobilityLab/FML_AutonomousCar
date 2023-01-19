@@ -5,6 +5,9 @@ Note on building with colcon on an RPI:
 Reduce workload to processor prevents crashing
 
 https://github.com/babakhani/rplidar_ros2 - Source to RPLIDAR
-Note: Check USB authority first, update if write access not permitted:
-ls -l /dev |grep ttyUSB
-sudo chmod 666 /dev/ttyUSB0
+Note: Check USB/I2C authority first, update if write access not permitted:  
+ls -l /dev |grep ttyUSB  
+sudo chmod 666 /dev/ttyUSB0  
+ls -l /dev |grep ttyUSB  
+sudo chmod 666 /dev/i2c-1
+
