@@ -21,15 +21,15 @@ fi
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 
 #RPLIDAR ROS2 SDK Implementaion - Publishes /scan topic
-cd src
-if ! git clone https://github.com/babakhani/rplidar_ros2
-then
-  echo "RPLidar Dependencies Failed - Check if Already Installed in /src"
-else
-  echo "RPLidar Dependencies Successful"
-fi
+#cd src
+#if ! git clone https://github.com/babakhani/rplidar_ros2
+#then
+#  echo "RPLidar Dependencies Failed - Check if Already Installed in /src"
+#else
+#  echo "RPLidar Dependencies Successful"
+#fi
 
-sudo chmod 777 -R rplidar_ros2
+#sudo chmod 777 -R rplidar_ros2
 
 
 
