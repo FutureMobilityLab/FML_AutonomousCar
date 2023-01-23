@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/george/FML_AutonomousCar/install/rplidar_ros/include/**",
+        "/opt/ros/humble/include/**",
+        "/home/george/FML_AutonomousCar/src/car_description/include/**",
+        "/home/george/FML_AutonomousCar/src/ros2_mpu6050_driver/include/**",
+        "/home/george/FML_AutonomousCar/src/rplidar_ros2/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-arm64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
