@@ -23,14 +23,15 @@ export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 
 #IMU ROS2 SDK Implementaion - Publishes imu topic
 cd src
-if ! git clone https://github.com/babakhani/rplidar_ros2
+if ! git clone https://github.com/hiwad-aziz/ros2_mpu6050_driver
 then
   echo "IMU Dependencies Failed - Check if Already Installed in /src"
 else
   echo "IMU Dependencies Successful"
 fi
 
-#sudo chmod 777 -R rplidar_ros2
+cd ..
+
 
 REQUIRED_PKG="ros-humble-xacro"
 PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
@@ -64,7 +65,6 @@ if [ "" = "$PKG_OK" ]; then
   sudo apt-get --yes install $REQUIRED_PKG
 fi
 
-#sudo chmod 777 -R rplidar_ros2
 
 REQUIRED_PKG="python-smbus"
 PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
