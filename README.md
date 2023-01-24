@@ -16,22 +16,22 @@ https://github.com/hiwad-aziz/ros2_mpu6050_driver
 
 1. Clone this repository to a local machine
 2. Run dependencies.sh
-'''
+```
 . dependencies.sh
-'''
+```
 3. Build the workspace
-'''
+```
   colcon build --symlink-install --executor sequential --event-handlers console_direct+  
-'''
+```
 Note on building with colcon on an RPI - Additional build parameters reduce workload to processor,  which prevents crashing when working with larger packages
 
 
 Note: Check USB/I2C authority first:
-'''
+```
 ls -l /dev |grep ttyUSB && ls -l /dev |grep i2c-1
-'''
+```
 Update if write access not permitted:
-'''
+```
 sudo chmod 666 /dev/ttyUSB0  
 sudo chmod 666 /dev/i2c-1
-'''
+```
