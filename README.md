@@ -21,7 +21,7 @@ cd FML_AutonomousCar && . dependencies.sh
 ```
 3. Build the workspace
 ```
-  colcon build --symlink-install --executor sequential --event-handlers console_direct+  
+colcon build --symlink-install --executor sequential --event-handlers console_direct+  
 ```
 Note on building with colcon on an RPI - Additional build parameters reduce workload to processor,  which prevents crashing when working with larger packages
 
