@@ -17,7 +17,7 @@ https://github.com/hiwad-aziz/ros2_mpu6050_driver
 1. Clone this repository to a local machine
 2. Run dependencies.sh
 ```
-. dependencies.sh
+cd FML_AutonomousCar && . dependencies.sh
 ```
 3. Build the workspace
 ```
