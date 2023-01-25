@@ -35,3 +35,9 @@ Update if write access not permitted:
 sudo chmod 666 /dev/ttyUSB0  
 sudo chmod 666 /dev/i2c-1
 ```
+
+
+Prior to running, it is necessary to set all rmw implementations to fast rtps:
+```
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+```
