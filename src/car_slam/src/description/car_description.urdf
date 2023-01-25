@@ -27,9 +27,9 @@
   </joint>
 
   <joint name="laser_joint" type="fixed">
-          <parent link="base_footprint"/>
+          <parent link="base_link"/>
           <child link="laser_frame"/>
-          <origin xyz="0.165 0 0.152" rpy="0 0 3.14159"/>
+          <origin xyz="0.165 0 ${0.152-(base_height/2)}" rpy="0 0 3.14159"/>
   </joint>
 
   <link name="laser_frame">
@@ -49,9 +49,9 @@
   </link>
 
   <joint name="imu_joint" type="fixed">
-      <parent link="base_footprint"/>
+      <parent link="base_link"/>
       <child link="imu_frame"/>
-      <origin xyz="0.153 0 0.070" rpy="0 0 0"/>
+      <origin xyz="0.153 0 ${0.070-(base_height/2)}" rpy="0 0 0"/>
   </joint>
 
   <link name="imu_frame">
