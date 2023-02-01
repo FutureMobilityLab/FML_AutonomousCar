@@ -1,0 +1,3 @@
+as5600driver_node:
+  ros__parameters:
+    frequency: 100 # [Hz]
