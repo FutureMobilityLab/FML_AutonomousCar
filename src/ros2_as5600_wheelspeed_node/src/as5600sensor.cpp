@@ -12,9 +12,8 @@ extern "C" {
 
 #include <iostream>
 
-AS5600Sensor::AS5600Sensor(int bus_number)
+AS5600Sensor::AS5600Sensor()
 {
-  filename_[9] = *std::to_string(bus_number).c_str();
   std::cout << filename_ << std::endl;
   file_ = open(filename_, O_RDWR);
   if (file_ < 0) {
@@ -40,22 +39,48 @@ int16_t AS5600Sensor::getRawAngle()
 
 int16_t AS5600Sensor::getDelta(int16_t raw_angle)
 {
-  int16_t delta_angle = raw_angle; //- AS5600Sensor::prev_raw_angle;
-  if(abs(delta_angle) > 2048)
+  int16_t delta_angle = (raw_angle - AS5600Sensor::prev_raw_angle);
+  if(delta_angle > 2048)
   {
     delta_angle = 4096 - delta_angle;
   }
-  //this.prev_raw_angle = delta_angle;
+  if(delta_angle < -2048)
+  {
+    delta_angle = delta_angle + 4096;
+  }
+  //std::cout << "Raw Previous Angle:" << prev_raw_angle << std::endl;
+  AS5600Sensor::prev_raw_angle = raw_angle;
+  //std::cout << "Raw Angle:" << prev_raw_angle << std::endl;
+  //std::cout << "Delta Angle:" << delta_angle << std::endl;
   return delta_angle;
+}
+
+double AS5600Sensor::getTime()
+{
+  std::chrono::time_point<std::chrono::steady_clock> current_time = std::chrono::steady_clock::now();
+  std::chrono::duration<double> time_elapsed = current_time - AS5600Sensor::runtime_start;
+  std::chrono::milliseconds time_elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_elapsed);
+  return time_elapsed_ms.count();
+}
+
+double AS5600Sensor::getTimeDelta(double current_time)
+{
+  double dt = current_time - AS5600Sensor::prev_time; //seconds
+  AS5600Sensor::prev_time = current_time;
+  return dt;
 }
 
 double AS5600Sensor::getVelocity()
 {
   int16_t raw_angle_reading = getRawAngle();
   int16_t delta_angle = getDelta(raw_angle_reading);
-  double delta_time =  .01; //s
-  double velocity = delta_angle /4096 * (13/37) * 3.14159 *.1143 / delta_time; //TODO: GET GOOD TIME
-  //this.prev_timestamp = current_timestamp;
+  double new_time = getTime();
+  double delta_time = getTimeDelta(new_time);
+  double velocity = ((double)delta_angle / 4096.0) * (13.0/37.0) * 3.14159 *0.1143 / (delta_time/1000.0);
+  
+  //std::cout << "Delta Angle:" << delta_angle << std::endl;
+  //std::cout << "Time Step:" << delta_time << std::endl;
+  std::cout << "Velocity:" << velocity << std::endl;
   return velocity;
 }
 
