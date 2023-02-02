@@ -11,7 +11,8 @@ class AS5600Sensor {
   ~AS5600Sensor();
 
   double getVelocity();
-  
+
+ private:  
   int16_t getRawAngle();
   int16_t getDelta(int16_t raw_angle);
 
@@ -30,8 +31,7 @@ class AS5600Sensor {
   static constexpr int MAGNITUDE_REGISTER = 0x1C;
   static constexpr int CONFIG_REGISTER = 0x3F;
 
- private:
-   int16_t prev_raw_angle = getRawAngle();
+  int16_t prev_raw_angle = getRawAngle();
 };
 
 #endif  // AS5600SENSOR_H

@@ -40,7 +40,7 @@ int16_t AS5600Sensor::getRawAngle()
 
 int16_t AS5600Sensor::getDelta(int16_t raw_angle)
 {
-  int16_t delta_angle = raw_angle - AS5600Sensor::prev_raw_angle;
+  int16_t delta_angle = raw_angle; //- AS5600Sensor::prev_raw_angle;
   if(abs(delta_angle) > 2048)
   {
     delta_angle = 4096 - delta_angle;
