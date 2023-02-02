@@ -14,7 +14,6 @@ extern "C" {
 
 AS5600Sensor::AS5600Sensor(int bus_number)
 {
-  // TODO: make char append cleaner
   filename_[9] = *std::to_string(bus_number).c_str();
   std::cout << filename_ << std::endl;
   file_ = open(filename_, O_RDWR);
@@ -27,40 +26,36 @@ AS5600Sensor::AS5600Sensor(int bus_number)
     std::cerr << "Failed to find device address! Check device address!";
     exit(1);
   }
-  // // Wake up sensor
-  // int result = i2c_smbus_write_byte_data(file_, PWR_MGMT_1, 0);
-  // if (result < 0) reportError(errno);
-  // Read current ranges from sensor
 }
 
 AS5600Sensor::~AS5600Sensor() { close(file_); }
 
-double AS5600Sensor::getRawAngle() const
+int16_t AS5600Sensor::getRawAngle()
 {
   int16_t angle_msb = i2c_smbus_read_byte_data(file_, RAW_ANGLE_REGISTER_MSB);
   int16_t angle_lsb = i2c_smbus_read_byte_data(file_, RAW_ANGLE_REGISTER_LSB);
   int16_t raw_angle = angle_lsb | angle_msb << 8;
-
   return raw_angle;
 }
 
-int16_t AS5600Sensor::getDelta(int16_t raw_angle_1, int16_t raw_angle_2)
+int16_t AS5600Sensor::getDelta(int16_t raw_angle)
 {
-  int16_t delta_angle = raw_angle_2 - raw_angle_1;
+  int16_t delta_angle = raw_angle - AS5600Sensor::prev_raw_angle;
   if(abs(delta_angle) > 2048)
   {
     delta_angle = 4096 - delta_angle;
   }
+  //this.prev_raw_angle = delta_angle;
   return delta_angle;
 }
 
 double AS5600Sensor::getVelocity()
 {
-  int16_t raw_angle_reading_1 = getRawAngle();
-  int16_t raw_angle_reading_2 = getRawAngle();
-  int16_t delta_angle = getDelta(raw_angle_reading_1,raw_angle_reading_2);
-  double delta_time = 0.01;
+  int16_t raw_angle_reading = getRawAngle();
+  int16_t delta_angle = getDelta(raw_angle_reading);
+  double delta_time =  .01; //s
   double velocity = delta_angle /4096 * (13/37) * 3.14159 *.1143 / delta_time; //TODO: GET GOOD TIME
+  //this.prev_timestamp = current_timestamp;
   return velocity;
 }
 

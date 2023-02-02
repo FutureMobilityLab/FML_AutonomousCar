@@ -3,16 +3,17 @@
 
 #include <string>
 #include <unordered_map>
+#include "rclcpp/rclcpp.hpp"
 
 class AS5600Sensor {
  public:
   AS5600Sensor(int bus_number = 1);
   ~AS5600Sensor();
 
-  double getRawAngle() const;
   double getVelocity();
   
-  int16_t getDelta(int16_t raw_angle_1, int16_t raw_angle_2);
+  int16_t getRawAngle();
+  int16_t getDelta(int16_t raw_angle);
 
   void reportError(int error);
 
@@ -28,6 +29,9 @@ class AS5600Sensor {
   static constexpr int AGC_REGISTER = 0x1A;
   static constexpr int MAGNITUDE_REGISTER = 0x1C;
   static constexpr int CONFIG_REGISTER = 0x3F;
+
+ private:
+   int16_t prev_raw_angle = getRawAngle();
 };
 
 #endif  // AS5600SENSOR_H
