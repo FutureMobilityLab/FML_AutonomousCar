@@ -36,6 +36,20 @@ def generate_launch_description():
             'serial_baudrate': 115200
         }]
     )
+    mpu6050driver_node = launch_ros.actions.Node(
+        package='mpu6050driver',
+        executable='mpu6050driver',
+        name='mpu6050driver_node',
+        output="screen",
+        emulate_tty=True,
+    )
+    as5600driver_node = launch_ros.actions.Node(
+        package='as5600driver',
+        executable='as5600driver',
+        name='as5600driver_node',
+        output="screen",
+        emulate_tty=True,
+    )
     robot_localization_node = launch_ros.actions.Node(
         package='robot_localization',
         executable='ekf_node',
@@ -43,10 +57,6 @@ def generate_launch_description():
         output='screen',
         parameters=[os.path.join(pkg_share, 'config/ekf.yaml'),
             {'use_sim_time': LaunchConfiguration('use_sim_time')}]
-    )
-    mpu6050driver_node = launch_ros.actions.Node(
-        package='mpu6050driver',
-        executable='mpu6050driver',
     )
 
     return launch.LaunchDescription([
@@ -59,6 +69,7 @@ def generate_launch_description():
         joint_state_publisher_node,
         robot_state_publisher_node,
         mpu6050driver_node,
+        as5600driver_node,
         rplidar_node,
         robot_localization_node,
         rviz_node
