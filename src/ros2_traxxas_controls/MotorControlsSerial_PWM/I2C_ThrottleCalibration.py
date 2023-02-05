@@ -74,13 +74,13 @@ def ThrottleCalibrationCommand(cmd):
 
 def throttleCalibrationState(throttleStep):
         if throttleStep == 1:
-                setp = int(0.5*65535)
+                setp = int(0.1*65535)
                 return setp
         if throttleStep == 2:
-                setp = int(0.075*65535)
+                setp = int(0.05*65535)
                 return setp
         if throttleStep == 3:
-                setp = int(0.05)
+                setp = int(0.075*65535)
                 return setp
         else:
                 sys.exit("Invalid Calibration State")
