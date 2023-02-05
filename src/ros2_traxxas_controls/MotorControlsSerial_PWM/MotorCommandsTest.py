@@ -17,7 +17,5 @@ time.sleep(1)
 
 TraxxasDriverCMD.ThrottleCommand(0x7FFF)
 time.sleep(6)
-TraxxasDriverCMD.ThrottleCommand(0xFFFF)
-time.sleep(6)
 TraxxasDriverCMD.ThrottleCommand(0x0000)
 time.sleep(6)
