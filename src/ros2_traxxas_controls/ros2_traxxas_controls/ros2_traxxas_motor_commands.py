@@ -1,11 +1,8 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-
 from board import SCL, SDA
 import busio
-# Import the PCA9685 module. Available in the bundle and here:
-#   https://github.com/adafruit/Adafruit_CircuitPython_PCA9685
 from adafruit_motor import servo
 from adafruit_pca9685 import PCA9685
 
@@ -29,7 +26,7 @@ class MotorCommands(Node):
         pca.frequency = 50
         TraxxasServo = servo.Servo(pca.channels[0])
         steeringClipped = boundedSignal(SteeringCMD,-0.65,0.65)
-        TraxxasServo.angle = (steeringClipped * 180 / 3.14159265) + 90
+        TraxxasServo.angle = (steeringClipped * 180.0 / 3.14159265) + 90.0
         pca.deinit()
 
     def ThrottleCommand(ThrottleCMD):

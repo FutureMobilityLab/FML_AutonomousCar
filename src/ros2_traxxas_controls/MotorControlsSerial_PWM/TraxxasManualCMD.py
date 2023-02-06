@@ -78,7 +78,7 @@ boundedSignal = lambda x, l, u: l if x < l else u if x > u else x
 class keys:
     def __init__(self):
         self.SteerCMD = 0
-        self.ThrottleCMD = 4500
+        self.ThrottleCMD = 4900
 
 def SteeringCommand(cmd):
         i2c = busio.I2C(SCL, SDA)
@@ -102,13 +102,13 @@ def ThrottleCommand(ThrottleCMD):
 keyboardlog = keys()
 def press(key):
     if key == "w":
-        keyboardlog.ThrottleCMD += 50
+        keyboardlog.ThrottleCMD += 10
     if key == "s":
-        keyboardlog.ThrottleCMD -= 50
+        keyboardlog.ThrottleCMD -= 10
     if key == "a":
-        keyboardlog.SteerCMD += 0.05
+        keyboardlog.SteerCMD += 0.01
     if key == "d":
-        keyboardlog.SteerCMD -= 0.05
+        keyboardlog.SteerCMD -= 0.01
     if key == "x":
         keyboardlog.ThrottleCMD = 4500
     if key == "c":
@@ -118,6 +118,6 @@ def press(key):
     ThrottleCommand(keyboardlog.ThrottleCMD)
     print("Steering Command:"+str(keyboardlog.SteerCMD))
     print("Throttle Command:"+str(keyboardlog.ThrottleCMD))
-    time.sleep(0.05)
+    
 
 listen_keyboard(on_press=press,delay_second_char = 0.00, delay_other_chars=0.0)

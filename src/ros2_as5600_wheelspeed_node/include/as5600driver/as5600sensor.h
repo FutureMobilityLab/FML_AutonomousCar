@@ -15,7 +15,8 @@ class AS5600Sensor {
  private:
   int16_t getRawAngle();
   int16_t getDelta(int16_t raw_angle);
-  int16_t prev_raw_angle{getRawAngle()}; 
+  int16_t prev_raw_angle{getRawAngle()};
+  bool dir_flag = 0; // 1 implies increasing angle is forward, 0 implies decreasing angle is forward 
 
   double getTime();
   double getTimeDelta(double current_time);
