@@ -99,7 +99,7 @@ if [ "" = "$PKG_OK" ]; then
   sudo apt-get --yes install $REQUIRED_PKG
 fi
 
-pip3 install lgpio adafruit-circuitpython-pca9685 adafruit-circuitpython-servokit
+pip3 install lgpio adafruit-circuitpython-pca9685 adafruit-circuitpython-servokit sshkeyboard
 
 sudo chmod 666 /dev/i2c-1
 sudo chmod 666 /dev/ttyUSB0
