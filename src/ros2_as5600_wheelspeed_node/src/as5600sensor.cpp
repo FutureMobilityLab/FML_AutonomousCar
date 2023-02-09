@@ -40,13 +40,17 @@ int16_t AS5600Sensor::getRawAngle()
 int16_t AS5600Sensor::getDelta(int16_t raw_angle)
 {
   int16_t delta_angle = (raw_angle - AS5600Sensor::prev_raw_angle);
-  if(delta_angle > 2048)
+  if(delta_angle > 3072)
   {
-    delta_angle = 4096 - delta_angle;
+    delta_angle = delta_angle - 4096.0;
   }
-  if(delta_angle < -2048)
+  if(delta_angle < -3072)
   {
-    delta_angle = delta_angle + 4096;
+    delta_angle = delta_angle + 4096.0;
+  }
+  if (AS5600Sensor::dir_flag == 0)
+  {
+    delta_angle = delta_angle*-1.0;
   }
   //std::cout << "Raw Previous Angle:" << prev_raw_angle << std::endl;
   AS5600Sensor::prev_raw_angle = raw_angle;
@@ -80,7 +84,7 @@ double AS5600Sensor::getVelocity()
   
   //std::cout << "Delta Angle:" << delta_angle << std::endl;
   //std::cout << "Time Step:" << delta_time << std::endl;
-  std::cout << "Velocity:" << velocity << std::endl;
+  //std::cout << "Velocity:" << velocity << std::endl;
   return velocity;
 }
 
