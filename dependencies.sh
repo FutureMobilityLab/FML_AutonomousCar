@@ -109,7 +109,7 @@ fi
 
 
 
-pip3 install lgpio adafruit-circuitpython-pca9685 adafruit-circuitpython-servokit sshkeyboard
+pip3 install lgpio adafruit-circuitpython-pca9685 adafruit-circuitpython-servokit sshkeyboard pynput
 
 sudo chmod 666 /dev/i2c-1
 sudo chmod 666 /dev/ttyUSB0

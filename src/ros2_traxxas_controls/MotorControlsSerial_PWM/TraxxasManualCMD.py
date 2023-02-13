@@ -1,6 +1,5 @@
 # #!/usr/bin/python3
 
-import time
 from sshkeyboard import listen_keyboard
 from board import SCL, SDA
 import busio
@@ -8,7 +7,6 @@ import busio
 #   https://github.com/adafruit/Adafruit_CircuitPython_PCA9685
 from adafruit_motor import servo
 from adafruit_pca9685 import PCA9685
-import os
 
 boundedSignal = lambda x, l, u: l if x < l else u if x > u else x
 

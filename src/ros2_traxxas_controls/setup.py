@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'motor_driver = ros2_traxxas_controls.ros2_traxxas_motor_commands:main'
         ],
     },
 )

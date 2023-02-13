@@ -15,16 +15,24 @@ class MotorCommands(Node):
         self.subscription = self.create_subscription(AckermannDriveStamped,'cmd_ackermann',self.ackermann_callback,10)
         self.subscription = self.create_subscription(Odometry,'odometry/filtered',self.odom_callback,10)
         self.subscription  # prevent unused variable warning
-        self.Kp = 1
-        self.Ki = 1
+        self.Kp = 100
+        self.Ki = 10
         self.errorIntegrated = 0
-        self.timeLastLooped = 3
+        tempTimeStamp = self.get_clock().now()
+        tempTimemsg = tempTimeStamp.to_msg()
+        self.timeLastLooped = tempTimemsg.sec + tempTimemsg.nanosec * 10**-9
 
+    def getTimeDiff(self,timestamp):
+        timeNow = timestamp.sec + timestamp.nsec * 10**-9
+        timediff = timeNow - self.timeLastLooped
+        return (timediff)
     
-    def LoopPID(AckermannCMD):
-        error = AckermannCMD.drive.speed - MotorCommands.v
-        ThrottleRegisterVal = MotorCommands.Kp * error + MotorCommands.Ki * MotorCommands.errorIntegrated
-        MotorCommands.errorIntegrated = MotorCommands.errorIntegrated + error * .1
+    def LoopPID(self,AckermannCMD):
+        error = AckermannCMD.drive.speed - self.v
+        integratorTimeStep = self.getTimeDiff(self,AckermannCMD.header.stamp)
+        ThrottleDesired = self.Kp * error + self.Ki * self.errorIntegrated * integratorTimeStep
+        self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
+        ThrottleRegisterVal = 4915 + 16.38 * ThrottleDesired ##converts to register value ()
         return ThrottleRegisterVal
 
     def odom_callback(self,msg):
@@ -43,14 +51,15 @@ class MotorCommands(Node):
         # i2c = busio.I2C(SCL, SDA)
         # pca = PCA9685(i2c)
         # pca.frequency = 50
-        ThrottleCMD = self.LoopPID(ackermann_cmd.drive.speed)
-        ThrottleCMDClipped = boundedSignal(ThrottleCMD,0,0.5*66535)
+        ThrottleCMD = self.LoopPID(self,ackermann_cmd.drive.speed)
+        ThrottleCMDClipped = int(boundedSignal(ThrottleCMD,0,0.1*66535))
         pca.channels[1].duty_cycle = ThrottleCMDClipped
         pca.deinit()
+        print('ThrottleCMD:',ThrottleCMD,'SteerCMD:',steeringClipped)
 
 
 
-def main(args=Node):
+def main(args=None):
     rclpy.init(args=args)
 
     motor_commands = MotorCommands()
