@@ -1,10 +1,11 @@
 # #!/usr/bin/python3
 
+# This Script is an ssh method of controlling the Traxxas Car, using ssh keyboard.
+# Kept in repository for use when not controlling car via ROS node, and for low level testing.
+
 from sshkeyboard import listen_keyboard
 from board import SCL, SDA
 import busio
-# Import the PCA9685 module. Available in the bundle and here:
-#   https://github.com/adafruit/Adafruit_CircuitPython_PCA9685
 from adafruit_motor import servo
 from adafruit_pca9685 import PCA9685
 

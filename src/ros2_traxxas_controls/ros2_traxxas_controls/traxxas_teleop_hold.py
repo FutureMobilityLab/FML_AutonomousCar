@@ -33,7 +33,7 @@ This node takes keypresses from the keyboard and publishes them
 as Ackermann Stamped messages. Your keypress will
 set the maximum configured speeds, at release all speeds are reset
 
-WARNING: This node will take commands even if your terminal is not in focus!
+WARNING: This node will take commands even if your terminal is out of focus
 
 Controls:
 

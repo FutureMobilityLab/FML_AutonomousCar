@@ -13,8 +13,8 @@ class Teleop(Node, ABC):
 
         self.declare_parameter("twist_stamped_enabled", True)
         self.declare_parameter("robot_base_frame", "base_link")
-        self.declare_parameter("linear_max", 1.0)
-        self.declare_parameter("angular_max", 1.0)
+        self.declare_parameter("linear_max", 0.1)
+        self.declare_parameter("angular_max", 0.1)
         self.declare_parameter("publish_rate", 10.0)
         self.LINEAR_MAX = self.get_parameter("linear_max").value
 
