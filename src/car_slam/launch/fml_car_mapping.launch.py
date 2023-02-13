@@ -18,13 +18,13 @@ def generate_launch_description():
         executable='joint_state_publisher',
         name='joint_state_publisher',
     )
-    rviz_node = launch_ros.actions.Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        output='screen',
-        arguments=['-d', LaunchConfiguration('rvizconfig')],
-    )
+    # rviz_node = launch_ros.actions.Node(
+    #     package='rviz2',
+    #     executable='rviz2',
+    #     name='rviz2',
+    #     output='screen',
+    #     arguments=['-d', LaunchConfiguration('rvizconfig')],
+    # )
     rplidar_node = launch_ros.actions.Node(
         package='rplidar_ros',
         executable='rplidar_composition',
@@ -60,7 +60,7 @@ def generate_launch_description():
     )
     slam_toolbox_node = launch_ros.actions.Node(
         package='slam_toolbox',
-        executable='async_slam_toolbox_node',
+        executable='sync_slam_toolbox_node',
         name='slam_toolbox',
         output='screen',
         parameters=[os.path.join(pkg_share, 'config/slam.yaml'),
@@ -80,6 +80,6 @@ def generate_launch_description():
         as5600driver_node,
         rplidar_node,
         robot_localization_node,
-        rviz_node,
+        # rviz_node,
         slam_toolbox_node
     ])
