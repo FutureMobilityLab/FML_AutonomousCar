@@ -51,11 +51,11 @@ class MotorCommands(Node):
         TraxxasServo = servo.Servo(pca.channels[0])
         steeringClipped = boundedSignal(ackermann_cmd.drive.steering_angle,-0.65,0.65)
         TraxxasServo.angle = (steeringClipped * 180.0 / 3.14159265) + 90.0
-        # pca.deinit()
+        pca.deinit()
 
-        # i2c = busio.I2C(SCL, SDA)
-        # pca = PCA9685(i2c)
-        # pca.frequency = 50
+        i2c = busio.I2C(SCL, SDA)
+        pca = PCA9685(i2c)
+        pca.frequency = 50
         ThrottleCMD = self.LoopPID(ackermann_cmd)
         ThrottleCMDClipped = int(boundedSignal(ThrottleCMD,0,0.1*66535))
         pca.channels[1].duty_cycle = ThrottleCMDClipped
