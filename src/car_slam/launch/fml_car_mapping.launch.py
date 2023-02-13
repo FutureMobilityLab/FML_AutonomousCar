@@ -60,11 +60,16 @@ def generate_launch_description():
     )
     slam_toolbox_node = launch_ros.actions.Node(
         package='slam_toolbox',
-        executable='sync_slam_toolbox_node',
+        executable='async_slam_toolbox_node',
         name='slam_toolbox',
         output='screen',
         parameters=[os.path.join(pkg_share, 'config/slam.yaml'),
             {'use_sim_time': LaunchConfiguration('use_sim_time')}]
+    )
+    traxxas_driver_node = launch_ros.actions.Node(
+        package='ros2_traxxas_controls',
+        executable='motor_driver',
+        name='motor_driver',
     )
 
     return launch.LaunchDescription([
@@ -81,5 +86,6 @@ def generate_launch_description():
         rplidar_node,
         robot_localization_node,
         # rviz_node,
-        slam_toolbox_node
+        slam_toolbox_node,
+        traxxas_driver_node
     ])

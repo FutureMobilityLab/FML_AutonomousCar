@@ -11,28 +11,33 @@ boundedSignal = lambda x, l, u: l if x < l else u if x > u else x
 class MotorCommands(Node):
 
     def __init__(self):
-        super().__init__('TraxxasSteering')
+        super().__init__('motor_driver')
         self.subscription = self.create_subscription(AckermannDriveStamped,'cmd_ackermann',self.ackermann_callback,10)
         self.subscription = self.create_subscription(Odometry,'odometry/filtered',self.odom_callback,10)
         self.subscription  # prevent unused variable warning
-        self.Kp = 100
+        self.Kp = 10
         self.Ki = 10
         self.errorIntegrated = 0
         tempTimeStamp = self.get_clock().now()
         tempTimemsg = tempTimeStamp.to_msg()
         self.timeLastLooped = tempTimemsg.sec + tempTimemsg.nanosec * 10**-9
+        self.v = 0
 
     def getTimeDiff(self,timestamp):
-        timeNow = timestamp.sec + timestamp.nsec * 10**-9
+        timeNow = timestamp.sec + timestamp.nanosec * 10**-9
         timediff = timeNow - self.timeLastLooped
+        self.timeLastLooped = timeNow
         return (timediff)
     
     def LoopPID(self,AckermannCMD):
         error = AckermannCMD.drive.speed - self.v
-        integratorTimeStep = self.getTimeDiff(self,AckermannCMD.header.stamp)
+        integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
         ThrottleDesired = self.Kp * error + self.Ki * self.errorIntegrated * integratorTimeStep
         self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
         ThrottleRegisterVal = 4915 + 16.38 * ThrottleDesired ##converts to register value ()
+        if AckermannCMD.drive.speed == -1.0:
+            ThrottleRegisterVal = 4915
+            self.errorIntegrated = 0
         return ThrottleRegisterVal
 
     def odom_callback(self,msg):
@@ -51,7 +56,7 @@ class MotorCommands(Node):
         # i2c = busio.I2C(SCL, SDA)
         # pca = PCA9685(i2c)
         # pca.frequency = 50
-        ThrottleCMD = self.LoopPID(self,ackermann_cmd.drive.speed)
+        ThrottleCMD = self.LoopPID(ackermann_cmd)
         ThrottleCMDClipped = int(boundedSignal(ThrottleCMD,0,0.1*66535))
         pca.channels[1].duty_cycle = ThrottleCMDClipped
         pca.deinit()
