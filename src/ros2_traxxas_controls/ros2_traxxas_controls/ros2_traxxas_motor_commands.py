@@ -16,8 +16,13 @@ class MotorCommands(Node):
         self.subscription = self.create_subscription(AckermannDriveStamped,'cmd_ackermann',self.ackermann_callback,10)
         self.subscription = self.create_subscription(Odometry,'odometry/filtered',self.odom_callback,10)
         self.subscription  # prevent unused variable warning
-        self.Kp = 10
-        self.Ki = 10
+        self.Kp = self.get_parameter("Kp").value
+        self.Ki = self.get_parameter("Ki").value
+        self.throttle_idle = self.get_parameter("throttle_register_idle").value
+        self.throttle_full = self.get_parameter("throttle_register_full").value
+        self.throttle_revr = self.get_parameter("throttle_register_revr").value
+        self.max_steer_angle = self.get_parameter("max_steer_angle").value
+        self.throttle_pcnt_increment = (self.throttle_full-self.throttle_idle)/100
         self.errorIntegrated = 0
         tempTimeStamp = self.get_clock().now()
         tempTimemsg = tempTimeStamp.to_msg()
@@ -35,9 +40,9 @@ class MotorCommands(Node):
         integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
         ThrottleDesired = self.Kp * error + self.Ki * self.errorIntegrated * integratorTimeStep
         self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
-        ThrottleRegisterVal = 4915 + 16.38 * ThrottleDesired ##converts to register value ()
-        if AckermannCMD.drive.speed == -1.0:
-            ThrottleRegisterVal = 4915
+        ThrottleRegisterVal = self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired ##converts to register value ()
+        if AckermannCMD.drive.speed < 0.0:
+            ThrottleRegisterVal = self.throttle_idle
             self.errorIntegrated = 0
         return ThrottleRegisterVal
 
@@ -50,7 +55,7 @@ class MotorCommands(Node):
         pca = PCA9685(i2c)
         pca.frequency = 50
         TraxxasServo = servo.Servo(pca.channels[0])
-        steeringClipped = boundedSignal(ackermann_cmd.drive.steering_angle,-0.65,0.65)
+        steeringClipped = boundedSignal(ackermann_cmd.drive.steering_angle,-self.max_steer_angle,self.max_steer_angle)
         TraxxasServo.angle = (steeringClipped * 180.0 / 3.14159265) + 90.0
         pca.deinit()
 
@@ -58,7 +63,7 @@ class MotorCommands(Node):
         pca = PCA9685(i2c)
         pca.frequency = 50
         ThrottleCMD = self.LoopPID(ackermann_cmd)
-        ThrottleCMDClipped = int(boundedSignal(ThrottleCMD,0,0.1*66535))
+        ThrottleCMDClipped = int(boundedSignal(ThrottleCMD,0,self.throttle_full))
         pca.channels[1].duty_cycle = ThrottleCMDClipped
         pca.deinit()
         print('ThrottleCMD:',ThrottleCMD,'SteerCMD:',steeringClipped)

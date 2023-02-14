@@ -10,28 +10,34 @@ from ros2_traxxas_controls.traxxas_teleop import Teleop
 class HoldKeyTeleop(Teleop):
     def __init__(self):
         super().__init__()
+        self.lr_binding = None
+        self.fb_binding = None
         self.key_listener = Listener(
-            on_press=self.update_twist,
+            on_press=self.on_press,
             on_release=self.on_release,
         )
         self.key_listener.start()
-        self.keys_bindings = {
-            "w": (self.LINEAR_MAX, 0.0),
-            "s": (-self.LINEAR_MAX, 0.0),
-            "a": (0.0, self.ANGULAR_MAX),
-            "d": (0.0, -self.ANGULAR_MAX),
+        self.keys_lr_bindings = {
+            "a": (self.ANGULAR_MAX),
+            "d": (-self.ANGULAR_MAX),
         }
-        self.special_keys_bindings = {
-            Key.up: (self.LINEAR_MAX, 0.0),
-            Key.down: (-self.LINEAR_MAX, 0.0),
-            Key.left: (0.0, self.ANGULAR_MAX),
-            Key.right: (0.0, -self.ANGULAR_MAX),
+        self.keys_fb_bindings = {
+            "w": (self.LINEAR_MAX),
+            "s": (-self.LINEAR_MAX),
+        }
+        self.special_keys_lr_bindings = {
+            Key.left: (self.ANGULAR_MAX),
+            Key.right: (-self.ANGULAR_MAX),
+        }
+        self.special_keys_fb_bindings = {
+            Key.up: (self.LINEAR_MAX),
+            Key.down: (-self.LINEAR_MAX),
         }
         self.get_logger().info(
             f"""
-This node takes keypresses from the keyboard and publishes them 
-as Ackermann Stamped messages. Your keypress will
-set the maximum configured speeds, at release all speeds are reset
+This node takes inputs from the keyboard and publishes them 
+as Ackermann Stamped messages. Pressed keys will
+set the maximum configured output, at release these values are set to 0
 
 WARNING: This node will take commands even if your terminal is out of focus
 
@@ -51,37 +57,38 @@ Max Angular Speed: +/-{self.ANGULAR_MAX} rad/s
     def on_release(self, key):
         if self._is_special_key(key):
 
-            if key in self.special_keys_bindings:
-                if key == Key.up or key == Key.down:
-                    self.write_twist(linear=0.0)
-                elif key == Key.left or key == Key.right:
-                    self.write_twist(angular=0.0)
+            if key in self.special_keys_fb_bindings:
+                self.write_twist(linear=0.0)
+            elif key in self.special_keys_lr_bindings:
+                self.write_twist(angular=0.0)
         else:
             key = key.char
-            if key in self.keys_bindings:
-                if key == "w" or key == "s":
+            if key in self.keys_fb_bindings:
                     self.write_twist(linear=0.0)
-                elif key == "a" or key == "d":
-                    self.write_twist(angular=0.0)
+            elif key in self.keys_lr_bindings:
+                self.write_twist(angular=0.0)
 
-    def update_twist(self, key):
-        binding = None
+    def on_press(self, key):
         if self._is_special_key(key):
-            if key in self.special_keys_bindings:
-                binding = self.special_keys_bindings[key]
+            if key in self.special_keys_lr_bindings:
+                self.lr_binding = self.special_keys_lr_bindings[key]
+            if key in self.special_keys_fb_bindings:
+                self.fb_binding = self.special_keys_fb_bindings[key]
             else:
                 self.write_twist(0.0, 0.0)
         else:
             if key.char == "q":
                 os.kill(os.getpid(), signal.SIGINT)
-            if key.char in self.keys_bindings:
-                binding = self.keys_bindings[key.char]
+            if key.char in self.keys_fb_bindings:
+                self.fb_binding = self.keys_fb_bindings[key.char]
+            if key.char in self.keys_lr_bindings:
+                self.lr_binding = self.keys_lr_bindings[key.char]
             else:
                 self.write_twist(0.0, 0.0)
-        if binding is not None:
-            new_linear = binding[0]
-            new_angular = binding[1]
-            self.write_twist(new_linear, new_angular)
+    
+        new_linear = self.fb_binding
+        new_angular = self.lr_binding
+        self.write_twist(new_linear, new_angular)
 
     def _is_special_key(self, key):
         try:
