@@ -1,18 +1,6 @@
 traxxas_teleop:
   ros__parameters:
-    twist_stamped_enabled: False
-    robot_base_frame: "base_link"
     publish_rate: 10.0 # Hz
     linear_max: 1.0 # m/s
     angular_max: 1.0 # rad/s
-    step: 0.2 # For key_teleop_incremental only
     use_sim_time: False
-
-motor_driver:
-  ros_parameters:
-    Kp: 10
-    Ki: 100
-    throttle_register_full: 6553
-    throttle_register_idle: 4915
-    throttle_register_revr: 3276
-    max_steer_angle: 0.65 # radians

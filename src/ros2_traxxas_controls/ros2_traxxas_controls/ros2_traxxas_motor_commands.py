@@ -12,12 +12,19 @@ boundedSignal = lambda x, l, u: l if x < l else u if x > u else x
 class MotorCommands(Node):
 
     def __init__(self):
-        super().__init__('motor_driver')
-        self.subscription = self.create_subscription(AckermannDriveStamped,'cmd_ackermann',self.ackermann_callback,10)
-        self.subscription = self.create_subscription(Odometry,'odometry/filtered',self.odom_callback,10)
-        self.subscription  # prevent unused variable warning
-        self.Kp = self.get_parameter("Kp").value
-        self.Ki = self.get_parameter("Ki").value
+        super().__init__("motor_driver")
+        self.command_subscription = self.create_subscription(AckermannDriveStamped,'cmd_ackermann',self.ackermann_callback,10)
+        self.speed_subscription = self.create_subscription(Odometry,'odometry/filtered',self.odom_callback,10)
+        self.command_subscription  # prevent unused variable warning
+        self.speed_subscription
+        self.declare_parameter("kp", 10)
+        self.declare_parameter("ki",  100)
+        self.declare_parameter("throttle_register_idle",  4915)
+        self.declare_parameter("throttle_register_full", 6335)
+        self.declare_parameter("throttle_register_revr", 3276)
+        self.declare_parameter("max_steer_angle", 0.65)
+        self.Kp = self.get_parameter("kp").value
+        self.Ki = self.get_parameter("ki").value
         self.throttle_idle = self.get_parameter("throttle_register_idle").value
         self.throttle_full = self.get_parameter("throttle_register_full").value
         self.throttle_revr = self.get_parameter("throttle_register_revr").value
