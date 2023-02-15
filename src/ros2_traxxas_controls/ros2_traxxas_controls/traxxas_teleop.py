@@ -48,12 +48,6 @@ class Teleop(Node, ABC):
                 )
         self._update_screen()
 
-    def _make_twist_unstamped(self, linear, angular):
-        ackermann_msg = AckermannDrive()
-        ackermann_msg.speed = linear
-        ackermann_msg.steering_angle = angular
-        return ackermann_msg
-
     def _make_twist_stamped(self, linear, angular):
         ackermann_msg_stamped = AckermannDriveStamped()
         ackermann_msg_stamped.header.stamp = self.get_clock().now().to_msg()

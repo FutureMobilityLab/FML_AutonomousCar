@@ -17,8 +17,8 @@ class MotorCommands(Node):
         self.speed_subscription = self.create_subscription(Odometry,'odometry/filtered',self.odom_callback,10)
         self.command_subscription  # prevent unused variable warning
         self.speed_subscription
-        self.declare_parameter("kp", 10)
-        self.declare_parameter("ki",  100)
+        self.declare_parameter("kp", 100)
+        self.declare_parameter("ki",  1000)
         self.declare_parameter("throttle_register_idle",  4915)
         self.declare_parameter("throttle_register_full", 6335)
         self.declare_parameter("throttle_register_revr", 3276)

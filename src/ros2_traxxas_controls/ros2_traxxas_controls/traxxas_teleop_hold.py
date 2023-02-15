@@ -58,15 +58,17 @@ Max Angular Speed: +/-{self.ANGULAR_MAX} rad/s
         if self._is_special_key(key):
 
             if key in self.special_keys_fb_bindings:
-                self.write_twist(linear=0.0)
+                self.lr_binding = 0.0
+                self.fb_binding = 0.0
             elif key in self.special_keys_lr_bindings:
-                self.write_twist(angular=0.0)
+                self.lr_binding = 0.0
+                self.fb_binding = 0.0
         else:
             key = key.char
             if key in self.keys_fb_bindings:
-                    self.write_twist(linear=0.0)
+                self.fb_binding = 0.0
             elif key in self.keys_lr_bindings:
-                self.write_twist(angular=0.0)
+                self.lr_binding = 0.0
 
     def on_press(self, key):
         if self._is_special_key(key):
@@ -75,7 +77,8 @@ Max Angular Speed: +/-{self.ANGULAR_MAX} rad/s
             if key in self.special_keys_fb_bindings:
                 self.fb_binding = self.special_keys_fb_bindings[key]
             else:
-                self.write_twist(0.0, 0.0)
+                self.lr_binding = 0.0
+                self.fb_binding = 0.0
         else:
             if key.char == "q":
                 os.kill(os.getpid(), signal.SIGINT)
@@ -85,6 +88,8 @@ Max Angular Speed: +/-{self.ANGULAR_MAX} rad/s
                 self.lr_binding = self.keys_lr_bindings[key.char]
             else:
                 self.write_twist(0.0, 0.0)
+                self.fb_binding = 0.0
+                self.lr_binding = 0.0
     
         new_linear = self.fb_binding
         new_angular = self.lr_binding
