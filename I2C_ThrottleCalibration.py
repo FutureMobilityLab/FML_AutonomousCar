@@ -5,6 +5,8 @@
 #       2. Power on ESC and wait until 4 beep sequence sounds, confirming full throttle setpoint.
 #       3. Run script at stage 2 and wait for additional 4 beeps, confirming full reverse setpoint.
 #       4. Run script at stage 3 and wait for final 4 beeps, confirming idle setpoint.
+#
+#       Additionally, please confirm motor_driver node has correctly set register values to match this script.
 
 from board import SCL, SDA
 import busio

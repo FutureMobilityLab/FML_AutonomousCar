@@ -56,19 +56,21 @@ Max Angular Speed: +/-{self.ANGULAR_MAX} rad/s
 
     def on_release(self, key):
         if self._is_special_key(key):
-
-            if key in self.special_keys_fb_bindings:
-                self.lr_binding = 0.0
+            if key == Key.up or key == Key.down:
                 self.fb_binding = 0.0
-            elif key in self.special_keys_lr_bindings:
+            elif key == Key.left or key == Key.right:
                 self.lr_binding = 0.0
-                self.fb_binding = 0.0
         else:
             key = key.char
-            if key in self.keys_fb_bindings:
+            if key == "w" or key == "s":
                 self.fb_binding = 0.0
-            elif key in self.keys_lr_bindings:
+            elif key == "a" or key == "d":
                 self.lr_binding = 0.0
+
+        new_linear = self.fb_binding
+        new_angular = self.lr_binding
+        self.write_twist(new_linear, new_angular)
+
 
     def on_press(self, key):
         if self._is_special_key(key):
@@ -79,18 +81,19 @@ Max Angular Speed: +/-{self.ANGULAR_MAX} rad/s
             else:
                 self.lr_binding = 0.0
                 self.fb_binding = 0.0
+
         else:
             if key.char == "q":
                 os.kill(os.getpid(), signal.SIGINT)
-            if key.char in self.keys_fb_bindings:
+            elif key.char == "w" or key.char == "s":
                 self.fb_binding = self.keys_fb_bindings[key.char]
-            if key.char in self.keys_lr_bindings:
+            elif key.char == "a" or key.char == "d":
                 self.lr_binding = self.keys_lr_bindings[key.char]
             else:
-                self.write_twist(0.0, 0.0)
                 self.fb_binding = 0.0
                 self.lr_binding = 0.0
-    
+
+        # print("\n lr_bind:",self.lr_binding,"fb_bind:",self.fb_binding,"\n")
         new_linear = self.fb_binding
         new_angular = self.lr_binding
         self.write_twist(new_linear, new_angular)
