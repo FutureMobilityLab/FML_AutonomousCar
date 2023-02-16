@@ -17,8 +17,8 @@ class MotorCommands(Node):
         self.speed_subscription = self.create_subscription(Odometry,'odometry/filtered',self.odom_callback,10)
         self.command_subscription  # prevent unused variable warning
         self.speed_subscription
-        self.declare_parameter("kp", 100)
-        self.declare_parameter("ki",  1000)
+        self.declare_parameter("kp", 20)
+        self.declare_parameter("ki",  10)
         self.declare_parameter("throttle_register_idle",  4915)
         self.declare_parameter("throttle_register_full", 6335)
         self.declare_parameter("throttle_register_revr", 3276)
@@ -45,12 +45,12 @@ class MotorCommands(Node):
     def LoopPID(self,AckermannCMD):
         error = AckermannCMD.drive.speed - self.v
         integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
-        ThrottleDesired = self.Kp * error + self.Ki * self.errorIntegrated * integratorTimeStep
-        self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
+        ThrottleDesired = self.Kp * error + self.Ki * self.errorIntegrated
         ThrottleRegisterVal = self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired ##converts to register value ()
-        if AckermannCMD.drive.speed < 0.0:
-            ThrottleRegisterVal = self.throttle_idle
+        if AckermannCMD.drive.speed * self.v < 0: # If direction commanded is reverse of speed
             self.errorIntegrated = 0
+        if ThrottleRegisterVal < self.throttle_full and ThrottleRegisterVal > self.throttle_revr:
+            self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
         return ThrottleRegisterVal
 
     def odom_callback(self,msg):
@@ -70,7 +70,7 @@ class MotorCommands(Node):
         pca = PCA9685(i2c)
         pca.frequency = 50
         ThrottleCMD = self.LoopPID(ackermann_cmd)
-        ThrottleCMDClipped = int(boundedSignal(ThrottleCMD,0,self.throttle_full))
+        ThrottleCMDClipped = int(boundedSignal(ThrottleCMD,self.throttle_revr,self.throttle_full))
         pca.channels[1].duty_cycle = ThrottleCMDClipped
         pca.deinit()
         print('ThrottleCMD:',ThrottleCMD,'SteerCMD:',steeringClipped)

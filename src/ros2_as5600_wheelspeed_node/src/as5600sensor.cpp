@@ -84,7 +84,7 @@ double AS5600Sensor::getVelocity()
   
   //std::cout << "Delta Angle:" << delta_angle << std::endl;
   //std::cout << "Time Step:" << delta_time << std::endl;
-  //std::cout << "Velocity:" << velocity << std::endl;
+  // std::cout << "Velocity:" << velocity << std::endl;
   return velocity;
 }
 

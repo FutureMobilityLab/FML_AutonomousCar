@@ -70,13 +70,14 @@ def generate_launch_description():
         package='ros2_traxxas_controls',
         executable='motor_driver',
         name='motor_driver',
+        output='screen',
     )
 
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='model', default_value=default_model_path,
                                              description='Absolute path to robot urdf file'),
         # launch.actions.DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path,
-        #                                     description='Absolute path to rviz config file'),
+        #                                      description='Absolute path to rviz config file'),
         launch.actions.DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
         joint_state_publisher_node,
