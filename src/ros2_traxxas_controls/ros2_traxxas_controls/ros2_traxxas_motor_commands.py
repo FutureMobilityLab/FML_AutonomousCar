@@ -18,7 +18,7 @@ class MotorCommands(Node):
         self.command_subscription  # prevent unused variable warning
         self.speed_subscription
         self.declare_parameter("kp", 20)
-        self.declare_parameter("ki",  10)
+        self.declare_parameter("ki",  20)
         self.declare_parameter("throttle_register_idle",  4915)
         self.declare_parameter("throttle_register_full", 6335)
         self.declare_parameter("throttle_register_revr", 3276)
