@@ -71,6 +71,8 @@ def generate_launch_description():
         executable='motor_driver',
         name='motor_driver',
         output='screen',
+        parameters=[os.path.join(pkg_share, 'config/motor_driver.yaml'),
+            {'use_sim_time': LaunchConfiguration('use_sim_time')}]
     )
 
     return launch.LaunchDescription([

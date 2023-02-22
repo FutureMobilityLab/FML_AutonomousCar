@@ -15,11 +15,11 @@ class MotorCommands(Node):
         super().__init__("motor_driver")
         self.command_subscription = self.create_subscription(AckermannDriveStamped,'cmd_ackermann',self.ackermann_callback,10)
         self.speed_subscription = self.create_subscription(Odometry,'odometry/filtered',self.odom_callback,10)
-        self.command_subscription  # prevent unused variable warning
+        self.command_subscription  # prevents unused variable warning
         self.speed_subscription
-        self.declare_parameter("kp", 20)
-        self.declare_parameter("ki",  20)
-        self.declare_parameter("throttle_register_idle",  4915)
+        self.declare_parameter("kp", 5)
+        self.declare_parameter("ki",  10)
+        self.declare_parameter("throttle_register_idle", 4915)
         self.declare_parameter("throttle_register_full", 6335)
         self.declare_parameter("throttle_register_revr", 3276)
         self.declare_parameter("max_steer_angle", 0.65)
@@ -35,6 +35,9 @@ class MotorCommands(Node):
         tempTimemsg = tempTimeStamp.to_msg()
         self.timeLastLooped = tempTimemsg.sec + tempTimemsg.nanosec * 10**-9
         self.v = 0
+        self.get_logger().info(F"""Motor PI Control Gains:
+        Kp: {self.Kp}
+        Ki: {self.Ki}""")
 
     def getTimeDiff(self,timestamp):
         timeNow = timestamp.sec + timestamp.nanosec * 10**-9
@@ -47,8 +50,9 @@ class MotorCommands(Node):
         integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
         ThrottleDesired = self.Kp * error + self.Ki * self.errorIntegrated
         ThrottleRegisterVal = self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired ##converts to register value ()
-        if AckermannCMD.drive.speed * self.v < 0: # If direction commanded is reverse of speed
+        if AckermannCMD.drive.speed * self.v < 0.0: # If direction commanded is reverse of speed
             self.errorIntegrated = 0
+            self.get_logger().info(f"""***REVERSE COMMAND - RESETTING INTEGRAL***""")
         if ThrottleRegisterVal < self.throttle_full and ThrottleRegisterVal > self.throttle_revr:
             self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
         return ThrottleRegisterVal
@@ -58,7 +62,6 @@ class MotorCommands(Node):
 
     def ackermann_callback(self,ackermann_cmd):
         i2c = busio.I2C(SCL, SDA)
-        # Create a simple PCA9685 class instance.
         pca = PCA9685(i2c)
         pca.frequency = 50
         TraxxasServo = servo.Servo(pca.channels[0])
@@ -73,7 +76,7 @@ class MotorCommands(Node):
         ThrottleCMDClipped = int(boundedSignal(ThrottleCMD,self.throttle_revr,self.throttle_full))
         pca.channels[1].duty_cycle = ThrottleCMDClipped
         pca.deinit()
-        print('ThrottleCMD:',ThrottleCMD,'SteerCMD:',steeringClipped)
+        self.get_logger().info(f"""Throttle Command: {ThrottleCMDClipped}   Steering Command: {TraxxasServo.angle}""")
 
 
 
