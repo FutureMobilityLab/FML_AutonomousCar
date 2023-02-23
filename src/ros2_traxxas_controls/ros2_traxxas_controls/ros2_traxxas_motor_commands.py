@@ -50,9 +50,9 @@ class MotorCommands(Node):
         integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
         ThrottleDesired = self.Kp * error + self.Ki * self.errorIntegrated
         ThrottleRegisterVal = self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired ##converts to register value ()
-        if AckermannCMD.drive.speed * self.v < 0.0: # If direction commanded is reverse of speed
-            self.errorIntegrated = 0
-            self.get_logger().info(f"""***REVERSE COMMAND - RESETTING INTEGRAL***""")
+        if integratorTimeStep > 0.5:
+            self.errorIntegrated = 0.0
+            self.get_logger().info(f"""***INTEGRATOR TIMEOUT - RESETTING INTEGRAL***""")
         if ThrottleRegisterVal < self.throttle_full and ThrottleRegisterVal > self.throttle_revr:
             self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
         return ThrottleRegisterVal
