@@ -4,7 +4,9 @@ from nav_msgs.msg import Odometry
 from ackermann_msgs.msg import AckermannDriveStamped
 import json
 
-from ros2_car_control.ros2_car_control import stanleyController, mpcController, youlaController
+from ros2_car_control.stanleyController import stanleyController
+from ros2_car_control.mpcController import mpcController
+from ros2_car_control.youlaController import youlaController
 
 class Controller(Node):
     def __init__(self):
@@ -18,7 +20,8 @@ class Controller(Node):
         self.timer = self.create_timer(timer_period, self.controller)
         # TODO: FETCH WAYPOINTS FROM ACTION CLIENT FILEPATH
         self.control_method = "stanley"
-        self.speed_setpoint = 1
+        self.speed_setpoint = 1.0
+        self.v = 0.0
 
     def odometry_callback(self,msg):
         self.v = msg.twist.twist.linear.x
@@ -26,20 +29,18 @@ class Controller(Node):
 
     def controller(self):
         if self.v > 2:  #if odom unsafe, comms lost, etc:
-            self.cmd_steer = 0
-            self.cmd_speed = 0
+            self.cmd_steer = 0.0
+            self.cmd_speed = 0.0
         # TODO: ADD PATH CONSTRAINTS TO KILL MOTOR IF OUT OF RANGE
         else:
             match self.control_method:
                 case "stanley":
                     self.cmd_steer = stanleyController()
-                    self.cmd_speed = self.speed_setpoint
                 case "mpc":
                     self.cmd_steer = mpcController()
-                    self.cmd_speed = self.speed_setpoint
                 case "youla":
                     self.cmd_steer = youlaController()
-                    self.cmd_speed = self.speed_setpoint
+            self.cmd_speed = self.speed_setpoint
         
         ackermann_command = AckermannDriveStamped()
         ackermann_command.header.stamp = self.get_clock().now().to_msg()
