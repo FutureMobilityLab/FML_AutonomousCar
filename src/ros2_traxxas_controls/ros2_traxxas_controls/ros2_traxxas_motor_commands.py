@@ -1,4 +1,5 @@
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from ackermann_msgs.msg import AckermannDriveStamped
 from nav_msgs.msg import Odometry
@@ -33,6 +34,7 @@ class MotorCommands(Node):
         self.errorIntegrated = 0
         tempTimeStamp = self.get_clock().now()
         tempTimemsg = tempTimeStamp.to_msg()
+        self.timeoutCount = 0
         self.timeLastLooped = tempTimemsg.sec + tempTimemsg.nanosec * 10**-9
         self.v = 0
         self.get_logger().info(F"""Motor PI Control Gains:
@@ -53,6 +55,14 @@ class MotorCommands(Node):
         if integratorTimeStep > 0.5:
             self.errorIntegrated = 0.0
             self.get_logger().info(f"""***INTEGRATOR TIMEOUT - RESETTING INTEGRAL***""")
+        if ThrottleDesired > 75:
+            self.timeoutCount += 1
+            if self.timeoutCount > 20:
+                ThrottleRegisterVal = self.throttle_idle
+                self.get_logger().info(f"""***MAX THROTTLE TIMEOUT - SETTING TO IDLE AND QUITTING***""")
+                raise SystemExit
+        else:
+            self.timeoutCount = 0
         if ThrottleRegisterVal < self.throttle_full and ThrottleRegisterVal > self.throttle_revr:
             self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
         return ThrottleRegisterVal
@@ -78,17 +88,37 @@ class MotorCommands(Node):
         pca.deinit()
         self.get_logger().info(f"""Throttle Command: {ThrottleCMDClipped}   Steering Command: {TraxxasServo.angle}""")
 
-
-
 def main(args=None):
     rclpy.init(args=args)
 
     motor_commands = MotorCommands()
 
-    rclpy.spin(motor_commands)
+    try:
+        rclpy.spin(motor_commands)
+    except KeyboardInterrupt:
+        pass
+    except SystemExit:
+        pass
+    except ExternalShutdownException:
+        pass
+    i2c = busio.I2C(SCL, SDA)
+    pca = PCA9685(i2c)
+    pca.frequency = 50
+    TraxxasServo = servo.Servo(pca.channels[0])
+    TraxxasServo.angle = 90
+    pca.deinit
 
+    i2c = busio.I2C(SCL, SDA)
+    pca = PCA9685(i2c)
+    pca.frequency = 50
+    pca.channels[1].duty_cycle = motor_commands.throttle_idle
+    pca.deinit()
+    rclpy.logging.get_logger("EXITCMD").info(f"""FINAL THROTTLE: {motor_commands.throttle_idle}   FINAL STEER: {TraxxasServo.angle}""")
+    rclpy.logging.get_logger("Quitting Motor Controller Node").info("Done")
     motor_commands.destroy_node()
-    rclpy.shutdown()
+    rclpy.try_shutdown()
+
+    
 
 if __name__ == '__main__':
     main()
