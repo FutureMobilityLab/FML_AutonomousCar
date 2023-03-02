@@ -3,6 +3,7 @@ from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from ackermann_msgs.msg import AckermannDriveStamped
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Imu
 from board import SCL, SDA
 import busio
 from adafruit_motor import servo
@@ -16,20 +17,26 @@ class MotorCommands(Node):
         super().__init__("motor_driver")
         self.command_subscription = self.create_subscription(AckermannDriveStamped,'cmd_ackermann',self.ackermann_callback,10)
         self.speed_subscription = self.create_subscription(Odometry,'odometry/filtered',self.odom_callback,10)
+        self.accel_subscription = self.create_subscription(Imu,'imu',self.accel_callback,10)
         self.command_subscription  # prevents unused variable warning
         self.speed_subscription
+        # Sets Default Parameters
         self.declare_parameter("kp", 15)
         self.declare_parameter("ki",  5)
         self.declare_parameter("throttle_register_idle", 4915)
         self.declare_parameter("throttle_register_full", 6335)
         self.declare_parameter("throttle_register_revr", 3276)
         self.declare_parameter("max_steer_angle", 0.65)
+        self.declare_parameter("max_accel", 2.0)
+        # Overrrides Parameters if Config File is Passed
         self.Kp = self.get_parameter("kp").value
         self.Ki = self.get_parameter("ki").value
         self.throttle_idle = self.get_parameter("throttle_register_idle").value
         self.throttle_full = self.get_parameter("throttle_register_full").value
         self.throttle_revr = self.get_parameter("throttle_register_revr").value
         self.max_steer_angle = self.get_parameter("max_steer_angle").value
+        self.max_accel = self.get_parameter("max_accel").value
+        # Unchanging Parameters
         self.throttle_pcnt_increment = (self.throttle_full-self.throttle_idle)/100
         self.errorIntegrated = 0
         tempTimeStamp = self.get_clock().now()
@@ -64,11 +71,17 @@ class MotorCommands(Node):
         else:
             self.timeoutCount = 0
         if ThrottleRegisterVal < self.throttle_full and ThrottleRegisterVal > self.throttle_revr:
-            self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
+            if abs(self.a) < self.max_accel:
+                self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
+            else:
+                self.get_logger().info(f"""***EXCESSIVE ACCELERATION - HOLDING INTEGRAL TERM***""")
         return ThrottleRegisterVal
 
     def odom_callback(self,msg):
        self.v = msg.twist.twist.linear.x
+
+    def accel_callback(self,msg):
+        self.a = msg.linear_acceleration.x
 
     def ackermann_callback(self,ackermann_cmd):
         i2c = busio.I2C(SCL, SDA)

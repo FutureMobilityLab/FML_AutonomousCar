@@ -6,3 +6,4 @@ motor_driver:
     throttle_register_idle: 4915
     throttle_register_revr: 3276
     max_steer_angle: 0.65 # radians
+    max_accel: 2 #m/s^2

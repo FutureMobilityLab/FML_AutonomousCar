@@ -4,3 +4,6 @@
 [submodule "src/ros2-py-path-planning"]
 	path = src/ros2-py-path-planning
 	url = https://github.com/JonnyD1117/ros2-py-path-planning-server.git
+[submodule "acados"]
+        path = acados
+        url = https://github.com/acados/acados

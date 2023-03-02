@@ -1,7 +1,7 @@
 import atexit
 import sys
 from abc import ABC, abstractmethod
-from ackermann_msgs.msg import AckermannDriveStamped, AckermannDrive
+from ackermann_msgs.msg import AckermannDriveStamped
 from rclpy.node import Node
 from rclpy.qos import qos_profile_system_default
 

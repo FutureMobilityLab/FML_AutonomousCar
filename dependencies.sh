@@ -19,20 +19,6 @@ if [ "" = "$PKG_OK" ]; then
   sudo apt-get --yes install $REQUIRED_PKG
 fi
 
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-
-#IMU ROS2 SDK Implementaion - Publishes imu topic
-cd src
-if ! git clone https://github.com/hiwad-aziz/ros2_mpu6050_driver
-then
-  echo "IMU Dependencies Failed - Check if Already Installed in /src"
-else
-  echo "IMU Dependencies Successful"
-fi
-
-cd ..
-
-
 REQUIRED_PKG="ros-humble-xacro"
 PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
 echo Checking for $REQUIRED_PKG: $PKG_OK
@@ -107,6 +93,13 @@ if [ "" = "$PKG_OK" ]; then
   sudo apt-get --yes install $REQUIRED_PKG
 fi
 
+REQUIRED_PKG="ros-humble-tf-transformations"
+PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
+echo Checking for $REQUIRED_PKG: $PKG_OK
+if [ "" = "$PKG_OK" ]; then
+  echo "No $REQUIRED_PKG. Setting up $REQUIRED_PKG."
+  sudo apt-get --yes install $REQUIRED_PKG
+fi
 
 
 pip3 install lgpio adafruit-circuitpython-pca9685 adafruit-circuitpython-servokit sshkeyboard pynput

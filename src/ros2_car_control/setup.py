@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'controller = ros2_car_control.controller:main',
+            'heartbeat = ros2_car_control.heartbeat:main',
         ],
     },
 )
