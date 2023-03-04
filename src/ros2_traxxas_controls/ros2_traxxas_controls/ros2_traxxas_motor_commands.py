@@ -27,7 +27,7 @@ class MotorCommands(Node):
         self.declare_parameter("throttle_register_full", 6335)
         self.declare_parameter("throttle_register_revr", 3276)
         self.declare_parameter("max_steer_angle", 0.65)
-        self.declare_parameter("max_accel", 2.0)
+        self.declare_parameter("max_accel", 1.0)
         # Overrrides Parameters if Config File is Passed
         self.Kp = self.get_parameter("kp").value
         self.Ki = self.get_parameter("ki").value
@@ -43,6 +43,7 @@ class MotorCommands(Node):
         tempTimemsg = tempTimeStamp.to_msg()
         self.timeoutCount = 0
         self.timeLastLooped = tempTimemsg.sec + tempTimemsg.nanosec * 10**-9
+        self.a = 0
         self.v = 0
         self.get_logger().info(F"""Motor PI Control Gains:
         Kp: {self.Kp}
