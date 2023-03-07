@@ -67,14 +67,17 @@ def generate_launch_description():
         executable='map_server',
         name='map_server',
         output='screen',
-        parameters = [{'yaml_filename':os.path.join(pkg_share, 'config/lab_map.yaml')}]
+        parameters = [os.path.join(pkg_share, 'config/amcl.yaml')],
+        remappings = [('/tf', 'tf'),
+                  ('/tf_static', 'tf_static')]
     )
     nav2_amcl_node = launch_ros.actions.Node(
-        package='nav2_amcl',
+        package='nav2_amcl',    
         executable='amcl',
         name='amcl',
         output='screen',
-        parameters=[os.path.join(pkg_share, 'config/amcl.yaml')]
+        parameters=[os.path.join(pkg_share, 'config/amcl.yaml')],
+        remappings = [('/tf', 'tf'),('/tf_static', 'tf_static')]        #Added in reference to Construct project, unsure if relative namespaces are causing issue
     )
     nav2_lifecycle_manager = launch_ros.actions.Node(
         package='nav2_lifecycle_manager',

@@ -46,3 +46,7 @@ amcl:
       y: 0.0
       z: 0.0
       yaw: 0.0
+
+map_server:
+  ros_parameters:
+    yaml_filename: "lab_map.yaml"
