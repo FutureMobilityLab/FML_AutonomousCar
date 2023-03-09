@@ -1,27 +1,33 @@
 import time, os
 import numpy as np
-from acados_generator import *
+from DBM_generator import *
 from getPath import getPath
 import matplotlib.pyplot as plt
+'''
+STATES: X, Y, x, y, y_dot, psi, psi_dot
+INPUTS: delta
+'''
 
-"""
-Example of the frc_racecars in simulation without obstacle avoidance:
-This example is for the optimal racing of the frc race cars. The model is a simple bicycle model and the lateral acceleration is constraint in order to validate the model assumptions.
-The simulation starts at s=-2m until one round is completed(s=8.71m). The beginning is cut in the final plots to simulate a 'warm start'. 
-"""
-[xref, yref, psiref] = getPath("waypoints.json")
+
+[xrefs, yrefs, psirefs] = getPath("waypoints.json")
+xrefs = np.array(xrefs*0.05)
+yrefs = np.array(yrefs*0.05)
+psirefs = np.array(psirefs)
+print('''
+STARTING POSITIONS:
+{0:.3f}  {1:.3f}
+'''.format(xrefs[0],yrefs[0],psirefs[0]))
+print(len(xrefs),len(yrefs))
 
 Tf = 1  # prediction horizon
 N = 20  # number of discretization steps
 T = 10.00  # maximum simulation time[s]
-sref_N = 3  # reference for final reference progress
 
 # load model
-# _, _, acados_solver = acados_settings(Tf, N, track)  #constraint,model, acados_solver
 acados_solver = AcadosOcpSolver(None,generate=False,build=True,json_file="acados_ocp.json")
-# acados_solver = AcadosOcpSolver.build('/home/george/FML_AutonomousCar/acados/examples/acados_python/race_cars/c_generated_code')
-# dimensions
-nx = 5 # model.x.size()[0]
+
+# Dimensions
+nx = 7 # model.x.size()[0]
 nu = 1 # model.u.size()[0]
 # print("size nx, nu: {} | {}".format(nx,nu))
 ny = nx + nu
@@ -30,26 +36,30 @@ Nsim = int(T * N / Tf)
 # initialize data structs
 simX = np.ndarray((Nsim, nx))
 simU = np.ndarray((Nsim, nu))
-s0 = -2 #model.x0[0]
 tcomp_sum = 0
 tcomp_max = 0
-
+x0 = np.array([xrefs[0],yrefs[0],0,0,0,psirefs[0],0])
+acados_solver.set(0, "lbx", x0)
+acados_solver.set(0, "ubx", x0)
 # simulate
+normArray= []
 for i in range(Nsim):
     # update reference
-    sref = s0 + sref_N
+    normArray = (xrefs - x0[0])**2 + (yrefs - x0[1])**2
+    start_ref = np.argmin(normArray)
+    print(start_ref)
     for j in range(N):
-        yref = np.array([s0 + (sref - s0) * j / N, 0, 0, 0, 0, 0, 0, 0])
+        yref = np.array([xrefs[start_ref+j], yrefs[start_ref+j], 0, 0, 0, psirefs[start_ref+j], 0, 0])
         acados_solver.set(j, "yref", yref)
-    yref_N = np.array([sref, 0, 0, 0, 0, 0])
+    yref_N = np.array([xrefs[start_ref+N], yrefs[start_ref+N], 0, 0, 0, psirefs[start_ref+N], 0])
     acados_solver.set(N, "yref", yref_N)
 
     # solve ocp
     t = time.time()
 
     status = acados_solver.solve()
-    if status != 0:
-        print("acados returned status {} in closed loop iteration {}.".format(status, i))
+    # if status != 0:
+    #     print("acados returned status {} in closed loop iteration {}.".format(status, i))
 
     elapsed = time.time() - t
     # manage timings
@@ -69,15 +79,23 @@ for i in range(Nsim):
     x0 = acados_solver.get(1, "x")
     acados_solver.set(0, "lbx", x0)
     acados_solver.set(0, "ubx", x0)
-    s0 = x0[0]
+    normArray = []  #Reset Norm Array
 
-    #check if done and terminate TODO
+    # if x0[0] == xrefs[-1]:
+    #     N0 = np.where(np.diff(np.sign(simX[:, 0])))[0][0]
+    #     Nsim = i - N0  # correct to final number of simulation steps for plotting
+    #     simX = simX[N0:i, :]
+    #     simU = simU[N0:i, :]
+    #     break
 
-# # Print some stats
+# Stats Printout
 print("Average computation time: {}".format(tcomp_sum / Nsim))
 print("Maximum computation time: {}".format(tcomp_max))
-print("Average speed:{}m/s".format(np.average(simX[:, 3])))
 print("Lap time: {}s".format(Tf * Nsim / N))
-# avoid plotting when running on Travis
-# if os.environ.get("ACADOS_ON_CI") is None:
-#     plt.show()
+
+#Graphing
+plt.figure()
+plt.plot(xrefs,yrefs,'--',color='k')
+plt.plot(simX[0][1:-1],simX[1][1:-1])
+plt.show()
+print(simX)

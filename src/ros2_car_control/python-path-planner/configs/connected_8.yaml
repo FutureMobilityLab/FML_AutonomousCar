@@ -1,0 +1,56 @@
+FML:
+  vehicle: 
+    major_diameter: 18
+    minor_diameter: 6
+
+  map:
+    path: "maps/map_1677110999.pgm"   # Note map.yaml needs to be in the same location as it will automatically get ingested by the planner   
+    # path: "maps/_map2delete/map.pgm"   # Note map.yaml needs to be in the same location as it will automatically get ingested by the planner 
+
+    cv:
+      kernel: [3,3]
+      apply: false    # Flag determines whether or not to apply erosion & dilation
+      erosion:
+        num_iter: 4
+      dilation:
+        num_iter: 5
+
+    threshold: 254
+    inflate: true
+    inflation_radius: 5
+
+  planner:
+    algorithm: PRM #  [Astar, Dijkstra, RRT, PRM, RRTstar] 
+
+    # Pixel Based Initial and Goal States
+    initialize_from_pixel_indices: true
+    goal_ind: [33, 20]
+    start_ind: [ 279, 96]
+    # goal_ind: [218, 230]
+    # start_ind: [ 148, 174]
+
+    # SI Based Initial and goal States 
+    origin: [0, 0]            
+    goal_point: [-3, 15]
+    x0_offset: -4.8
+    y0_offset: 13.95
+
+    Astar:                              # also the configuration for Dijkstra's Algorithm
+      connectivity: "connected-8"       # ["connected-4", "connected-8"]
+      heuristic: "euclidian"            # ["euclidian", "manhattan"]
+    RRT:
+      num_samples: 5000
+      # num_samples: 100000
+      step_size: 1
+      goal_tolerance: 2 # +- px indices
+
+    RRTstar:
+    PRM:
+      num_samples: 8000
+      num_neighbors: 8      # Number of Nearest Neighbors  
+    
+  smoothing:
+    num_wpts: 500
+
+  output: 
+    path: "configs/"

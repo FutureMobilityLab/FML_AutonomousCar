@@ -50,3 +50,4 @@ amcl:
 map_server:
   ros_parameters:
     yaml_filename: "lab_map.yaml"
+    

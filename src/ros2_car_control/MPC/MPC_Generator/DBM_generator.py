@@ -35,16 +35,16 @@ def acados_generator():
     ny_e = nx
 
     ocp.dims.N = N
-    ns = 2
-    nsh = 2
+    ns = 1
+    nsh = 1
 
-    # set cost
-    Q = np.diag([1e-1, 1e-8, 1e-8, 1e-8, 1e-3])
+    # set costs
+    Q = np.diag([1e-1, 1e-1, 0, 0, 1e-1, 1e-1, 1e-1])       #Should be of Size = nx
 
     R = np.eye(nu)
-    R[0, 0] = 1e-3
+    R[0, 0] = 1e-3                                                #Should be of Size = nu 
 
-    Qe = np.diag([ 5e0, 1e1, 1e-8, 1e-8, 5e-3])
+    Qe = np.diag([ 1e-1, 1e-1, 0, 0, 0, 1e-1, 0])            #Should be of Size = nx
 
     ocp.cost.cost_type = "LINEAR_LS"
     ocp.cost.cost_type_e = "LINEAR_LS"
@@ -58,7 +58,7 @@ def acados_generator():
     ocp.cost.Vx = Vx
 
     Vu = np.zeros((ny, nu))
-    Vu[6, 0] = 1.0
+    Vu[7, 0] = 1.0
     ocp.cost.Vu = Vu
 
     Vx_e = np.zeros((ny_e, nx))
@@ -71,40 +71,32 @@ def acados_generator():
     ocp.cost.Zu = 0 * np.ones((ns,))
 
     # set initial references
-    ocp.cost.yref = np.array([1, 0, 0, 0, 0, 0, 0, 0])
-    ocp.cost.yref_e = np.array([0, 0, 0, 0, 0, 0])
+    ocp.cost.yref = np.array([1, 1, 0, 0, 0, 0, 1, 0])       # Size: nx + nu
+    ocp.cost.yref_e = np.array([0, 0, 0, 0, 0, 0, 0])        # Size: nx 
 
     # setting constraints
-    ocp.constraints.lbx = np.array([-12])
-    ocp.constraints.ubx = np.array([12])
-    ocp.constraints.idxbx = np.array([1])
-    ocp.constraints.lbu = np.array([model.dthrottle_min, model.ddelta_min])
-    ocp.constraints.ubu = np.array([model.dthrottle_max, model.ddelta_max])
-    ocp.constraints.idxbu = np.array([0, 1])
+    ocp.constraints.lbx = np.array([])
+    ocp.constraints.ubx = np.array([])
+    ocp.constraints.idxbx = np.array([])
+    ocp.constraints.lbu = np.array([model.delta_min])
+    ocp.constraints.ubu = np.array([model.delta_max])
+    ocp.constraints.idxbu = np.array([0])
     # ocp.constraints.lsbx=np.zero s([1])
     # ocp.constraints.usbx=np.zeros([1])
     # ocp.constraints.idxsbx=np.array([1])
     ocp.constraints.lh = np.array(
         [
-            constraint.along_min,
-            constraint.alat_min,
-            model.n_min,
-            model.throttle_min,
             model.delta_min,
         ]
     )
     ocp.constraints.uh = np.array(
         [
-            constraint.along_max,
-            constraint.alat_max,
-            model.n_max,
-            model.throttle_max,
             model.delta_max,
         ]
     )
     ocp.constraints.lsh = np.zeros(nsh)
     ocp.constraints.ush = np.zeros(nsh)
-    ocp.constraints.idxsh = np.array([0, 2])
+    ocp.constraints.idxsh = np.array([0])
 
     # set intial condition
     ocp.constraints.x0 = model.x0
@@ -112,7 +104,7 @@ def acados_generator():
     # set QP solver and integration
     ocp.solver_options.tf = Tf
     ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
-    #ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
+    # ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
     # ocp.solver_options.nlp_solver_type = "SQP_RTI"
     ocp.solver_options.nlp_solver_max_iter = 10
     ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
@@ -130,3 +122,6 @@ def acados_generator():
     acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp.json")
 
     return constraint, model, acados_solver
+
+if __name__ == "__main__":
+    acados_generator()
