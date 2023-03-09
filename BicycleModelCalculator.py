@@ -39,8 +39,10 @@ def main():
     tire_D      = np.array([21.3,31.14,38.77,50.98,57.45,64.86])
     tire_Cf     = tire_B * tire_C * tire_D
     C_curve = np.polyfit(tireLoads,tire_Cf,1)   #Linear Interpolation
-    Cf = C_curve[0]*g*frontMass+C_curve[1]
-    Cr = C_curve[0]*g*rearMass+C_curve[1]
+    Cf_each = C_curve[0]*g*frontMass/2+C_curve[1]
+    Cr_each = C_curve[0]*g*rearMass/2+C_curve[1]
+    Cf = Cf_each * 2
+    Cr = Cr_each * 2   
 
     # Printout -------------------------------------------------------------------------------------------------
 

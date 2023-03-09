@@ -5,6 +5,8 @@ https://www.researchgate.net/publication/308851864_Kinematic_and_dynamic_vehicle
 
 Predictive Active Steering Control for Autonomous Vehicle Systems
 https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=4162483
+
+Slip Angles from PPTX [need to find again]
 '''
 
 from casadi import *
@@ -17,8 +19,8 @@ def bicycle_model():
     model_name = "Dynamic_Bicycle"
     ## Race car parameters
     m = 5.568 # mass
-    Cf = 3.675 # Cornering Stiffness of Front Tires
-    Cr = 3.661 # Cornering Stiffness of Rear Tires
+    Cf = 6.932 # Cornering Stiffness of Front Tires
+    Cr = 6.918 # Cornering Stiffness of Rear Tires
     lf = 0.205 # Distance from CG to Front Axle
     lr = 0.199 # Distance from CG to Rear Axle
     Iz = 0.167 # Rotational Inertia
@@ -60,30 +62,17 @@ def bicycle_model():
     p = vertcat([])
 
     # dynamics
-    # REF: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=4162483
-    # F_xf = 0                                        # Assume Const Vel
-    # F_xr = 0                                        # Assume Const Vel
-    # F_yf = - Cf * (delta - arctan(y_dot/x_dot))     # Only Term which is non zero force to tire
-    # F_yr = 0                                        # Assume no rear steering
-
-    # x_dot * cos(psi) - y_dot * sin(psi),            # X_dot
-    # x_dot * sin(psi) + y_dot * cos(psi),            # Y_dot
-    # 1.0,                                            # x_dot
-    # y_dot,                                          # y_dot
-    # -x_dot * psi_dot + 2 * F_yf/m + 2 * F_yr/m,     # y_d_dot
-    # psi_dot,                                        # psi_dot
-    # 2 * lf * F_yf / Iz - 2 * lr * F_yr / Iz,        # psi_d_dot
-
-    F_yf = Cf * (delta - arctan(y_dot/vx_setpoint))
+    F_cf = Cf * (delta-atan2(y_dot+lf*psi_dot,vx_setpoint))
+    F_cr = Cr * -atan2(y_dot-lr*psi_dot,vx_setpoint)
     # Explicit Dynamics [x_dot = f(x,u)]
     f_expl = vertcat(
-        vx_setpoint * cos(psi) - y_dot * sin(psi),      # X_dot
-        vx_setpoint * sin(psi) + y_dot * cos(psi),      # Y_dot
-        vx_setpoint,                                    # x_dot
-        y_dot,                                          # y_dot
-        -vx_setpoint * psi_dot + 2 * F_yf/m,            # y_d_dot
-        psi_dot,                                        # psi_dot
-        2 * lf * F_yf / Iz,                             # psi_d_dot
+        vx_setpoint * cos(psi) - y_dot * sin(psi),              # X_dot
+        vx_setpoint * sin(psi) + y_dot * cos(psi),              # Y_dot
+        vx_setpoint,                                            # x_dot
+        y_dot,                                                  # y_dot
+        -vx_setpoint * psi_dot + 2/m * (F_cf*cos(delta)+F_cr),  # y_d_dot
+        psi_dot,                                                # psi_dot
+        2/Iz*(lf*F_cf-lr*F_cr),                                     # psi_d_dot
     )
 
     # state bounds

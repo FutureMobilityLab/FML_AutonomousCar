@@ -21,7 +21,7 @@ print(len(xrefs),len(yrefs))
 
 Tf = 1  # prediction horizon
 N = 20  # number of discretization steps
-T = 10.00  # maximum simulation time[s]
+T = 15.00  # maximum simulation time[s]
 
 # load model
 acados_solver = AcadosOcpSolver(None,generate=False,build=True,json_file="acados_ocp.json")
@@ -47,7 +47,6 @@ for i in range(Nsim):
     # update reference
     normArray = (xrefs - x0[0])**2 + (yrefs - x0[1])**2
     start_ref = np.argmin(normArray)
-    print(start_ref)
     for j in range(N):
         yref = np.array([xrefs[start_ref+j], yrefs[start_ref+j], 0, 0, 0, psirefs[start_ref+j], 0, 0])
         acados_solver.set(j, "yref", yref)
@@ -96,6 +95,9 @@ print("Lap time: {}s".format(Tf * Nsim / N))
 #Graphing
 plt.figure()
 plt.plot(xrefs,yrefs,'--',color='k')
-plt.plot(simX[0][1:-1],simX[1][1:-1])
+psiref_x = np.cos(simX[:,5])
+psiref_y = np.sin(simX[:,5])
+plt.plot(simX[:,0],simX[:,1])
+plt.quiver(simX[:,0],simX[:,1],psiref_x,psiref_y)
 plt.show()
 print(simX)
