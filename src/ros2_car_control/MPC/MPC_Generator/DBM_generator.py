@@ -44,7 +44,7 @@ def acados_generator():
     R = np.eye(nu)
     R[0, 0] = 1e-3                                                #Should be of Size = nu 
 
-    Qe = np.diag([ 1e-1, 1e-1, 0, 0, 0, 1e-1, 0])            #Should be of Size = nx
+    Qe = np.diag([ 1e1, 1e1, 0, 0, 0, 1e-1, 0])            #Should be of Size = nx
 
     ocp.cost.cost_type = "LINEAR_LS"
     ocp.cost.cost_type_e = "LINEAR_LS"
@@ -58,7 +58,7 @@ def acados_generator():
     ocp.cost.Vx = Vx
 
     Vu = np.zeros((ny, nu))
-    Vu[7, 0] = 1.0
+    Vu[7, 0] = 0.5
     ocp.cost.Vu = Vu
 
     Vx_e = np.zeros((ny_e, nx))

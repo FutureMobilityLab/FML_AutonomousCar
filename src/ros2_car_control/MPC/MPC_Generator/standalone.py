@@ -21,7 +21,7 @@ print(len(xrefs),len(yrefs))
 
 Tf = 1  # prediction horizon
 N = 20  # number of discretization steps
-T = 15.00  # maximum simulation time[s]
+v = 1.0 # Velocity Setpoint
 
 # load model
 acados_solver = AcadosOcpSolver(None,generate=False,build=True,json_file="acados_ocp.json")
@@ -31,7 +31,7 @@ nx = 7 # model.x.size()[0]
 nu = 1 # model.u.size()[0]
 # print("size nx, nu: {} | {}".format(nx,nu))
 ny = nx + nu
-Nsim = int(T * N / Tf)
+Nsim = int(300/v)
 
 # initialize data structs
 simX = np.ndarray((Nsim, nx))
@@ -80,12 +80,12 @@ for i in range(Nsim):
     acados_solver.set(0, "ubx", x0)
     normArray = []  #Reset Norm Array
 
-    # if x0[0] == xrefs[-1]:
-    #     N0 = np.where(np.diff(np.sign(simX[:, 0])))[0][0]
-    #     Nsim = i - N0  # correct to final number of simulation steps for plotting
-    #     simX = simX[N0:i, :]
-    #     simU = simU[N0:i, :]
-    #     break
+    if x0[0] == xrefs[-1]:
+        N0 = np.where(np.diff(np.sign(simX[:, 0])))[0][0]
+        Nsim = i - N0  # correct to final number of simulation steps for plotting
+        simX = simX[N0:i, :]
+        simU = simU[N0:i, :]
+        break
 
 # Stats Printout
 print("Average computation time: {}".format(tcomp_sum / Nsim))
@@ -100,4 +100,3 @@ psiref_y = np.sin(simX[:,5])
 plt.plot(simX[:,0],simX[:,1])
 plt.quiver(simX[:,0],simX[:,1],psiref_x,psiref_y)
 plt.show()
-print(simX)
