@@ -1,0 +1,2 @@
+clean:
+	dh_clean

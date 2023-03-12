@@ -1,0 +1,24 @@
+Source: fml-acados-deps
+Section: unknown
+Homepage: https://futuremobility.engineering.ucdavis.edu/
+Maintainer: Jonathan Dorsey <jtdorsey@ucdavis.edu>
+Standards-Version: 4.0.0
+
+Package: fml-acados-deps
+Architecture: amd64
+Priority: optional
+Depends: 
+    ${misc:Depends}, 
+    git, 
+    cmake,
+    gcc,
+    g++,
+    gfortran,
+    liblapack-dev,
+    pkg-config,
+    swig,
+    python3-dev,
+    python3-numpy,
+    python3-scipy,
+    python3-matplotlib 
+Description: Acados Dependency Package.
