@@ -5,10 +5,10 @@ from tf_transformations import euler_from_quaternion
 from ackermann_msgs.msg import AckermannDriveStamped
 from std_msgs.msg import String
 import json
-Odometry
 from ros2_car_control.stanleyController import StanleyController
 from ros2_car_control.mpcController import MPCController
 from ros2_car_control.youlaController import YoulaController
+import numpy as np 
 
 class Controller(Node):
     def __init__(self):
@@ -17,10 +17,13 @@ class Controller(Node):
         self.heartbeat_subscriber = self.create_subscription(String,'heartbeat',self.heartbeat_callback,1)
         self.pose_subscriber = self.create_subscription(Odometry,'map/odometry/filtered',self.pose_callback,10)
         self.ackermann_publisher = self.create_publisher(AckermannDriveStamped,'cmd_ackermann',10)
-        # TODO: ADD ACTION CLIENT TO GENERATE WAYPOINTS, RETURN FILEPATH OF JSON AND NAME
         waypointsdir = open('src/ros2_car_control/config/waypoints.json') # TODO: PUT THAT PATH/NAME HERE
         waypointsfile = json.load(waypointsdir)
-        self.waypoints = waypointsfile['smoothed_wpts']
+        # TODO: CREATE STANDALONE ADJUSTMENT
+        untranslated_waypoints = waypointsfile['smoothed_wpts']
+        waypoints_x = [x[0] for x in untranslated_waypoints]
+        waypoints_y = [y[1] for y in untranslated_waypoints]
+        self.waypoints = [[waypoints_x[i]*0.05-5.93,waypoints_y[i]*0.05-12.8] for i in range(len(waypoints_x))]
         timer_period = 0.1
         self.timer = self.create_timer(timer_period, self.controller)
         self.control_method = "stanley"
@@ -48,7 +51,7 @@ class Controller(Node):
     def pose_callback(self,msg):
         orientations = msg.pose.pose.orientation
         quaternion_pose = [orientations.x,orientations.y,orientations.z,orientations.w]
-        [_,_,self.yaw] = euler_from_quaternion(quaternion_pose) #TODO: Do this right
+        [_,_,self.yaw] = euler_from_quaternion(quaternion_pose)
         self.x = msg.pose.pose.position.x
         self.y = msg.pose.pose.position.y
 

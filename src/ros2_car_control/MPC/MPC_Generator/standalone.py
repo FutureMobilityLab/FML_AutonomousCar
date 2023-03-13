@@ -24,7 +24,7 @@ N = 20  # number of discretization steps
 v = 1.0 # Velocity Setpoint
 
 # load model
-acados_solver = AcadosOcpSolver(None,generate=False,build=True,json_file="acados_ocp.json")
+acados_solver = AcadosOcpSolver(None,generate=False,build=False,json_file="acados_ocp.json")
 
 # Dimensions
 nx = 7 # model.x.size()[0]
