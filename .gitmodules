@@ -1,9 +1,6 @@
 [submodule "src/ros2_mpu6050_driver"]
 	path = src/ros2_mpu6050_driver
 	url = https://github.com/hiwad-aziz/ros2_mpu6050_driver
-[submodule "acados"]
-	path = acados
-	url = https://github.com/acados/acados
-[submodule "src/python-path-planner"]
-	path = src/python-path-planner
+[submodule "src/ros2_car_control/python-path-planner"]
+	path = src/ros2_car_control/python-path-planner
 	url = https://github.com/JonnyD1117/python-path-planners

@@ -2,7 +2,7 @@
 import numpy as np
 
 class StanleyController():
-    def __init__(self):
+    def __init__(self,waypoints):
         self.k = 1 #control_gain
         self.k_soft = 1 #softening_gain
         self.L = 0.404 #wheelbase
@@ -10,34 +10,25 @@ class StanleyController():
         self.prev_steering_angle = 0
         self.debug_bool = True
         self.velocity_setpoint = 1.0
-        
-    def getYawRef(self,waypoints,index):
-        try:
-            rise = waypoints[index+1][1]-waypoints[index][1]
-            run = waypoints[index+1][0]-waypoints[index][0]
-        except IndexError:
-            rise = waypoints[index][1]-waypoints[index-1][1]
-            run = waypoints[index][0]-waypoints[index-1][0]
-        yawref = np.arctan2(rise,run)
-        return yawref
+        self.waypoints = waypoints
 
-    def get_commands(self,waypoints,x,y,yaw,v):
+    def get_commands(self,x,y,yaw,v):
         distance_to_waypoint = []
 
         front_axle_x = x + self.L * np.cos(yaw)
         front_axle_y = y + self.L * np.sin(yaw)
-        for i in range(len(waypoints)):
-            distance_to_waypoint.append((front_axle_x - waypoints[i][0])**2 + (front_axle_y - waypoints[i][1])**2)
+        for i in range(len(self.waypoints.x)):
+            distance_to_waypoint.append((front_axle_x - self.waypoints.x[i])**2 + (front_axle_y - self.waypoints.y[i])**2)
             nearest_waypoint_index = distance_to_waypoint.index(min(distance_to_waypoint))
 
-        yaw_ref = self.getYawRef(waypoints,nearest_waypoint_index)
-        ref_to_axle = np.array([front_axle_x - waypoints[nearest_waypoint_index][0], front_axle_y - waypoints[nearest_waypoint_index][1]])
+        yaw_ref = self.waypoints.psi[nearest_waypoint_index]
+        ref_to_axle = np.array([front_axle_x - self.waypoints.x[nearest_waypoint_index], front_axle_y - self.waypoints.y[nearest_waypoint_index]])
         crosstrack_vector = np.array([np.cos(yaw_ref), np.sin(yaw_ref)])
         crosstrack_error = -(ref_to_axle[0]*crosstrack_vector[1] - \
                            ref_to_axle[1]*crosstrack_vector[0])
         
         if self.debug_bool == True:
-            print('Pose: '+str(front_axle_x)+' '+str(front_axle_y)+'\tNearest Points: '+str(waypoints[nearest_waypoint_index][0])+' '+str(waypoints[nearest_waypoint_index][1]))
+            print('Pose: '+str(front_axle_x)+' '+str(front_axle_y)+'\tNearest Points: '+str(self.waypoints.x[nearest_waypoint_index])+' '+str(self.waypoints.y[nearest_waypoint_index]))
             print('Crosstrack Error:'+str(crosstrack_error)+'\tCrosstrack Vector:'+str(crosstrack_vector))
         # Stanley Control law.
         yaw_term = yaw_ref - yaw
@@ -51,7 +42,7 @@ class StanleyController():
 
         self.prev_steering_angle = steering_angle
 
-        if waypoints[nearest_waypoint_index] == waypoints[-1]:
+        if nearest_waypoint_index == len(self.waypoints.x):
             speed_cmd = 0
         else:
             speed_cmd = self.velocity_setpoint

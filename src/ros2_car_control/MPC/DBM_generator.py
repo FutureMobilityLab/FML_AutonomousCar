@@ -4,7 +4,7 @@ import scipy.linalg
 import numpy as np
 
 def acados_generator():
-    Tf = 1  # prediction horizon
+    Tf = 2  # prediction horizon
     N = 20  # number of discretization steps
 
     # create render arguments
@@ -71,7 +71,7 @@ def acados_generator():
     ocp.cost.Zu = 0 * np.ones((ns,))
 
     # set initial references
-    ocp.cost.yref = np.array([1, 1, 0, 0, 0, 0, 1, 0])       # Size: nx + nu
+    ocp.cost.yref = np.array([1, 1, 0, 0, 0, 0, 1e-1, 0])       # Size: nx + nu
     ocp.cost.yref_e = np.array([0, 0, 0, 0, 0, 0, 0])        # Size: nx 
 
     # setting constraints
@@ -95,7 +95,7 @@ def acados_generator():
         ]
     )
     ocp.constraints.lsh = np.zeros(nsh)
-    ocp.constraints.ush = np.zeros(nsh)
+    ocp.constraints.ush = np.ones(nsh)*0.01
     ocp.constraints.idxsh = np.array([0])
 
     # set intial condition

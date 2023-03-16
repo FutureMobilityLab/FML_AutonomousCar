@@ -67,7 +67,7 @@ def generate_launch_description():
         executable='map_server',
         name='map_server',
         output='screen',
-        parameters = [os.path.join(pkg_share, 'config/amcl.yaml')],
+        parameters = [{'yaml_filename': "lab_map.yaml"}],
         remappings = [('/tf', 'tf'),
                   ('/tf_static', 'tf_static')]
     )

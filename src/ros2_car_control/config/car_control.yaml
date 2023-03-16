@@ -1,0 +1,27 @@
+car_control:
+  ros_parameters:
+    speed_setpoint: 1.0       # m/s
+    max_speed: 2.0            # m/s
+    heartbeat_timeout: 0.5    # seconds
+    max_steer: 0.65           # radians
+
+    wheelbase: .404           # m
+
+    control_method: "stanley" # controller type
+
+    stanley_k: 1              # stanley controller gain
+    stanley_k_soft: 1         # stanley softening gain
+
+    mpc_tf: 1.0               # time horizon [sec]
+    mpc_N: 20                 # number of shooting nodes                
+    mpc_nx: 7                 # number of states
+    mpc_nu: 1                 # number of inputs
+
+    pp_lookahead: 1.0         # pure pursuit lookahead dist [m]
+
+    youla_matrices: "Youla_Controller.json" # json title of Youla Matrices
+
+    hinf_matrices: "Hinf_Controller.json"   # json title of Hinf Matrices
+
+    
+

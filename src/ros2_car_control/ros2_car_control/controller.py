@@ -17,14 +17,8 @@ class Controller(Node):
         self.heartbeat_subscriber = self.create_subscription(String,'heartbeat',self.heartbeat_callback,1)
         self.pose_subscriber = self.create_subscription(Odometry,'map/odometry/filtered',self.pose_callback,10)
         self.ackermann_publisher = self.create_publisher(AckermannDriveStamped,'cmd_ackermann',10)
-        waypointsdir = open('src/ros2_car_control/config/waypoints.json') # TODO: PUT THAT PATH/NAME HERE
-        waypointsfile = json.load(waypointsdir)
-        # TODO: CREATE STANDALONE ADJUSTMENT
-        untranslated_waypoints = waypointsfile['smoothed_wpts']
-        waypoints_x = [x[0] for x in untranslated_waypoints]
-        waypoints_y = [y[1] for y in untranslated_waypoints]
-        self.waypoints = [[waypoints_x[i]*0.05-5.93,waypoints_y[i]*0.05-12.8] for i in range(len(waypoints_x))]
         timer_period = 0.1
+        self.waypoints = waypoints()
         self.timer = self.create_timer(timer_period, self.controller)
         self.control_method = "stanley"
         self.speed_setpoint = 1.0
@@ -38,11 +32,11 @@ class Controller(Node):
 
         match self.control_method:
             case "stanley":
-                    self.controller_function = StanleyController()
+                    self.controller_function = StanleyController(self.waypoints)
             case "youla":
-                    self.controller_function = YoulaController()
+                    self.controller_function = YoulaController(self.waypoints)
             case "mpc":
-                    self.controller_function = MPCController()
+                    self.controller_function = MPCController(self.waypoints)
 
 
     def odometry_callback(self,msg):
@@ -69,7 +63,7 @@ class Controller(Node):
             self.cmd_speed = 0.0
         # TODO: ADD PATH CONSTRAINTS TO KILL MOTOR IF OUT OF RANGE
         else:
-            (self.cmd_steer,self.cmd_speed) = self.controller_function.get_commands(self.waypoints,self.x,self.y,self.yaw,self.v)
+            (self.cmd_steer,self.cmd_speed) = self.controller_function.get_commands(self.x,self.y,self.yaw,self.v)
             
         
         ackermann_command = AckermannDriveStamped()
@@ -88,6 +82,20 @@ def main(args=None):
     # Destroy the node explicitly
     car_controller.destroy_node()
     rclpy.shutdown()
+
+class waypoints():
+     def __init__(self):
+          
+        waypointsdir = open('src/ros2_car_control/config/waypoints.json') # TODO: PUT THAT PATH/NAME HERE
+        waypointsfile = json.load(waypointsdir)
+        # TODO: CREATE STANDALONE ADJUSTMENT
+        untranslated_waypoints = waypointsfile['smoothed_wpts']
+        self.x = np.array([x[0] for x in untranslated_waypoints])
+        self.y = np.array([y[1] for y in untranslated_waypoints])
+        x_diffs = np.diff(self.x)
+        y_diffs = np.diff(self.y)
+        self.psi = np.arctan2(y_diffs,x_diffs)
+        self.psi = np.append(self.psi, self.psi[-1])
 
 
 if __name__ == '__main__':

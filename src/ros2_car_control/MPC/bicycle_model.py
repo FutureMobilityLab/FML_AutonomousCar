@@ -24,7 +24,7 @@ def bicycle_model():
     lf = 0.205 # Distance from CG to Front Axle
     lr = 0.199 # Distance from CG to Rear Axle
     Iz = 0.167 # Rotational Inertia
-    vx_setpoint = 1.0 # Tuned Controller Speed
+    vx_setpoint = 2.0 # Tuned Controller Speed
 
     ## CasADi Model
     # set up states & controls
@@ -62,17 +62,17 @@ def bicycle_model():
     p = vertcat([])
 
     # dynamics
-    F_cf = Cf * (delta-atan2(y_dot+lf*psi_dot,vx_setpoint))
-    F_cr = Cr * -atan2(y_dot-lr*psi_dot,vx_setpoint)
+    F_cf = -Cf * (-delta+np.arctan2(y_dot+lf*psi_dot,vx_setpoint))
+    F_cr = -Cr * np.arctan2(y_dot-lr*psi_dot,vx_setpoint)
     # Explicit Dynamics [x_dot = f(x,u)]
     f_expl = vertcat(
-        vx_setpoint * cos(psi) - y_dot * sin(psi),              # X_dot
-        vx_setpoint * sin(psi) + y_dot * cos(psi),              # Y_dot
-        vx_setpoint,                                            # x_dot
-        y_dot,                                                  # y_dot
-        -vx_setpoint * psi_dot + 2/m * (F_cf*cos(delta)+F_cr),  # y_d_dot
-        psi_dot,                                                # psi_dot
-        2/Iz*(lf*F_cf-lr*F_cr),                                     # psi_d_dot
+        vx_setpoint * np.cos(psi) - y_dot * np.sin(psi),              # X_dot
+        vx_setpoint * np.sin(psi) + y_dot * np.cos(psi),              # Y_dot
+        vx_setpoint,                                                  # x_dot
+        y_dot,                                                        # y_dot
+        -vx_setpoint * psi_dot + 2/m * (F_cf*np.cos(delta)+F_cr),     # y_d_dot
+        psi_dot,                                                      # psi_dot
+        2/Iz*(lf*F_cf-lr*F_cr),                                       # psi_d_dot
     )
 
     # state bounds
