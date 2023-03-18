@@ -19,9 +19,9 @@ car_control:
 
     pp_lookahead: 1.0         # pure pursuit lookahead dist [m]
 
-    Youla_GcA: [1.0733 -0.4128 0.2741 0.0; 0.5 0.0 0.0 0.0; 0.0 0.5 0.0 0.0; 0.0 0.0 0.5 0.0]
-    Youla_GcB: [2; 0.0; 0.0; 0.0]
-    Youla_GcC: [0.5195 -0.6425 -0.6239 0.0001]
+    Youla_GcA: [1.8934 -1.0907 0.4767 -0.2260; 1.0 0.0 0.0 0.0; 0.0 0.5 0.0 0.0; 0.0 0.0 0.5 0.0]
+    Youla_GcB: [8; 0.0; 0.0; 0.0]
+    Youla_GcC: [0.5445 -1.2909 2.0142 -1.0329]
     Youla_GcD: [0.0]
 
     hinf_matrices: "Hinf_Controller.json"   # json title of Hinf Matrices
