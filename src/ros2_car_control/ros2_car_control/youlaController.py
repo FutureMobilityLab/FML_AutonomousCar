@@ -21,20 +21,35 @@ class YoulaController():
         distance_to_waypoint = []
         # waypoints = []
 
-        for i in range(len(self.waypoints.x)):
-            distance_to_waypoint.append((pose_x - self.waypoints.x[i])**2 + (pose_y - self.waypoints.y[i])**2)
-            # waypoints.append([self.waypoints.x[i],self.waypoints.y[i],self.waypoints.psi[i])
-            nearest_waypoint_index = distance_to_waypoint.index(min(distance_to_waypoint))
-        # nearest_waypoint_index = np.argmin(distance_to_waypoint)
-        # ref_x, ref_y, ref_yaw = waypoints[nearest_waypoint_index]
-        
+        # There are two ways we can implement the output feedback here: 
+        #   1. we find the reference waypoint closest to some point ahead of
+        #   the vehicle (lookahead) and compute crosstrack error.
+        #   2. we find the reference waypoint closest to the vehicle c.g. and
+        #   compute crosstrack error and yaw error. Then the total error is
+        #   crosstrack_error + lookahead*yaw_error.
+
         # lookahead = 0
         # front_axle_x = pose_x + lookahead * np.cos(pose_psi)
         # front_axle_y = pose_y + lookahead * np.sin(pose_psi)
 
+        for i in range(len(self.waypoints.x)):
+            # Uncomment below 3 lines for option 1.
+            # distance_to_waypoint.append(
+            #     (front_axle_x - self.waypoints.x[i])**2 \
+            #         + (front_axle_y - self.waypoints.y[i])**2)
+
+            distance_to_waypoint.append((pose_x - self.waypoints.x[i])**2 + (pose_y - self.waypoints.y[i])**2)
+            # waypoints.append([self.waypoints.x[i],self.waypoints.y[i],self.waypoints.psi[i])
+            nearest_waypoint_index = distance_to_waypoint.index(min(distance_to_waypoint))
+        # nearest_waypoint_index = np.argmin(distance_to_waypoint)
+        # ref_x, ref_y, ref_psi = waypoints[nearest_waypoint_index]
+
         # ref_to_axle = np.array([front_axle_x - ref_x, front_axle_y - ref_y])
-        # crosstrack_vector = np.array([np.sin(ref_yaw), -np.cos(ref_yaw)])
-        # lateral_error = ref_to_axle.dot(crosstrack_vector)
+        # crosstrack_vector = np.array([np.sin(ref_psi), -np.cos(ref_psi)])
+        # lateral_error = -ref_to_axle.dot(crosstrack_vector)
+
+        # Uncomment below for option 2.
+        # lateral_error += pose_psi - ref_psi
 
         # This lateral error calculation might not work out if there is a
         # lookahead distance. Consider the example where there is zero
