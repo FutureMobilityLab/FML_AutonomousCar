@@ -1,13 +1,14 @@
 import numpy as np
 from acados_template import AcadosOcpSolver
+import yaml
 
 class MPCController():
     def __init__(self,waypoints):
-        self.Tf = 1.0  # prediction horizon
-        self.N = 20  # number of discretization steps
-        self.v = 2.0 # Velocity Setpoint
-
-        # TODO: Use Correct Waypoint Refs
+        stream =  open('car_control.yaml','r')
+        config_file = yaml.load(stream)
+        self.Tf = config_file.get("Tf")  # prediction horizon
+        self.N = config_file.get("N")  # number of discretization steps
+        self.v = config_file.get("speed_setpoint") # Velocity Setpoint
         self.xrefs = np.array(waypoints.x)
         self.yrefs = np.array(waypoints.psi)
         self.psirefs = np.array(waypoints.psi)

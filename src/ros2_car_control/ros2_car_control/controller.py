@@ -4,10 +4,10 @@ from nav_msgs.msg import Odometry
 from tf_transformations import euler_from_quaternion
 from ackermann_msgs.msg import AckermannDriveStamped
 from std_msgs.msg import String
-import json
-from ros2_car_control.stanleyController import StanleyController
-from ros2_car_control.mpcController import MPCController
-from ros2_car_control.youlaController import YoulaController
+import json, os
+from stanleyController import StanleyController
+from mpcController import MPCController
+from youlaController import YoulaController
 import numpy as np 
 
 class Controller(Node):
@@ -20,16 +20,20 @@ class Controller(Node):
         timer_period = 0.1
         self.waypoints = waypoints()
         self.timer = self.create_timer(timer_period, self.controller)
-        self.control_method = "stanley"
-        self.speed_setpoint = 1.0
+        self.declare_parameter("control_method","stanley")
+        self.declare_parameter("speed_setpoint",1.0)
+        self.declare_parameter("v_max",2.0)
+        self.control_method = self.get_parameter("control_method").value
+        self.speed_setpoint = self.get_parameter("speed_setpoint").value
+        self.v_max = self.get_parameter("v_max").value
         self.v = 0.0
         self.x = 0.0
         self.y = 0.0
         self.yaw = 0.0
-        self.v_max = 2.0
-        self.heartbeat_timeout = 0.5 #s
+        self.declare_parameter("heartbeat_timeout",0.5)
+        self.heartbeat_timeout = self.get_parameter("heartbeat_timeout").value
         self.heartbeat_alarm = 0
-
+        # print(self.control_method)
         match self.control_method:
             case "stanley":
                     self.controller_function = StanleyController(self.waypoints)
@@ -85,13 +89,12 @@ def main(args=None):
 
 class waypoints():
      def __init__(self):
-          
-        waypointsdir = open('src/ros2_car_control/config/waypoints.json') # TODO: PUT THAT PATH/NAME HERE
-        waypointsfile = json.load(waypointsdir)
-        # TODO: CREATE STANDALONE ADJUSTMENT
-        untranslated_waypoints = waypointsfile['smoothed_wpts']
-        self.x = np.array([x[0] for x in untranslated_waypoints])
-        self.y = np.array([y[1] for y in untranslated_waypoints])
+        waypointsdir = os.path.join(os.path.dirname( __file__ ), '../config/','waypoints.json')
+        with open(waypointsdir,"r") as read_file:
+            waypointsfile = json.load(read_file)
+            untranslated_waypoints = waypointsfile['smoothed_wpts']
+            self.x = np.array([x[0] for x in untranslated_waypoints])
+            self.y = np.array([y[1] for y in untranslated_waypoints])
         x_diffs = np.diff(self.x)
         y_diffs = np.diff(self.y)
         self.psi = np.arctan2(y_diffs,x_diffs)

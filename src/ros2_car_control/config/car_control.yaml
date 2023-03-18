@@ -7,7 +7,7 @@ car_control:
 
     wheelbase: .404           # m
 
-    control_method: "stanley" # controller type
+    control_method: "youla" # controller type SELECT FROM: stanley | youla | mpc | hinf | pp
 
     stanley_k: 1              # stanley controller gain
     stanley_k_soft: 1         # stanley softening gain
@@ -19,9 +19,14 @@ car_control:
 
     pp_lookahead: 1.0         # pure pursuit lookahead dist [m]
 
-    youla_matrices: "Youla_Controller.json" # json title of Youla Matrices
+    Youla_Gca: [1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0]
+    Youla_GcB: [1.0; 0.0; 0.0; 0.0]
+    Youla_GcC: [1.0 0.0 0.0 0.0]
+    Youla_GcD: [0.0]
 
     hinf_matrices: "Hinf_Controller.json"   # json title of Hinf Matrices
+
+    waypoints: "waypoints.json"             # json title of waypoints
 
     
 
