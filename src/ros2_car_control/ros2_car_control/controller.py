@@ -20,7 +20,7 @@ class Controller(Node):
         timer_period = 0.1
         self.waypoints = waypoints()
         self.timer = self.create_timer(timer_period, self.controller)
-        self.declare_parameter("control_method","stanley")
+        self.declare_parameter("control_method","youla")
         self.declare_parameter("speed_setpoint",1.0)
         self.declare_parameter("v_max",2.0)
         self.control_method = self.get_parameter("control_method").value

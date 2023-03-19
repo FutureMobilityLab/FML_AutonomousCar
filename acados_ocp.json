@@ -1,6 +1,6 @@
 {
-    "acados_include_path": "/home/george/FML_AutonomousCar/acados/include",
-    "acados_lib_path": "/home/george/FML_AutonomousCar/acados/lib",
+    "acados_include_path": "/home/george/acados/include",
+    "acados_lib_path": "/home/george/acados/lib",
     "code_export_directory": "/home/george/FML_AutonomousCar/c_generated_code",
     "constraints": {
         "C": [],

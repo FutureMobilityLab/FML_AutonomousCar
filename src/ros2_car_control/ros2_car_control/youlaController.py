@@ -1,17 +1,19 @@
 import numpy as np
-import yaml
+import yaml, os
 
 class YoulaController():
     def __init__(self,waypoints):
         n_gcx = 7 #Number of controller states
         self.Gc_states = np.zeros((1,n_gcx))
-        stream =  open('car_control.yaml','r')
+        config_path = os.path.join(__file__,'../config/car_control.yaml')
+        stream =  open(config_path,'r')
         config_file = yaml.load(stream)
-        self.GcA = np.matrix([config_file.get('GcA')])
-        self.GcB = np.matrix([config_file.get('GcB')])
-        self.GcC = np.matrix([config_file.get('GcC')])
-        self.GcD = np.matrix([config_file.get('GcD')])
+        self.GcA = np.matrix([config_file.get('Youla_GcA')])
+        self.GcB = np.matrix([config_file.get('Youla_GcB')])
+        self.GcC = np.matrix([config_file.get('Youla_GcC')])
+        self.GcD = np.matrix([config_file.get('Youla_GcD')])
         self.waypoints = waypoints
+        print(self.GcA)
 
     def get_commands(self,pose_x,pose_y,pose_psi,v):
         distance_to_waypoint = []

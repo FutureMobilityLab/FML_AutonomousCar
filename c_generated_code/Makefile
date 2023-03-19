@@ -75,8 +75,8 @@ OBJ+= $(OCP_OBJ)
 EXTERNAL_DIR=
 EXTERNAL_LIB=
 
-INCLUDE_PATH = /home/george/FML_AutonomousCar/acados/include
-LIB_PATH = /home/george/FML_AutonomousCar/acados/lib
+INCLUDE_PATH = /home/george/acados/include
+LIB_PATH = /home/george/acados/lib
 
 # preprocessor flags for make's implicit rules
 CPPFLAGS += -DACADOS_WITH_QPOASES

@@ -288,7 +288,6 @@ return nlp_dims;
 void Dynamic_Bicycle_acados_create_3_create_and_set_functions(Dynamic_Bicycle_solver_capsule* capsule)
 {
     const int N = capsule->nlp_solver_plan->N;
-    ocp_nlp_config* nlp_config = capsule->nlp_config;
 
     /************************************************
     *  external functions
@@ -648,7 +647,6 @@ void Dynamic_Bicycle_acados_create_6_set_opts(Dynamic_Bicycle_solver_capsule* ca
 {
     const int N = capsule->nlp_solver_plan->N;
     ocp_nlp_config* nlp_config = capsule->nlp_config;
-    ocp_nlp_dims* nlp_dims = capsule->nlp_dims;
     void *nlp_opts = capsule->nlp_opts;
 
     /************************************************
@@ -847,8 +845,6 @@ int Dynamic_Bicycle_acados_reset(Dynamic_Bicycle_solver_capsule* capsule, int re
     ocp_nlp_in* nlp_in = capsule->nlp_in;
     ocp_nlp_solver* nlp_solver = capsule->nlp_solver;
 
-    int nx, nu, nv, ns, nz, ni, dim;
-
     double* buffer = calloc(NX+NU+NZ+2*NS+2*NSN+NBX+NBU+NG+NH+NPHI+NBX0+NBXN+NHN+NPHIN+NGN, sizeof(double));
 
     for(int i=0; i<N+1; i++)
@@ -937,7 +933,7 @@ int Dynamic_Bicycle_acados_update_params_sparse(Dynamic_Bicycle_solver_capsule *
     //     printf("param %d value %e\n", idx[i], p[i]);
     // }
 
-    return 0;
+    return solver_status;
 }
 
 int Dynamic_Bicycle_acados_solve(Dynamic_Bicycle_solver_capsule* capsule)
@@ -1019,6 +1015,9 @@ void Dynamic_Bicycle_acados_print_stats(Dynamic_Bicycle_solver_capsule* capsule)
 
 int Dynamic_Bicycle_acados_custom_update(Dynamic_Bicycle_solver_capsule* capsule, double* data, int data_len)
 {
+    (void)capsule;
+    (void)data;
+    (void)data_len;
     printf("\ndummy function that can be called in between solver calls to update parameters or numerical data efficiently in C.\n");
     printf("nothing set yet..\n");
     return 1;
