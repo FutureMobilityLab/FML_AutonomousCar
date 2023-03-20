@@ -3,24 +3,26 @@ from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from tf_transformations import euler_from_quaternion
 from ackermann_msgs.msg import AckermannDriveStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from std_msgs.msg import String
 import json, os
-from stanleyController import StanleyController
-from mpcController import MPCController
-from youlaController import YoulaController
-import numpy as np 
+from ros2_car_control.stanleyController import StanleyController
+from ros2_car_control.mpcController import MPCController
+from ros2_car_control.youlaController import YoulaController
+import numpy as np
+
 
 class Controller(Node):
     def __init__(self):
         super().__init__("car_controller")
-        self.localization_subscriber = self.create_subscription(Odometry,'odometry/filtered',self.odometry_callback,10)
+        self.odometry_subscriber = self.create_subscription(Odometry,'odometry/filtered',self.odometry_callback,10)
         self.heartbeat_subscriber = self.create_subscription(String,'heartbeat',self.heartbeat_callback,1)
-        self.pose_subscriber = self.create_subscription(Odometry,'map/odometry/filtered',self.pose_callback,10)
+        self.pose_subscriber = self.create_subscription(PoseWithCovarianceStamped,'amcl_pose',self.pose_callback,10)
         self.ackermann_publisher = self.create_publisher(AckermannDriveStamped,'cmd_ackermann',10)
         timer_period = 0.1
         self.waypoints = waypoints()
         self.timer = self.create_timer(timer_period, self.controller)
-        self.declare_parameter("control_method","youla")
+        self.declare_parameter("control_method","stanley")
         self.declare_parameter("speed_setpoint",1.0)
         self.declare_parameter("v_max",2.0)
         self.control_method = self.get_parameter("control_method").value
@@ -33,6 +35,7 @@ class Controller(Node):
         self.declare_parameter("heartbeat_timeout",0.5)
         self.heartbeat_timeout = self.get_parameter("heartbeat_timeout").value
         self.heartbeat_alarm = 0
+        self.heartbeat_last_time = self.get_clock().now().nanoseconds
         # print(self.control_method)
         match self.control_method:
             case "stanley":
@@ -55,14 +58,14 @@ class Controller(Node):
 
 
     def heartbeat_callback(self,msg):
-        time_now = self.get_clock().now()
-        if time_now - self.heartbeat_last_time > self.heartbeat_timeout:
+        time_now = self.get_clock().now().nanoseconds
+        if time_now * 10**-9 - self.heartbeat_last_time * 10**-9 > self.heartbeat_timeout:
             self.heartbeat_alarm = 1
         self.heartbeat_last_time = time_now
 
 
     def controller(self):
-        if self.v > self.v_max or self.heartbeat_alarm == 1:  #if odom unsafe, comms lost, etc:
+        if self.v > self.v_max or self.heartbeat_alarm == 1 or self.x == 0.0:  #if odom unsafe, comms lost, etc:
             self.cmd_steer = 0.0
             self.cmd_speed = 0.0
         # TODO: ADD PATH CONSTRAINTS TO KILL MOTOR IF OUT OF RANGE
@@ -89,16 +92,22 @@ def main(args=None):
 
 class waypoints():
      def __init__(self):
-        waypointsdir = os.path.join(os.path.dirname( __file__ ), '../config/','waypoints.json')
+        waypointsdir = '/home/george/FML_AutonomousCar/src/ros2_car_control/config/waypoints.json'
         with open(waypointsdir,"r") as read_file:
             waypointsfile = json.load(read_file)
             untranslated_waypoints = waypointsfile['smoothed_wpts']
-            self.x = np.array([x[0] for x in untranslated_waypoints])
-            self.y = np.array([y[1] for y in untranslated_waypoints])
+            self.x = np.array([x[1] for x in untranslated_waypoints]) #switch back later
+            self.y = np.array([y[0] for y in untranslated_waypoints])
+        
+            self.x = self.x*0.05 - 0.466    #commentif not using conversions from starter map
+            self.y = -self.y*0.05 +2.1
+
         x_diffs = np.diff(self.x)
         y_diffs = np.diff(self.y)
         self.psi = np.arctan2(y_diffs,x_diffs)
         self.psi = np.append(self.psi, self.psi[-1])
+
+        print(self.psi)
 
 
 if __name__ == '__main__':

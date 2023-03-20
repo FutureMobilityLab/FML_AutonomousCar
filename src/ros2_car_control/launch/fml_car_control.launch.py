@@ -4,8 +4,10 @@ import launch_ros
 import os
 
 def generate_launch_description():
-    pkg_share = launch_ros.substitutions.FindPackageShare(package='car_slam').find('car_slam')
-    default_model_path = os.path.join(pkg_share, 'src/description/car_description.urdf')
+    slam_pkg_share = launch_ros.substitutions.FindPackageShare(package='car_slam').find('car_slam')
+    ctrl_pkg_share = launch_ros.substitutions.FindPackageShare(package='ros2_car_control').find('ros2_car_control')
+    trxs_pkg_share = launch_ros.substitutions.FindPackageShare(package='ros2_traxxas_controls').find('ros2_traxxas_controls')
+    default_model_path = os.path.join(slam_pkg_share, 'src/description/car_description.urdf')
     
     robot_state_publisher_node = launch_ros.actions.Node(
         package='robot_state_publisher',
@@ -47,27 +49,15 @@ def generate_launch_description():
         executable='ekf_node',
         name='ekf_filter_node',
         output='screen',
-        parameters=[os.path.join(pkg_share, 'config/ekf.yaml'),
+        parameters=[os.path.join(slam_pkg_share, 'config/ekf.yaml'),
             {'use_sim_time': LaunchConfiguration('use_sim_time')}]
-    )
-    robot_localization_map_node = launch_ros.actions.Node(
-        package='robot_localization',
-        executable='ekf_node',
-        name='ekf_map_node',
-        output='screen',
-        parameters=[os.path.join(pkg_share, 'config/map_ekf.yaml'),
-            {'use_sim_time': LaunchConfiguration('use_sim_time')}],
-        remappings=[
-            ('/odometry/filtered','/map/odometry/filtered'),
-            ('/accel/filtered','/map/accel/filtered'),
-        ]
     )
     nav2_map_server_node = launch_ros.actions.Node(
         package='nav2_map_server',
         executable='map_server',
         name='map_server',
         output='screen',
-        parameters = [{'yaml_filename': os.path.join(pkg_share,"config/lab_map.yaml")}],
+        parameters = [{'yaml_filename': os.path.join(slam_pkg_share,"config/lab_map.yaml")}],
         remappings = [('/tf', 'tf'),
                   ('/tf_static', 'tf_static')]
     )
@@ -76,7 +66,7 @@ def generate_launch_description():
         executable='amcl',
         name='amcl',
         output='screen',
-        parameters=[os.path.join(pkg_share, 'config/amcl.yaml')],
+        parameters=[os.path.join(slam_pkg_share, 'config/amcl.yaml')],
         remappings = [('/tf', 'tf'),('/tf_static', 'tf_static')]        #Added in reference to Construct project, unsure if relative namespaces are causing issue
     )
     nav2_lifecycle_manager = launch_ros.actions.Node(
@@ -94,7 +84,15 @@ def generate_launch_description():
         executable='motor_driver',
         name='motor_driver',
         output='screen',
-        parameters=[os.path.join(pkg_share, 'config/motor_driver.yaml'),
+        parameters=[os.path.join(slam_pkg_share, 'config/motor_driver.yaml'),
+            {'use_sim_time': LaunchConfiguration('use_sim_time')}]
+    )
+    car_controller_node = launch_ros.actions.Node(
+        package='ros2_car_control',
+        executable='controller',
+        name='controller',
+        output='screen',
+        parameters=[os.path.join(ctrl_pkg_share, 'config/motor_driver.yaml'),
             {'use_sim_time': LaunchConfiguration('use_sim_time')}]
     )
 
@@ -112,6 +110,6 @@ def generate_launch_description():
         nav2_map_server_node,
         nav2_amcl_node,
         nav2_lifecycle_manager,
-        robot_localization_map_node,
-        traxxas_driver_node
+        traxxas_driver_node,
+        car_controller_node
     ])

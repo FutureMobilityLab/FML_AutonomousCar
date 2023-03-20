@@ -3,7 +3,7 @@ import numpy as np
 
 class StanleyController():
     def __init__(self,waypoints):
-        self.k = 1 #control_gain
+        self.k = .5 #control_gain
         self.k_soft = 1 #softening_gain
         self.L = 0.404 #wheelbase
         self.max_steer = 0.65 #max_steer
@@ -18,7 +18,7 @@ class StanleyController():
         front_axle_x = x + self.L * np.cos(yaw)
         front_axle_y = y + self.L * np.sin(yaw)
         for i in range(len(self.waypoints.x)):
-            distance_to_waypoint.append((front_axle_x - self.waypoints.x[i])**2 + (front_axle_y - self.waypoints.y[i])**2)
+            distance_to_waypoint.append(np.sqrt((front_axle_x - self.waypoints.x[i])**2 + (front_axle_y - self.waypoints.y[i])**2))
             nearest_waypoint_index = distance_to_waypoint.index(min(distance_to_waypoint))
 
         yaw_ref = self.waypoints.psi[nearest_waypoint_index]
