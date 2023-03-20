@@ -22,11 +22,11 @@ from post_processing.path_smoothing import BezierPathSmoothing
 
 
 class PathPlanner:
-    DEF_CONFIG_PATH = "configs/connected_8.yaml"
+    DEF_CONFIG_PATH = "/home/george/FML_AutonomousCar/src/ros2_car_control/python-path-planner/configs/connected_8.yaml"
     planner_mapping = {"Astar": AStar, "RRT": RRT, "RRTstar": RRTStar, "PRM": PRM, "Dijkstra": DijkstaShortestPath}
     
     def __init__(self, conf_path=None, preview_path=False):
-        self._config_path = conf_path if conf_path else Path(self.DEF_CONFIG_PATH).absolute()
+        self._config_path = conf_path if conf_path else Path(self.DEF_CONFIG_PATH)#.absolute()
         self._preview = preview_path
         self._config = self._load_config()
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from ros2_path_planning_interfaces.srv import PathPlanner
+from planner import PathPlanner
 
 import sys
 import rclpy
