@@ -1,15 +1,16 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.duration import Duration
 from nav_msgs.msg import Odometry
 from tf_transformations import euler_from_quaternion
 from ackermann_msgs.msg import AckermannDriveStamped
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from std_msgs.msg import String
-import json, os
 from ros2_car_control.stanleyController import StanleyController
 from ros2_car_control.mpcController import MPCController
 from ros2_car_control.youlaController import YoulaController
-import numpy as np
+from ros2_car_control.fetchWaypoints import waypoints
+from visualization_msgs.msg import Marker
 
 
 class Controller(Node):
@@ -19,6 +20,7 @@ class Controller(Node):
         self.heartbeat_subscriber = self.create_subscription(String,'heartbeat',self.heartbeat_callback,1)
         self.pose_subscriber = self.create_subscription(PoseWithCovarianceStamped,'amcl_pose',self.pose_callback,10)
         self.ackermann_publisher = self.create_publisher(AckermannDriveStamped,'cmd_ackermann',10)
+        self.point_ref_publisher = self.create_publisher(Marker,'ref_point',10)
         timer_period = 0.1
         self.waypoints = waypoints()
         self.timer = self.create_timer(timer_period, self.controller)
@@ -36,6 +38,9 @@ class Controller(Node):
         self.heartbeat_timeout = self.get_parameter("heartbeat_timeout").value
         self.heartbeat_alarm = 0
         self.heartbeat_last_time = self.get_clock().now().nanoseconds
+        self.reference_point_x = 0.0
+        self.reference_point_y = 0.0
+        self.point_out = RefPointMarker()
         # print(self.control_method)
         match self.control_method:
             case "stanley":
@@ -63,6 +68,11 @@ class Controller(Node):
             self.heartbeat_alarm = 1
         self.heartbeat_last_time = time_now
 
+    def ref_point(self):
+        self.point_out.pose.position.x = self.x
+        self.point_out.pose.position.y = self.y
+        self.point_ref_publisher.publish(self.point_out)
+
 
     def controller(self):
         if self.v > self.v_max or self.heartbeat_alarm == 1 or self.x == 0.0:  #if odom unsafe, comms lost, etc:
@@ -70,7 +80,7 @@ class Controller(Node):
             self.cmd_speed = 0.0
         # TODO: ADD PATH CONSTRAINTS TO KILL MOTOR IF OUT OF RANGE
         else:
-            (self.cmd_steer,self.cmd_speed) = self.controller_function.get_commands(self.x,self.y,self.yaw,self.v)
+            (self.cmd_steer,self.cmd_speed,self.reference_point_x,self.reference_point_y) = self.controller_function.get_commands(self.x,self.y,self.yaw,self.v)
             
         
         ackermann_command = AckermannDriveStamped()
@@ -78,6 +88,25 @@ class Controller(Node):
         ackermann_command.drive.speed = self.cmd_speed
         ackermann_command.drive.steering_angle = self.cmd_steer
         self.ackermann_publisher.publish(ackermann_command)
+
+class RefPointMarker():
+     def __init__(self):
+        point_out = Marker()
+        point_out.header.frame_id = "map"
+        point_out.type = Marker.SPHERE
+        point_out.action = Marker.ADD
+        point_out.ns = "reference_point"
+        point_out.id = 1.0
+        point_out.pose.position.x = 0.0
+        point_out.pose.position.y = 0.0
+        point_out.scale.x = 0.1
+        point_out.scale.y = 0.1
+        point_out.scale.z = 0.1
+        point_out.pose.orientation.w = 1.0
+        point_out.frame_locked = False
+        point_out.color.a = 1.0
+        point_out.color.r = 1.0
+        point_out.lifetime = Duration(seconds=1).to_msg()
 
 def main(args=None):
     rclpy.init(args=args)
@@ -89,25 +118,6 @@ def main(args=None):
     # Destroy the node explicitly
     car_controller.destroy_node()
     rclpy.shutdown()
-
-class waypoints():
-     def __init__(self):
-        waypointsdir = '/home/george/FML_AutonomousCar/src/ros2_car_control/config/waypoints.json'
-        with open(waypointsdir,"r") as read_file:
-            waypointsfile = json.load(read_file)
-            untranslated_waypoints = waypointsfile['smoothed_wpts']
-            self.x = np.array([x[1] for x in untranslated_waypoints]) #switch back later
-            self.y = np.array([y[0] for y in untranslated_waypoints])
-        
-            self.x = self.x*0.05 - 0.466    #commentif not using conversions from starter map
-            self.y = -self.y*0.05 +2.1
-
-        x_diffs = np.diff(self.x)
-        y_diffs = np.diff(self.y)
-        self.psi = np.arctan2(y_diffs,x_diffs)
-        self.psi = np.append(self.psi, self.psi[-1])
-
-        print(self.psi)
 
 
 if __name__ == '__main__':
