@@ -75,7 +75,8 @@ class MotorCommands(Node):
             if abs(self.a) < self.max_accel:
                 self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
             else:
-                self.get_logger().info(f"""***EXCESSIVE ACCELERATION - HOLDING INTEGRAL TERM***""")
+                self.errorIntegrated = self.errorIntegrated
+                # self.get_logger().info(f"""***EXCESSIVE ACCELERATION - HOLDING INTEGRAL TERM***""")
         return ThrottleRegisterVal
 
     def odom_callback(self,msg):
@@ -100,7 +101,7 @@ class MotorCommands(Node):
         ThrottleCMDClipped = int(boundedSignal(ThrottleCMD,self.throttle_revr,self.throttle_full))
         pca.channels[1].duty_cycle = ThrottleCMDClipped
         pca.deinit()
-        self.get_logger().info(f"""Throttle Command: {ThrottleCMDClipped}   Steering Command: {TraxxasServo.angle}""")
+        # self.get_logger().info(f"""Throttle Command: {ThrottleCMDClipped}   Steering Command: {TraxxasServo.angle}""")
 
 def main(args=None):
     rclpy.init(args=args)

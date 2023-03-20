@@ -89,14 +89,7 @@ def generate_launch_description():
                    {'autostart': True},
                    {'node_names': ['map_server','amcl']}]
     )
-    traxxas_driver_node = launch_ros.actions.Node(
-        package='ros2_traxxas_controls',
-        executable='motor_driver',
-        name='motor_driver',
-        output='screen',
-        parameters=[os.path.join(pkg_share, 'config/motor_driver.yaml'),
-            {'use_sim_time': LaunchConfiguration('use_sim_time')}]
-    )
+    
 
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='model', default_value=default_model_path,
@@ -112,6 +105,5 @@ def generate_launch_description():
         nav2_map_server_node,
         nav2_amcl_node,
         nav2_lifecycle_manager,
-        robot_localization_map_node,
-        traxxas_driver_node
+        robot_localization_map_node
     ])

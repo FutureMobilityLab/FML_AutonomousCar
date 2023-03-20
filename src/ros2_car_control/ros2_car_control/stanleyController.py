@@ -51,4 +51,4 @@ class StanleyController():
             print('Psi: '+str(yaw_term)+'\tTangent Term: '+str(tangent_term))
             print('Stanley Output: '+str(steering_angle))
 
-        return steering_angle, speed_cmd
+        return steering_angle, speed_cmd, self.waypoints.x[nearest_waypoint_index], self.waypoints.y[nearest_waypoint_index]

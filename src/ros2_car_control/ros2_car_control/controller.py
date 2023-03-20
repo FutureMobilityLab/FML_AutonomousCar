@@ -24,6 +24,7 @@ class Controller(Node):
         timer_period = 0.1
         self.waypoints = waypoints()
         self.timer = self.create_timer(timer_period, self.controller)
+        self.marker_timer = self.create_timer(1.0,self.ref_point)
         self.declare_parameter("control_method","stanley")
         self.declare_parameter("speed_setpoint",1.0)
         self.declare_parameter("v_max",2.0)
@@ -40,7 +41,7 @@ class Controller(Node):
         self.heartbeat_last_time = self.get_clock().now().nanoseconds
         self.reference_point_x = 0.0
         self.reference_point_y = 0.0
-        self.point_out = RefPointMarker()
+        self.point_out = Marker()
         # print(self.control_method)
         match self.control_method:
             case "stanley":
@@ -69,8 +70,22 @@ class Controller(Node):
         self.heartbeat_last_time = time_now
 
     def ref_point(self):
-        self.point_out.pose.position.x = self.x
-        self.point_out.pose.position.y = self.y
+        self.point_out.header.frame_id = "map"
+        self.point_out.type = Marker.SPHERE
+        self.point_out.action = Marker.ADD
+        self.point_out.ns = "reference_point"
+        self.point_out.id = 1
+        self.point_out.pose.position.x = self.reference_point_x
+        self.point_out.pose.position.y = self.reference_point_y
+        self.point_out.scale.x = 0.1
+        self.point_out.scale.y = 0.1
+        self.point_out.scale.z = 0.1
+        self.point_out.pose.orientation.w = 1.0
+        self.point_out.frame_locked = False
+        self.point_out.color.a = 1.0
+        self.point_out.color.r = 1.0
+        self.point_out.lifetime = Duration(seconds=1).to_msg()
+
         self.point_ref_publisher.publish(self.point_out)
 
 
@@ -88,25 +103,6 @@ class Controller(Node):
         ackermann_command.drive.speed = self.cmd_speed
         ackermann_command.drive.steering_angle = self.cmd_steer
         self.ackermann_publisher.publish(ackermann_command)
-
-class RefPointMarker():
-     def __init__(self):
-        point_out = Marker()
-        point_out.header.frame_id = "map"
-        point_out.type = Marker.SPHERE
-        point_out.action = Marker.ADD
-        point_out.ns = "reference_point"
-        point_out.id = 1.0
-        point_out.pose.position.x = 0.0
-        point_out.pose.position.y = 0.0
-        point_out.scale.x = 0.1
-        point_out.scale.y = 0.1
-        point_out.scale.z = 0.1
-        point_out.pose.orientation.w = 1.0
-        point_out.frame_locked = False
-        point_out.color.a = 1.0
-        point_out.color.r = 1.0
-        point_out.lifetime = Duration(seconds=1).to_msg()
 
 def main(args=None):
     rclpy.init(args=args)
