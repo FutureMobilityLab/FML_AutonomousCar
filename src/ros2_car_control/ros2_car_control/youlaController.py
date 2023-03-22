@@ -13,6 +13,7 @@ class YoulaController():
         self.GcC = np.matrix([config_file.get('Youla_GcC')])
         self.GcD = np.matrix([config_file.get('Youla_GcD')])
         self.waypoints = waypoints
+        self.v = config_file.get("speed_setpoint") # Velocity Setpoint
         print(self.GcA)
 
     def get_commands(self,pose_x,pose_y,pose_psi,v):
@@ -33,4 +34,5 @@ class YoulaController():
         steering_angle = self.GcC * self.Gc_states + self.GcD * lateral_error
 
         self.Gc_states = new_Gc_states
-        return steering_angle
+        speed_cmd = self.v
+        return steering_angle, speed_cmd, self.waypoints.x[nearest_waypoint_index], self.waypoints.y[nearest_waypoint_index]

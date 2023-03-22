@@ -1,4 +1,4 @@
-from acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
+from acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver, builders
 from bicycle_model import bicycle_model
 import scipy.linalg
 import numpy as np
@@ -118,8 +118,13 @@ def acados_generator():
     ocp.solver_options.qp_solver_tol_ineq = 1e-2
     ocp.solver_options.qp_solver_tol_comp = 1e-2
 
+    cmake_template = builders.CMakeBuilder()
+    # cmake_template.build_targets = "GENERIC"
+    cmake_template.options_on = ["BUILD_ACADOS_OCP_SOLVER_LIB"]
+
     # create solver
-    acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp.json")
+    # acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp.json")
+    acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp.json", cmake_builder=cmake_template)
 
     return constraint, model, acados_solver
 

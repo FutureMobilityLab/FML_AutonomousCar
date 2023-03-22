@@ -71,4 +71,4 @@ class MPCController():
         else:
             speed_cmd = self.velocity_setpoint
 
-        return steering_angle, speed_cmd
+        return steering_angle, speed_cmd, self.xrefs[start_ref], self.yrefs[start_ref]
