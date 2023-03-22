@@ -6,7 +6,6 @@ https://www.researchgate.net/publication/308851864_Kinematic_and_dynamic_vehicle
 Predictive Active Steering Control for Autonomous Vehicle Systems
 https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=4162483
 
-Slip Angles from PPTX [need to find again]
 '''
 
 from casadi import *

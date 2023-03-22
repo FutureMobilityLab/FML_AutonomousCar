@@ -6,8 +6,7 @@ import os
 def generate_launch_description():
     pkg_share = launch_ros.substitutions.FindPackageShare(package='car_slam').find('car_slam')
     default_model_path = os.path.join(pkg_share, 'src/description/car_description.urdf')
-    # default_rviz_config_path = os.path.join(pkg_share, 'rviz/urdf_config.rviz')
-
+    
     robot_state_publisher_node = launch_ros.actions.Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -18,13 +17,6 @@ def generate_launch_description():
         executable='joint_state_publisher',
         name='joint_state_publisher',
     )
-    # rviz_node = launch_ros.actions.Node(
-    #     package='rviz2',
-    #     executable='rviz2',
-    #     name='rviz2',
-    #     output='screen',
-    #     arguments=['-d', LaunchConfiguration('rvizconfig')],
-    # )
     rplidar_node = launch_ros.actions.Node(
         package='rplidar_ros',
         executable='rplidar_composition',
@@ -58,20 +50,50 @@ def generate_launch_description():
         parameters=[os.path.join(pkg_share, 'config/ekf.yaml'),
             {'use_sim_time': LaunchConfiguration('use_sim_time')}]
     )
-    slam_toolbox_node = launch_ros.actions.Node(
-        package='slam_toolbox',
-        executable='async_slam_toolbox_node',
-        name='slam_toolbox',
+    robot_localization_map_node = launch_ros.actions.Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_map_node',
         output='screen',
-        parameters=[os.path.join(pkg_share, 'config/slam.yaml'),
-            {'use_sim_time': LaunchConfiguration('use_sim_time')}]
+        parameters=[os.path.join(pkg_share, 'config/map_ekf.yaml'),
+            {'use_sim_time': LaunchConfiguration('use_sim_time')}],
+        remappings=[
+            ('/odometry/filtered','/map/odometry/filtered'),
+            ('/accel/filtered','/map/accel/filtered'),
+        ]
     )
+    nav2_map_server_node = launch_ros.actions.Node(
+        package='nav2_map_server',
+        executable='map_server',
+        name='map_server',
+        output='screen',
+        parameters = [{'yaml_filename': os.path.join(pkg_share,"config/lab_map.yaml")}],
+        remappings = [('/tf', 'tf'),
+                  ('/tf_static', 'tf_static')]
+    )
+    nav2_amcl_node = launch_ros.actions.Node(
+        package='nav2_amcl',    
+        executable='amcl',
+        name='amcl',
+        output='screen',
+        parameters=[os.path.join(pkg_share, 'config/amcl.yaml')],
+        remappings = [('/tf', 'tf'),('/tf_static', 'tf_static')]        #Added in reference to Construct project, unsure if relative namespaces are causing issue
+    )
+    nav2_lifecycle_manager = launch_ros.actions.Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager',
+        output='screen',
+        arguments=['--ros-args', '--log-level', 'info'],
+        parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')},
+                   {'autostart': True},
+                   {'node_names': ['map_server','amcl']}]
+    )
+    
 
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='model', default_value=default_model_path,
                                              description='Absolute path to robot urdf file'),
-        # launch.actions.DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path,
-        #                                      description='Absolute path to rviz config file'),
         launch.actions.DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
         joint_state_publisher_node,
@@ -80,6 +102,8 @@ def generate_launch_description():
         as5600driver_node,
         rplidar_node,
         robot_localization_node,
-        # rviz_node,
-        slam_toolbox_node,
+        nav2_map_server_node,
+        nav2_amcl_node,
+        nav2_lifecycle_manager,
+        robot_localization_map_node
     ])
