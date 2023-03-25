@@ -1,7 +1,7 @@
 motor_driver:
   ros__parameters:
-    kp: 10
-    ki: 10
+    kp: 10.0
+    ki: 10.0
     throttle_register_full: 6553
     throttle_register_idle: 4915
     throttle_register_revr: 3276

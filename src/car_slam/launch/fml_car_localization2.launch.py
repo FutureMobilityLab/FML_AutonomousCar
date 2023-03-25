@@ -62,34 +62,15 @@ def generate_launch_description():
             ('/accel/filtered','/map/accel/filtered'),
         ]
     )
-    nav2_map_server_node = launch_ros.actions.Node(
-        package='nav2_map_server',
-        executable='map_server',
-        name='map_server',
+    slam_toolbox_localization_node = launch_ros.actions.Node(
+        package='slam_toolbox',
+        executable='slam_toolbox_localization_node',
+        name='slam_toolbox',
         output='screen',
-        parameters = [{'yaml_filename': os.path.join(pkg_share,"config/lab_map.yaml")}],
-        remappings = [('/tf', 'tf'),
-                  ('/tf_static', 'tf_static')]
+        parameters=[os.path.join(pkg_share, 'config/slam_localization.yaml'),
+            {'use_sim_time': LaunchConfiguration('use_sim_time')}]
     )
-    nav2_amcl_node = launch_ros.actions.Node(
-        package='nav2_amcl',    
-        executable='amcl',
-        name='amcl',
-        output='screen',
-        parameters=[os.path.join(pkg_share, 'config/amcl.yaml')],
-        remappings = [('/tf', 'tf'),('/tf_static', 'tf_static')]        #Added in reference to Construct project, unsure if relative namespaces are causing issue
-    )
-    nav2_lifecycle_manager = launch_ros.actions.Node(
-        package='nav2_lifecycle_manager',
-        executable='lifecycle_manager',
-        name='lifecycle_manager',
-        output='screen',
-        arguments=['--ros-args', '--log-level', 'info'],
-        parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')},
-                   {'autostart': True},
-                   {'node_names': ['map_server','amcl']}]
-    )
-    
+
 
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='model', default_value=default_model_path,
@@ -102,8 +83,6 @@ def generate_launch_description():
         as5600driver_node,
         rplidar_node,
         robot_localization_node,
-        nav2_map_server_node,
-        nav2_amcl_node,
-        nav2_lifecycle_manager,
+        slam_toolbox_localization_node,
         robot_localization_map_node
     ])

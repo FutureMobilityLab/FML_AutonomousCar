@@ -15,7 +15,6 @@ def generate_launch_description():
             {'use_sim_time': LaunchConfiguration('use_sim_time')}]
     )
 
-
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
