@@ -10,7 +10,7 @@ class MPCController():
         self.N = config_file.get("N")  # number of discretization steps
         self.v = config_file.get("speed_setpoint") # Velocity Setpoint
         self.xrefs = np.array(waypoints.x)
-        self.yrefs = np.array(waypoints.psi)
+        self.yrefs = np.array(waypoints.y)
         self.psirefs = np.array(waypoints.psi)
         # Get Total Path Distances
         sumDist = 0

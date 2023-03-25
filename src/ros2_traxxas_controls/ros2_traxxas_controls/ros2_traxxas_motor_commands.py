@@ -21,8 +21,8 @@ class MotorCommands(Node):
         self.command_subscription  # prevents unused variable warning
         self.speed_subscription
         # Sets Default Parameters
-        self.declare_parameter("kp", 15)
-        self.declare_parameter("ki",  5)
+        self.declare_parameter("kp", 15.0)
+        self.declare_parameter("ki",  5.0)
         self.declare_parameter("throttle_register_idle", 4915)
         self.declare_parameter("throttle_register_full", 6335)
         self.declare_parameter("throttle_register_revr", 3276)
