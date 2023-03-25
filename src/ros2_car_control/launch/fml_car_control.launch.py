@@ -6,7 +6,7 @@ import os
 def generate_launch_description():
     ctrl_pkg_share = launch_ros.substitutions.FindPackageShare(package='ros2_car_control').find('ros2_car_control')
     trxs_pkg_share = launch_ros.substitutions.FindPackageShare(package='ros2_traxxas_controls').find('ros2_traxxas_controls')
-
+    print(trxs_pkg_share)
     traxxas_driver_node = launch_ros.actions.Node(
         package='ros2_traxxas_controls',
         executable='motor_driver',
@@ -23,10 +23,17 @@ def generate_launch_description():
         parameters=[os.path.join(ctrl_pkg_share, 'config/motor_driver.yaml'),
             {'use_sim_time': LaunchConfiguration('use_sim_time')}]
     )
+    waypoints_pub_node = launch_ros.actions.Node(
+        package='ros2_car_control',
+        executable='waypoints',
+        name='waypoints',
+        output='screen'
+    )
 
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
         traxxas_driver_node,
-        car_controller_node
+        car_controller_node,
+        waypoints_pub_node
     ])

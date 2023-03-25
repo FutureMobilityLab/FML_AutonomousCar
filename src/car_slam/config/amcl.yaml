@@ -1,14 +1,14 @@
 amcl:
   ros__parameters:
-    alpha1: 0.2
-    alpha2: 0.2
-    alpha3: 0.2
-    alpha4: 0.2
-    alpha5: 0.2
+    alpha1: 1.0
+    alpha2: 1.0
+    alpha3: 0.05
+    alpha4: 0.05
+    alpha5: 0.05
     base_frame_id: "base_footprint"
     beam_skip_distance: 0.5
     beam_skip_error_threshold: 0.5
-    beam_skip_threshold: 0.3
+    beam_skip_threshold: 0.5
     do_beamskip: true
     global_frame_id: "map"
     lambda_short: 0.1
@@ -27,7 +27,7 @@ amcl:
     resample_interval: 1
     robot_model_type: "nav2_amcl::DifferentialMotionModel"
     save_pose_rate: -1.0
-    sigma_hit: 0.2
+    sigma_hit: 0.1
     tf_broadcast: true
     transform_tolerance: 0.25
     update_min_a: 0.001

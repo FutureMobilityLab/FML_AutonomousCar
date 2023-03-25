@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from fetchWaypoints import waypoints
+from ros2_car_control.fetchWaypoints import waypoints
 from visualization_msgs.msg import Marker, MarkerArray
 from rclpy.duration import Duration
 from tf_transformations import quaternion_from_euler
@@ -11,7 +11,7 @@ class WaypointPublisher(Node):
     def __init__(self):
         super().__init__('waypoint_publisher')
         self.publisher_ = self.create_publisher(MarkerArray, 'waypoints', 10)
-        timer_period = 1  # seconds
+        timer_period = 1.0  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.message_out = MarkerArray()
         self.waypoints_to_publish = waypoints()

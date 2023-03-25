@@ -3,12 +3,12 @@ import numpy as np
 
 class StanleyController():
     def __init__(self,waypoints):
-        self.k = .5 #control_gain
-        self.k_soft = 1 #softening_gain
+        self.k = 0.5 #control_gain
+        self.k_soft = 1.0 #softening_gain
         self.L = 0.404 #wheelbase
         self.max_steer = 0.65 #max_steer
-        self.prev_steering_angle = 0
-        self.debug_bool = True
+        self.prev_steering_angle = 0.0
+        self.debug_bool = False
         self.velocity_setpoint = 1.0
         self.waypoints = waypoints
 
@@ -43,7 +43,7 @@ class StanleyController():
         self.prev_steering_angle = steering_angle
 
         if nearest_waypoint_index == len(self.waypoints.x):
-            speed_cmd = 0
+            speed_cmd = 0.0
         else:
             speed_cmd = self.velocity_setpoint
 
