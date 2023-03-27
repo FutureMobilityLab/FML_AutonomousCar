@@ -80,8 +80,12 @@ CMakeFiles/ocp_Dynamic_Bicycle.dir/acados_solver_Dynamic_Bicycle.c.o
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h
  /usr/include/x86_64-linux-gnu/bits/floatn.h
  /usr/include/x86_64-linux-gnu/bits/floatn-common.h
+ /usr/include/x86_64-linux-gnu/bits/stdio.h
+ /usr/include/x86_64-linux-gnu/bits/stdio2.h
  /usr/include/stdlib.h
+ /usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h
+ /usr/include/x86_64-linux-gnu/bits/stdlib.h
  /usr/include/assert.h
  /home/george/acados/include/acados_c/ocp_nlp_interface.h
  /home/george/acados/include/acados/ocp_nlp/ocp_nlp_common.h

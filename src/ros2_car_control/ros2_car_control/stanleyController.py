@@ -44,11 +44,8 @@ class StanleyController():
 
         self.prev_steering_angle = steering_angle
 
-        if nearest_waypoint_index == len(self.waypoints.x):
-            speed_cmd = 0.0
-        else:
-            speed_cmd = self.velocity_setpoint
-
+        speed_cmd = self.velocity_setpoint
+        
         if self.debug_bool == True:
             print('Psi: '+str(yaw_term)+'\tTangent Term: '+str(tangent_term))
             print('Stanley Output: '+str(steering_angle))

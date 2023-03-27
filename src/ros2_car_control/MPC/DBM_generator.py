@@ -4,7 +4,7 @@ import scipy.linalg
 import numpy as np
 
 def acados_generator():
-    Tf = 2  # prediction horizon
+    Tf = 1  # prediction horizon
     N = 20  # number of discretization steps
 
     # create render arguments

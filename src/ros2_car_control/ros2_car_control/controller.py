@@ -11,6 +11,7 @@ from ros2_car_control.mpcController import MPCController
 from ros2_car_control.youlaController import YoulaController
 from ros2_car_control.fetchWaypoints import waypoints
 from visualization_msgs.msg import Marker
+import numpy as np
 
 class Controller(Node):
     def __init__(self):
@@ -23,15 +24,16 @@ class Controller(Node):
         self.waypoints = waypoints()
         self.cmd_timer = self.create_timer(0.1, self.controller)
         self.marker_timer = self.create_timer(1.0,self.ref_point)
-        self.declare_parameter("control_method","mpc")
+        self.declare_parameter("control_method","youla")
         self.control_method = self.get_parameter("control_method").value
         self.declare_parameter("v_max",2.0)
         self.v_max = self.get_parameter("v_max").value
         self.declare_parameter("heartbeat_timeout",0.5)
         self.heartbeat_timeout = self.get_parameter("heartbeat_timeout").value
         self.heartbeat_alarm = 0
-        self.run_flag = 1           # Set to 1 when home testing
+        self.run_flag = 0           # Set to 1 when home testing
         self.heartbeat_last_time = self.get_clock().now().nanoseconds
+        self.final_thresh = 0.5
 
         self.v = 0.0
         self.x = 0.0
@@ -137,12 +139,18 @@ class Controller(Node):
         if self.get_clock().now().nanoseconds * 10**-9 - self.heartbeat_last_time * 10**-9 > self.heartbeat_timeout:
             self.heartbeat_alarm = 1
             self.get_logger().info(f'HEARTBEAT ALARM ACTIVE')
-        if self.v > self.v_max or self.heartbeat_alarm == 1 or self.run_flag == 0:  #if odom unsafe, comms lost, etc:
+
+        last_waypoint_dist = np.linalg.norm([self.waypoints.x[-1]-self.x,self.waypoints.y[-1]-self.y])
+        
+
+        if self.v > self.v_max or self.heartbeat_alarm == 1 or self.run_flag == 0 or last_waypoint_dist < self.final_thresh:
+            # If odometry unsafe, heartbeat fails, run flag disabled, or close enough to end of line
             self.cmd_steer = 0.0
             self.cmd_speed = 0.0
         else:
             (self.cmd_steer,self.cmd_speed,self.reference_point_x,self.reference_point_y) = self.controller_function.get_commands(self.x,self.y,self.yaw,self.v)
 
+        self.get_logger().info(f'Steer Command: {self.cmd_steer}')
         ackermann_command = AckermannDriveStamped()
         ackermann_command.header.stamp = self.get_clock().now().to_msg()
         ackermann_command.drive.speed = self.cmd_speed

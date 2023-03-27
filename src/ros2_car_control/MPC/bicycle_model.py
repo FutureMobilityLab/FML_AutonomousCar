@@ -23,7 +23,7 @@ def bicycle_model():
     lf = 0.205 # Distance from CG to Front Axle
     lr = 0.199 # Distance from CG to Rear Axle
     Iz = 0.167 # Rotational Inertia
-    vx_setpoint = 2.0 # Tuned Controller Speed
+    vx_setpoint = 1.0 # Tuned Controller Speed
 
     ## CasADi Model
     # set up states & controls

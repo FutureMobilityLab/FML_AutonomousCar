@@ -7,10 +7,10 @@ controller:
 
     wheelbase: .404           # m
 
-    control_method: "youla" # controller type SELECT FROM: stanley | youla | mpc | hinf | pp
+    control_method: "stanley" # controller type SELECT FROM: stanley | youla | mpc | hinf | pp
 
-    stanley_k: 1              # stanley controller gain
-    stanley_k_soft: 1         # stanley softening gain
+    stanley_k: 1.0              # stanley controller gain
+    stanley_k_soft: 1.0         # stanley softening gain
 
     mpc_tf: 1.0               # time horizon [sec]
     mpc_N: 20                 # number of shooting nodes                

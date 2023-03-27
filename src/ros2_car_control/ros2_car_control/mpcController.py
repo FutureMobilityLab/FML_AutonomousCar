@@ -9,6 +9,9 @@ class MPCController():
         self.xrefs = np.array(waypoints.x)
         self.yrefs = np.array(waypoints.y)
         self.psirefs = np.array(waypoints.psi)
+        self.pose_x = self.xrefs[0]
+        self.pose_y = self.yrefs[0]
+        self.pose_psi = self.psirefs[0]
         # Get Total Path Distances
         sumDist = 0
         srefs = np.array([])
@@ -31,7 +34,9 @@ class MPCController():
         self.ds = self.v*self.Tf/self.N
 
     def get_commands(self,pose_x,pose_y,pose_psi,v):
-        
+        self.pose_x = pose_x
+        self.pose_y = pose_y
+        self.pose_psi = pose_psi
         #Get Nearest Reference Point
         x0 = np.array([pose_x,pose_y,0,0,0,pose_psi,0])
         normArray = np.sqrt((self.xrefs - x0[0])**2 + (self.yrefs - x0[1])**2)
@@ -63,9 +68,6 @@ class MPCController():
         self.acados_solver.solve()
         steering_angle = float(self.acados_solver.get(0, "u"))
 
-        if start_ref == len(self.xrefs):
-            speed_cmd = 0.0
-        else:
-            speed_cmd = self.v
+        speed_cmd = self.v
 
         return steering_angle, speed_cmd, self.xrefs[start_ref], self.yrefs[start_ref]

@@ -8,9 +8,9 @@ STATES: X, Y, x, y, y_dot, psi, psi_dot
 INPUTS: delta
 '''
 
-Tf = 2  # prediction horizon
+Tf = 1  # prediction horizon
 N = 20  # number of discretization steps
-v = 2.0 # Velocity Setpoint
+v = 1.0 # Velocity Setpoint
 
 waypointsdir = os.path.join(os.path.dirname( __file__ ), '..', 'config','waypoints.json')
 [xrefs, yrefs, psirefs] = getPath(waypointsdir)
@@ -95,6 +95,7 @@ for i in range(Nsim):
     # get solution
     x0 = acados_solver.get(0, "x")
     u0 = acados_solver.get(0, "u")
+    print(float(u0))
     for j in range(nx):
         simX[i, j] = x0[j]
     for j in range(nu):
@@ -119,10 +120,14 @@ print("Maximum computation time: {}".format(tcomp_max))
 print("Lap time: {}s".format(Tf * Nsim / N))
 
 #Graphing
-plt.figure()
+plt.figure(1)
 plt.plot(xrefs,yrefs,'--',color='k')
 psiref_x = np.cos(simX[:,5])
 psiref_y = np.sin(simX[:,5])
 plt.plot(simX[:,0],simX[:,1])
 plt.quiver(simX[:,0],simX[:,1],psiref_x,psiref_y)
+
+
+plt.figure(2)
+plt.plot(np.linspace(0,Tf*Nsim/N,Nsim),simU[:,0])
 plt.show()
