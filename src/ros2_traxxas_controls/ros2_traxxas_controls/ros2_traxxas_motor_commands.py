@@ -80,7 +80,7 @@ class MotorCommands(Node):
         return ThrottleRegisterVal
 
     def odom_callback(self,msg):
-       self.v = msg.twist.twist.linear.x
+        self.v = msg.twist.twist.linear.x
 
     def accel_callback(self,msg):
         self.a = msg.linear_acceleration.x

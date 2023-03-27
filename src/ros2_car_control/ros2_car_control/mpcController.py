@@ -1,14 +1,11 @@
 import numpy as np
 from acados_template import AcadosOcpSolver
-import yaml
 
 class MPCController():
-    def __init__(self,waypoints):
-        stream =  open('car_control.yaml','r')
-        config_file = yaml.load(stream)
-        self.Tf = config_file.get("Tf")  # prediction horizon
-        self.N = config_file.get("N")  # number of discretization steps
-        self.v = config_file.get("speed_setpoint") # Velocity Setpoint
+    def __init__(self,waypoints,ctrl_params):
+        self.Tf = ctrl_params.get("tf")  # prediction horizon
+        self.N = ctrl_params.get("N")  # number of discretization steps
+        self.v = ctrl_params.get("speed_setpoint") # Velocity Setpoint
         self.xrefs = np.array(waypoints.x)
         self.yrefs = np.array(waypoints.y)
         self.psirefs = np.array(waypoints.psi)
@@ -26,8 +23,8 @@ class MPCController():
         self.acados_solver =  AcadosOcpSolver(None,generate=False,build=False,json_file="acados_ocp.json")
 
         # Dimensions
-        self.nx = 7 # model.x.size()[0]
-        self.nu = 1 # model.u.size()[0]
+        self.nx = ctrl_params.get("nx") # model.x.size()[0]
+        self.nu = ctrl_params.get("nu") # model.u.size()[0]
         self.ny = self.nx + self.nu
 
         self.Nsim= int(self.srefs[-1] * self.N / (self.v * self.Tf))
@@ -64,10 +61,10 @@ class MPCController():
 
         #Solve the OCP Problem and Fetch First Input
         self.acados_solver.solve()
-        steering_angle = self.acados_solver.get(0, "u")
+        steering_angle = float(self.acados_solver.get(0, "u"))
 
         if start_ref == len(self.xrefs):
-            speed_cmd = 0
+            speed_cmd = 0.0
         else:
             speed_cmd = self.v
 

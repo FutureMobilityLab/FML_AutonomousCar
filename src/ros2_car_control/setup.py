@@ -1,7 +1,8 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 from glob import glob
 package_name = 'ros2_car_control'
+
 
 setup(
     name=package_name,
@@ -11,7 +12,9 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        (os.path.join('share',package_name),glob('launch/*launch.[pxy][yma]*'))
+        (os.path.join('share',package_name),glob('launch/*launch.[pxy][yma]*')),
+        (os.path.join('share', package_name, 'config'), glob('config/*.yaml'))
+        # (os.path.join('share',package_name,package_name,'controllers'),glob(os.path.join(package_name,package_name,'controllers','*.py'))),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

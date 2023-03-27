@@ -12,7 +12,6 @@ from ros2_car_control.youlaController import YoulaController
 from ros2_car_control.fetchWaypoints import waypoints
 from visualization_msgs.msg import Marker
 
-
 class Controller(Node):
     def __init__(self):
         super().__init__("car_controller")
@@ -21,35 +20,81 @@ class Controller(Node):
         self.pose_subscriber = self.create_subscription(PoseWithCovarianceStamped,'amcl_pose',self.pose_callback,10)
         self.ackermann_publisher = self.create_publisher(AckermannDriveStamped,'cmd_ackermann',10)
         self.point_ref_publisher = self.create_publisher(Marker,'ref_point',10)
-        timer_period = 0.1
         self.waypoints = waypoints()
-        self.timer = self.create_timer(timer_period, self.controller)
+        self.cmd_timer = self.create_timer(0.1, self.controller)
         self.marker_timer = self.create_timer(1.0,self.ref_point)
-        self.declare_parameter("control_method","stanley")
-        self.declare_parameter("speed_setpoint",1.0)
-        self.declare_parameter("v_max",2.0)
+        self.declare_parameter("control_method","mpc")
         self.control_method = self.get_parameter("control_method").value
-        self.speed_setpoint = self.get_parameter("speed_setpoint").value
+        self.declare_parameter("v_max",2.0)
         self.v_max = self.get_parameter("v_max").value
+        self.declare_parameter("heartbeat_timeout",0.5)
+        self.heartbeat_timeout = self.get_parameter("heartbeat_timeout").value
+        self.heartbeat_alarm = 0
+        self.run_flag = 1           # Set to 1 when home testing
+        self.heartbeat_last_time = self.get_clock().now().nanoseconds
+
         self.v = 0.0
         self.x = 0.0
         self.y = 0.0
         self.yaw = 0.0
-        self.declare_parameter("heartbeat_timeout",0.5)
-        self.heartbeat_timeout = self.get_parameter("heartbeat_timeout").value
-        self.heartbeat_alarm = 0
-        self.heartbeat_last_time = self.get_clock().now().nanoseconds
         self.reference_point_x = 0.0
         self.reference_point_y = 0.0
         self.point_out = Marker()
-        # print(self.control_method)
+
+        self.declare_parameter("max_steer",0.65)
+        self.declare_parameter("speed_setpoint",1.0)
+        control_params = {
+            "max_steer"     : self.get_parameter("max_steer").value,
+            "speed_setpoint": self.get_parameter("speed_setpoint").value,
+        }
         match self.control_method:
             case "stanley":
-                    self.controller_function = StanleyController(self.waypoints)
+                    self.declare_parameter("stanley_k",0.65)
+                    self.declare_parameter("stanley_k_soft",1.0)
+                    self.declare_parameter("wheelbase",.404)
+                    stanley_params = {
+                         "k"      : self.get_parameter("stanley_k").value,
+                         "k_soft" : self.get_parameter("stanley_k_soft").value,
+                         "L"      : self.get_parameter("wheelbase").value,
+                    }
+                    control_params.update(stanley_params)
+                    self.controller_function = StanleyController(self.waypoints,control_params)
             case "youla":
-                    self.controller_function = YoulaController(self.waypoints)
+                    self.declare_parameter("Youla_GcX",4)
+                    self.declare_parameter("Youla_GcA",[1.8934, -1.0907, 0.4767, -0.2260,
+                                                        1.0, 0.0, 0.0, 0.0,
+                                                        0.0, 0.5, 0.0, 0.0,
+                                                        0.0, 0.0, 0.5, 0.0])
+                    self.declare_parameter("Youla_GcB",[8.0, 0.0, 0.0, 0.0])
+                    self.declare_parameter("Youla_GcC",[0.5445, -1.2909, 2.0142, -1.0329])
+                    self.declare_parameter("Youla_GcD",[0.0])
+                    youla_params = {
+                        "n_GcX":self.get_parameter("Youla_GcX").value,
+                        "GcA":  self.get_parameter("Youla_GcA").value,
+                        "GcB":  self.get_parameter("Youla_GcB").value,
+                        "GcC":  self.get_parameter("Youla_GcC").value,
+                        "GcD":  self.get_parameter("Youla_GcD").value,
+                    }
+                    control_params.update(youla_params)
+                    self.controller_function = YoulaController(self.waypoints,control_params)
             case "mpc":
-                    self.controller_function = MPCController(self.waypoints)
+                    self.declare_parameter("mpc_tf",1.0)
+                    self.declare_parameter("mpc_N",20)
+                    self.declare_parameter("mpc_nx",7)
+                    self.declare_parameter("mpc_nu",1)                    
+                    mpc_params = {
+                        "tf": self.get_parameter("mpc_tf").value,
+                        "N" : self.get_parameter("mpc_N").value,
+                        "nx": self.get_parameter("mpc_nx").value,
+                        "nu": self.get_parameter("mpc_nu").value,
+                    }
+                    control_params.update(mpc_params)
+                    self.controller_function = MPCController(self.waypoints,control_params)
+
+        self.get_logger().info(f"INITIALIZING CONTROLLER - TYPE : {self.control_method}")
+        for key in control_params:
+            self.get_logger().info(f"{key}: {control_params[key]}")
+
 
 
     def odometry_callback(self,msg):
@@ -61,13 +106,12 @@ class Controller(Node):
         [_,_,self.yaw] = euler_from_quaternion(quaternion_pose)
         self.x = msg.pose.pose.position.x
         self.y = msg.pose.pose.position.y
-
+        if self.run_flag == 0:
+            self.run_flag = 1 # Allow run after telemetry first captured
+            self.get_logger().info(f'TELEMETRY ONLINE -- PERMITTING CONTROL START')
 
     def heartbeat_callback(self,msg):
-        time_now = self.get_clock().now().nanoseconds
-        if time_now * 10**-9 - self.heartbeat_last_time * 10**-9 > self.heartbeat_timeout:
-            self.heartbeat_alarm = 1
-        self.heartbeat_last_time = time_now
+        self.heartbeat_last_time = self.get_clock().now().nanoseconds
 
     def ref_point(self):
         self.point_out.header.frame_id = "map"
@@ -90,19 +134,21 @@ class Controller(Node):
 
 
     def controller(self):
-        if self.v > self.v_max or self.heartbeat_alarm == 1 or self.x == 0.0:  #if odom unsafe, comms lost, etc:
+        if self.get_clock().now().nanoseconds * 10**-9 - self.heartbeat_last_time * 10**-9 > self.heartbeat_timeout:
+            self.heartbeat_alarm = 1
+            self.get_logger().info(f'HEARTBEAT ALARM ACTIVE')
+        if self.v > self.v_max or self.heartbeat_alarm == 1 or self.run_flag == 0:  #if odom unsafe, comms lost, etc:
             self.cmd_steer = 0.0
             self.cmd_speed = 0.0
-        # TODO: ADD PATH CONSTRAINTS TO KILL MOTOR IF OUT OF RANGE
         else:
             (self.cmd_steer,self.cmd_speed,self.reference_point_x,self.reference_point_y) = self.controller_function.get_commands(self.x,self.y,self.yaw,self.v)
-            
-        
+
         ackermann_command = AckermannDriveStamped()
         ackermann_command.header.stamp = self.get_clock().now().to_msg()
         ackermann_command.drive.speed = self.cmd_speed
         ackermann_command.drive.steering_angle = self.cmd_steer
         self.ackermann_publisher.publish(ackermann_command)
+     
 
 def main(args=None):
     rclpy.init(args=args)

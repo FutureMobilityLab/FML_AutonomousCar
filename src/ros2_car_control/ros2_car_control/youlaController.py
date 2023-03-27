@@ -1,20 +1,17 @@
 import numpy as np
-import yaml, os
 
 class YoulaController():
-    def __init__(self,waypoints):
-        n_gcx = 7 #Number of controller states
-        self.Gc_states = np.zeros((1,n_gcx))
-        config_path = os.path.join(__file__,'../config/car_control.yaml')
-        stream =  open(config_path,'r')
-        config_file = yaml.load(stream)
-        self.GcA = np.matrix([config_file.get('Youla_GcA')])
-        self.GcB = np.matrix([config_file.get('Youla_GcB')])
-        self.GcC = np.matrix([config_file.get('Youla_GcC')])
-        self.GcD = np.matrix([config_file.get('Youla_GcD')])
+    def __init__(self,waypoints,ctrl_params):
+        n_GcX = ctrl_params.get("n_GcX") #Number of controller states
         self.waypoints = waypoints
-        self.v = config_file.get("speed_setpoint") # Velocity Setpoint
-        print(self.GcA)
+
+        self.Gc_states = np.zeros((n_GcX,1))
+        self.GcA = np.matrix(np.array(ctrl_params.get("GcA")).reshape(n_GcX,n_GcX))
+        self.GcB = np.matrix(np.array(ctrl_params.get("GcB")).reshape(n_GcX,1))
+        self.GcC = np.matrix(np.array(ctrl_params.get("GcC")).reshape(1,n_GcX))
+        self.GcD = np.matrix(np.array(ctrl_params.get("GcD")).reshape(1,1))
+
+        self.v = ctrl_params.get("speed_setpoint") # Velocity Setpoint
 
     def get_commands(self,pose_x,pose_y,pose_psi,v):
         # Not sure if ROS 2 fixes this problem, but you might have to store the

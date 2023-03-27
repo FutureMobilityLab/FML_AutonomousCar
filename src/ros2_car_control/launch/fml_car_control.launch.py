@@ -20,7 +20,7 @@ def generate_launch_description():
         executable='controller',
         name='controller',
         output='screen',
-        parameters=[os.path.join(ctrl_pkg_share, 'config/motor_driver.yaml'),
+        parameters=[os.path.join(ctrl_pkg_share, 'config/car_control.yaml'),
             {'use_sim_time': LaunchConfiguration('use_sim_time')}]
     )
     waypoints_pub_node = launch_ros.actions.Node(

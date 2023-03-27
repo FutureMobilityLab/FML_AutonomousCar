@@ -2,14 +2,16 @@
 import numpy as np
 
 class StanleyController():
-    def __init__(self,waypoints):
-        self.k = 0.5 #control_gain
-        self.k_soft = 1.0 #softening_gain
-        self.L = 0.404 #wheelbase
-        self.max_steer = 0.65 #max_steer
+    def __init__(self,waypoints,ctrl_params):
+        self.k = ctrl_params.get("k") #control_gain
+        self.k_soft = ctrl_params.get("k_soft") #softening_gain
+        self.L = ctrl_params.get("L") #wheelbase
+        self.max_steer = ctrl_params.get("max_steer") #max_steer
+        self.velocity_setpoint = ctrl_params.get("speed_setpoint")
+
         self.prev_steering_angle = 0.0
         self.debug_bool = False
-        self.velocity_setpoint = 1.0
+
         self.waypoints = waypoints
 
     def get_commands(self,x,y,yaw,v):
