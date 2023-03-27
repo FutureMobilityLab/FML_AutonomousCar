@@ -23,7 +23,7 @@ class Controller(Node):
         self.waypoints = waypoints()
         self.cmd_timer = self.create_timer(0.1, self.controller)
         self.marker_timer = self.create_timer(1.0,self.ref_point)
-        self.declare_parameter("control_method","mpc")
+        self.declare_parameter("control_method","stanley")
         self.control_method = self.get_parameter("control_method").value
         self.declare_parameter("v_max",2.0)
         self.v_max = self.get_parameter("v_max").value
@@ -81,7 +81,7 @@ class Controller(Node):
                     self.declare_parameter("mpc_tf",1.0)
                     self.declare_parameter("mpc_N",20)
                     self.declare_parameter("mpc_nx",7)
-                    self.declare_parameter("mpc_nu",1)                    
+                    self.declare_parameter("mpc_nu",1)
                     mpc_params = {
                         "tf": self.get_parameter("mpc_tf").value,
                         "N" : self.get_parameter("mpc_N").value,
@@ -148,7 +148,7 @@ class Controller(Node):
         ackermann_command.drive.speed = self.cmd_speed
         ackermann_command.drive.steering_angle = self.cmd_steer
         self.ackermann_publisher.publish(ackermann_command)
-     
+        self.get_logger().info(f'Steer Command:{self.cmd_steer}   Speed Command:{self.cmd_speed}')
 
 def main(args=None):
     rclpy.init(args=args)
