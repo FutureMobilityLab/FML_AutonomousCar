@@ -134,8 +134,8 @@ CMakeFiles/ocp_Dynamic_Bicycle.dir/clean:
 # Target rules for target CMakeFiles/acados_ocp_solver_Dynamic_Bicycle.dir
 
 # All Build rule for target.
-CMakeFiles/acados_ocp_solver_Dynamic_Bicycle.dir/all: CMakeFiles/model_Dynamic_Bicycle.dir/all
 CMakeFiles/acados_ocp_solver_Dynamic_Bicycle.dir/all: CMakeFiles/ocp_Dynamic_Bicycle.dir/all
+CMakeFiles/acados_ocp_solver_Dynamic_Bicycle.dir/all: CMakeFiles/model_Dynamic_Bicycle.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/acados_ocp_solver_Dynamic_Bicycle.dir/build.make CMakeFiles/acados_ocp_solver_Dynamic_Bicycle.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/acados_ocp_solver_Dynamic_Bicycle.dir/build.make CMakeFiles/acados_ocp_solver_Dynamic_Bicycle.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/george/FML_AutonomousCar/c_generated_code/build/CMakeFiles --progress-num=1 "Built target acados_ocp_solver_Dynamic_Bicycle"
