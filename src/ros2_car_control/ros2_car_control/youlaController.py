@@ -17,7 +17,7 @@ class YoulaController():
 
         distance_to_waypoint = []
 
-        lookahead = 0.404
+        lookahead = 0.404/2 # Base Link position is between both axles
         front_axle_x = pose_x + lookahead * np.cos(pose_psi)
         front_axle_y = pose_y + lookahead * np.sin(pose_psi)
 
