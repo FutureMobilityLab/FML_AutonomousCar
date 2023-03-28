@@ -24,8 +24,8 @@ class StanleyController():
             nearest_waypoint_index = distance_to_waypoint.index(min(distance_to_waypoint))
 
         yaw_ref = self.waypoints.psi[nearest_waypoint_index]
-        body_to_ref = np.array([front_axle_x - self.waypoints.x[nearest_waypoint_index], front_axle_y - self.waypoints.y[nearest_waypoint_index]])
-        path_vector = np.array([np.cos(yaw_ref), np.sin(yaw_ref)])
+        body_to_ref = np.array([front_axle_x - self.waypoints.x[nearest_waypoint_index], front_axle_y - self.waypoints.y[nearest_waypoint_index],0.0])
+        path_vector = np.array([np.cos(yaw_ref), np.sin(yaw_ref),0.0])
         crosstrack_error = distance_to_waypoint[nearest_waypoint_index]
         error_sign = np.sign(np.cross(body_to_ref,path_vector)[2])
         
@@ -34,7 +34,7 @@ class StanleyController():
             print('Crosstrack Error:'+str(crosstrack_error)+'\tCrosstrack Vector:'+str(path_vector))
         # Stanley Control law.
         yaw_term = yaw_ref - yaw
-        tangent_term = np.arctan2((self.k*crosstrack_error*error_sign,(v + self.k_soft)))
+        tangent_term = np.arctan2((self.k*crosstrack_error*error_sign),(v + self.k_soft))
         steer_angle = yaw_term + tangent_term
 
 
