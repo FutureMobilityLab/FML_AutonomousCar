@@ -1,0 +1,9 @@
+[Unit]
+Description=Systemd service to ensure device permission are correctly set after Boot.
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /usr/bin/set_device_permissions.sh
+
+[Install]
+WantedBy=multi-user.target

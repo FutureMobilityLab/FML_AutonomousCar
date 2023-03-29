@@ -1,0 +1,29 @@
+Source: fml-autonomous-veh-deps
+Section: unknown
+Homepage: https://futuremobility.engineering.ucdavis.edu/
+Maintainer: Jonathan Dorsey <jtdorsey@ucdavis.edu>
+Standards-Version: 4.0.0
+
+Package: fml-autonomous-veh-deps
+Architecture: any
+Priority: optional
+Depends: 
+    ${misc:Depends}, 
+    git, 
+    ros-humble-rmw-fastrtps-cpp, 
+    ros-humble-xacro, 
+    ros-humble-joint-state-publisher-gui, 
+    ros-humble-navigation2, 
+    python3-smbus, 
+    i2c-tools, 
+    libi2c-dev, 
+    ros-humble-rplidar-ros, 
+    ros-humble-robot-localization, 
+    python3-pip,
+    openssh-server,
+    ros-humble-ackermann-msgs,
+    ros-humble-tf-transformations 
+Description: future-mobility-lab Debian package is intended to make the installation of required packages for the Autonomous Vehicle project as painless as possible.
+
+
+

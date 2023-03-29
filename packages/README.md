@@ -7,7 +7,7 @@ The Future Mobility Lab, autonomous vehicle project requires external code in or
 To install this package run ... 
 
 ```
-sudo apt install ./packages/fml-ros2-autonomous-vehicle-deps_1.0-1_amd64.deb
+sudo apt install ./packages/releases/fml-ros2-autonomous-vehicle-deps_1.0-1_amd64.deb
 ```
 
 

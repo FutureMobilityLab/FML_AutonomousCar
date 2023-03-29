@@ -1,0 +1,7 @@
+lgpio
+adafruit-circuitpython-pca9685
+adafruit-circuitpython-servokit
+sshkeyboard
+pynput
+RPi.GPIO
+setuptools==58.2.0

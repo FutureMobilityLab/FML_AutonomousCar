@@ -1,0 +1,10 @@
+/opt
+/opt/fml
+/opt/fml/dependencies
+
+/lib
+/lib/systemd
+/lib/systemd/system
+
+/usr
+/usr/bin

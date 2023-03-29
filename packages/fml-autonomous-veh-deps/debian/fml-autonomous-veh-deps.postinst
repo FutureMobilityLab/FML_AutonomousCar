@@ -1,0 +1,21 @@
+#!/bin/bash
+
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+
+
+pip3 install -r /opt/fml/dependencies/requirements.txt
+
+
+USB_DEV=/dev/ttyUSB0
+if [ ! -f "$USB_DEV" ]; then
+    echo "USB Device: ttyUSB0 does not exist. Creating it now!"
+    mknod  $USB_DEV c 188 0
+fi
+
+# Enable & Install Device Permissions Service
+DEV_SERV="ros2_device_permissions.service"
+
+systemctl daemon-reload
+
+systemctl enable $DEV_SERV
+systemctl start $DEV_SERV

@@ -1,0 +1,14 @@
+#!/bin/bash
+pip3 uninstall -y -r /opt/fml/dependencies/requirements.txt
+
+USB_DEV=/dev/ttyUSB0
+echo "Removing USB Device ttyUSB0"
+rm -f  $USB_DEV 
+
+# Disable & Stop Device Permissions
+DEV_SERV="ros2_device_permissions.service"
+
+systemctl disable $DEV_SERV
+systemctl stop $DEV_SERV
+
+systemctl daemon-reload
