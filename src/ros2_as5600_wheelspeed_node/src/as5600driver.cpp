@@ -12,7 +12,7 @@ AS5600Driver::AS5600Driver()
   declareParameters();
   // Create publisher
   publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
-  std::chrono::duration<int64_t, std::milli> frequency = 10ms; //Used in MPU6050 node, unsure of application
+  std::chrono::duration<int64_t, std::milli> frequency = 10ms;
   timer_ = this->create_wall_timer(frequency, std::bind(&AS5600Driver::handleInput, this));
 }
 

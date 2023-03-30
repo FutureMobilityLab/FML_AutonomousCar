@@ -9,6 +9,7 @@ from std_msgs.msg import String
 from ros2_car_control.stanleyController import StanleyController
 from ros2_car_control.mpcController import MPCController
 from ros2_car_control.youlaController import YoulaController
+from ros2_car_control.purePursuitController import PurePursuitController
 from ros2_car_control.fetchWaypoints import waypoints
 from visualization_msgs.msg import Marker
 import numpy as np
@@ -22,7 +23,7 @@ class Controller(Node):
         self.ackermann_publisher = self.create_publisher(AckermannDriveStamped,'cmd_ackermann',10)
         self.point_ref_publisher = self.create_publisher(Marker,'ref_point',10)
         self.waypoints = waypoints()
-        self.cmd_timer = self.create_timer(0.1, self.controller)
+        self.cmd_timer = self.create_timer(0.05, self.controller)
         self.marker_timer = self.create_timer(1.0,self.ref_point)
         self.declare_parameter("control_method","youla")
         self.control_method = self.get_parameter("control_method").value
@@ -50,6 +51,13 @@ class Controller(Node):
             "speed_setpoint": self.get_parameter("speed_setpoint").value,
         }
         match self.control_method:
+            case "purepursuit":
+                    self.declare_parameter("pp_lookahead",0.5)
+                    pp_params = {
+                         "lookahead" : self.get_parameter("pp_lookahead").value,
+                    }
+                    control_params.update(pp_params)
+                    self.controller_function = PurePursuitController(self.waypoints,control_params)
             case "stanley":
                     self.declare_parameter("stanley_k",0.65)
                     self.declare_parameter("stanley_k_soft",1.0)
