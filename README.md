@@ -1,13 +1,12 @@
 # **FML_AutonomousCar**
 Code and documentation for the Future Mobility Lab scale test vehicle used for SLAM, motion planning and controls research. This repo assumes installation of ROS 2 Humble Hawksbill on an Ubuntu 22.04 machine. Tested on a Raspberry Pi 4b with 8 GB RAM.
 
-ROS Humble Hawksbill Installation Guide:  
-https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html  
+# Installation:
+This repo requires the installation of [ROS2 Humble Hawksbill](https://docs.ros.org/en/humble/index.html) on [Ubuntu 22.04 LTS Server](https://releases.ubuntu.com/jammy/), running on a Raspberry Pi 4b with 8 GB RAM.
 
-## Dependency References (Installed during setup)
+## Clone the Repository
 
-Nav2 Installation Guide:  
-https://navigation.ros.org/getting_started/index.html#installation  
+To start, clone the FML_AutonomousCar repo onto your machine/raspberrypi by running the following command. 
 
 MPU6050 Plugin:  
 https://github.com/hiwad-aziz/ros2_mpu6050_driver  
@@ -17,9 +16,83 @@ https://github.com/hiwad-aziz/ros2_mpu6050_driver
 1. Clone this repository to a local machine
 2. Run dependencies.sh
 ```
-cd FML_AutonomousCar && . dependencies.sh
+sudo apt install git -y
+git clone git@github.com:GeorgeTMartin/FML_AutonomousCar.git
+cd ./FML_AutonomousCar && git submodule update --init --recursive
 ```
-3. Build the workspace
+
+NOTE: After cloning the repo, we need to intialize all of the [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) by using the `git submodule` command.
+
+## Install ROS2 Humble Hawksbill 
+
+### Setup UTF8 & Ros2 Repo Sources
+
+```
+sudo apt update && sudo apt install locales
+sudo locale-gen en_US en_US.UTF-8
+sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+sudo apt install software-properties-common
+sudo add-apt-repository universe
+sudo apt update && sudo apt install curl
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+```
+
+### Install ROS2 
+
+```
+sudo apt update
+sudo apt upgrade
+
+####################
+#   RaspberryPi    #
+####################
+sudo apt install ros-humble-ros-base
+
+#####################
+#   Desktop/Laptop  #
+#####################
+sudo apt install ros-humble-desktop
+
+sudo apt install ros-dev-tools
+echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+```
+
+
+## Install ROS2 Dependencies 
+
+The Debian package that installs all of the external dependencies this repo uses is  CPU architecture specific. Most desktop/laptops with Intel or AMD CPUs are `amd64` while raspberry pis are `arm64/aarch64`. NOTE: (Apple Silicon is also `arm64`)
+
+To determine which architecture your system has run the following command ... 
+
+```
+dpkg --print-architecture 
+```
+
+Then install the correct package as shown below...
+
+```
+#########################
+#   Arm64 Architecture  #
+#########################
+sudo apt install ./package/releases/arm64/fml-autonomous-veh-deps_1.0-1_arm64.deb
+
+#########################
+#   Amd64 Architecture  #
+#########################
+sudo apt install ./package/releases/amd64/fml-autonomous-veh-deps_1.0-1_amd64.deb
+```
+
+NOTE: To remove the dependencies off the system run ... 
+```
+sudo apt purge fml-autonomous-veh-deps
+```
+
+## Build Workspace 
+Note on building with colcon on an RPI - Additional build parameters reduce workload to processor,  which prevents crashing when working with larger packages
+
 ```
 colcon build --symlink-install
 ```
@@ -88,6 +161,18 @@ On the localization module. To run the test, run the controller launch file on t
 ros2 launch ros2_car_control fml_car_control.launch.py
 ```
 
+
+
+## References 
+Nav2 Installation Guide:  
+https://navigation.ros.org/getting_started/index.html#installation  
+
+MPU6050 Plugin:  
+https://github.com/hiwad-aziz/ros2_mpu6050_driver  
+
+ROS2 Humble Hawksbill:
+https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html 
+=======
 # **Useful Aliases**:
 
 Some Useful Aliases can be added to streamline workflow on the car
@@ -100,4 +185,3 @@ At the FML_AutonomousCar Root Directory, setup the car parameters for running. T
 ```
 alias fml="export RMW_IMPLEMENTATION=rmw_fastrtps_cpp && source ./install/setup> && sudo chmod 777 /dev/ttyUSB0 && sudo chmod 777 /dev/i2c-1"
 ```
-
