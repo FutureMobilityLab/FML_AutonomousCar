@@ -87,3 +87,17 @@ On the localization module. To run the test, run the controller launch file on t
 ```
 ros2 launch ros2_car_control fml_car_control.launch.py
 ```
+
+# **Useful Aliases**:
+
+Some Useful Aliases can be added to streamline workflow on the car
+
+Connect to the RPI (assumes names of rpi-hia and rpi-hig):
+```
+alias rpi-{hia or hig}="ssh {USERNAME}@{COMPUTER}-rpi4.local"
+```
+At the FML_AutonomousCar Root Directory, setup the car parameters for running. This can also be added directly to ./bashrc but is kept in an alias to minimally alter the system when not running the car.
+```
+alias fml="export RMW_IMPLEMENTATION=rmw_fastrtps_cpp && source ./install/setup> && sudo chmod 777 /dev/ttyUSB0 && sudo chmod 777 /dev/i2c-1"
+```
+
