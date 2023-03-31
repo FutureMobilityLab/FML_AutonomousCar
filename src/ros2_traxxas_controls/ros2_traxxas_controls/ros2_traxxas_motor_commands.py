@@ -77,15 +77,17 @@ class MotorCommands(Node):
         else:
             self.timeoutCount = 0
         if ThrottleRegisterVal < self.throttle_full and ThrottleRegisterVal > self.throttle_revr:
-            if abs(self.a) < self.max_accel and np.sign(self.a) == np.sign(self.v):
-                self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
-            else:
+            if abs(self.a) > self.max_accel and np.sign(self.a) == np.sign(self.v):
                 self.errorIntegrated = self.errorIntegrated
-                self.get_logger().info(f"""***EXCESSIVE ACCELERATION - HOLDING INTEGRAL TERM***""")
+                self.get_logger().info(F"***EXCESSIVE ACCELERATION - HOLDING INTEGRAL***")
+            else:
+                self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
         if ThrottleRegisterVal > 30 and self.v < 0.05:
-            ThrottleRegisterVal = self.throttle_idle
-            self.get_logger().info(f"*** THROTTLE ACTIVE BUT NO MOTION - ASSUMED COLLISION - SETTING IDLE AND QUITTING")
-            raise SystemExit
+            self.timeoutCount += 1
+            if self.timeoutCount > 20:
+                ThrottleRegisterVal = self.throttle_idle
+                self.get_logger().info(f"*** THROTTLE ACTIVE BUT NO MOTION - ASSUMED COLLISION - SETTING IDLE AND QUITTING")
+                raise SystemExit
         return ThrottleRegisterVal
     
     def CMDtoMotor(self):
