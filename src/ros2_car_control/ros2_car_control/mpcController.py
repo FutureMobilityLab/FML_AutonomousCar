@@ -38,7 +38,9 @@ class MPCController():
         self.pose_y = pose_y
         self.pose_psi = pose_psi
         #Get Nearest Reference Point
-        x0 = np.array([pose_x,pose_y,0,0,0,pose_psi,0])
+        x0 = np.array([self.pose_x,self.pose_y,0,0,0,self.pose_psi,0])
+        self.acados_solver.set(0, "lbx", x0)
+        self.acados_solver.set(0, "ubx", x0)
         normArray = np.sqrt((self.xrefs - x0[0])**2 + (self.yrefs - x0[1])**2)
         start_ref = np.argmin(normArray)
         current_sref = self.srefs[start_ref]
@@ -65,7 +67,10 @@ class MPCController():
         self.acados_solver.set(self.N, "yref", yref_N)
 
         #Solve the OCP Problem and Fetch First Input
-        self.acados_solver.solve()
+        status = self.acados_solver.solve()
+        if status != 0:
+            self.acados_solver.reset()
+
         steering_angle = float(self.acados_solver.get(0, "u"))
 
         speed_cmd = self.v

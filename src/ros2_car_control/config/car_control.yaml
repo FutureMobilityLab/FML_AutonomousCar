@@ -17,7 +17,7 @@ controller:
     mpc_nx: 7                 # number of states
     mpc_nu: 1                 # number of inputs
 
-    pp_lookahead: 1.0         # pure pursuit lookahead dist [m]
+    pp_lookahead: 0.25         # pure pursuit lookahead dist [m]
 
     Youla_n_GcX: 4
     Youla_GcA: [1.8934, -1.0907, 0.4767, -0.2260, 1.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0]

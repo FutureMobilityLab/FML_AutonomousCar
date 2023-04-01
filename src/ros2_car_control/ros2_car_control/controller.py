@@ -51,9 +51,11 @@ class Controller(Node):
             "speed_setpoint": self.get_parameter("speed_setpoint").value,
         }
         match self.control_method:
-            case "purepursuit":
+            case "pp":
                     self.declare_parameter("pp_lookahead",0.5)
+                    self.declare_parameter("wheelbase",.404)
                     pp_params = {
+                         "L"         : self.get_parameter("wheelbase").value,
                          "lookahead" : self.get_parameter("pp_lookahead").value,
                     }
                     control_params.update(pp_params)
