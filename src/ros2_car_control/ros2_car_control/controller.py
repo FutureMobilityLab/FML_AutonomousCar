@@ -160,7 +160,7 @@ class Controller(Node):
         else:
             (self.cmd_steer,self.cmd_speed,self.reference_point_x,self.reference_point_y) = self.controller_function.get_commands(self.x,self.y,self.yaw,self.v)
 
-        self.get_logger().info(f'Steer Command: {self.cmd_steer}')
+#        self.get_logger().info(f'Steer Command: {self.cmd_steer}')
         ackermann_command = AckermannDriveStamped()
         ackermann_command.header.stamp = self.get_clock().now().to_msg()
         ackermann_command.drive.speed = self.cmd_speed

@@ -24,6 +24,7 @@ class MotorCommands(Node):
         # Sets Default Parameters
         self.declare_parameter("kp", 10.0)
         self.declare_parameter("ki", 20.0)
+        self.declare_parameter("kt", 2.0)
         self.declare_parameter("throttle_register_idle", 4915)
         self.declare_parameter("throttle_register_full", 6335)
         self.declare_parameter("throttle_register_revr", 3276)
@@ -32,6 +33,7 @@ class MotorCommands(Node):
         # Overrrides Parameters if Config File is Passed
         self.Kp = self.get_parameter("kp").value
         self.Ki = self.get_parameter("ki").value
+        self.Kt = self.get_parameter("kt").value
         self.throttle_idle = self.get_parameter("throttle_register_idle").value
         self.throttle_full = self.get_parameter("throttle_register_full").value
         self.throttle_revr = self.get_parameter("throttle_register_revr").value
@@ -49,7 +51,8 @@ class MotorCommands(Node):
         self.debugBool = True
         self.get_logger().info(F"""Motor PI Control Gains:
         Kp: {self.Kp}
-        Ki: {self.Ki}""")
+        Ki: {self.Ki}
+        Kt: {self.Kt}""")
 
     def getTimeDiff(self,timestamp):
         timeNow = timestamp.sec + timestamp.nanosec * 10**-9
@@ -59,10 +62,11 @@ class MotorCommands(Node):
     
     def LoopPID(self,AckermannCMD):
         error = AckermannCMD.drive.speed - self.v
+        steerangle = AckermannCMD.drive.steering_angle
         integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
-        ThrottleDesired = self.Kp * error + self.Ki * self.errorIntegrated
+        ThrottleDesired = self.Kp * error + self.Ki * self.errorIntegrated + self.Kt * abs(steerangle)
         if self.debugBool == True:
-            self.get_logger().info(f"Error: {error}    Throttle Out: {ThrottleDesired}")
+            self.get_logger().info(f"""Measured Velocity: {self.v}       Error: {error}    Throttle Out: {ThrottleDesired}""")
 
         ThrottleRegisterVal = self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired ##converts to register value ()
         if integratorTimeStep > 0.5:
