@@ -25,7 +25,7 @@ class Controller(Node):
         self.waypoints = waypoints()
         self.cmd_timer = self.create_timer(0.05, self.controller)
         self.marker_timer = self.create_timer(1.0,self.ref_point)
-        self.declare_parameter("control_method","youla")
+        self.declare_parameter("control_method","hinf")
         self.control_method = self.get_parameter("control_method").value
         self.declare_parameter("v_max",2.0)
         self.v_max = self.get_parameter("v_max").value
