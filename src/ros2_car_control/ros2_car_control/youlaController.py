@@ -10,16 +10,15 @@ class YoulaController():
         self.GcB = np.matrix(np.array(ctrl_params.get("GcB")).reshape(n_GcX,1))
         self.GcC = np.matrix(np.array(ctrl_params.get("GcC")).reshape(1,n_GcX))
         self.GcD = np.matrix(np.array(ctrl_params.get("GcD")).reshape(1,1))
-
+        self.lookahead = ctrl_params.get("lookahead")
         self.v = ctrl_params.get("speed_setpoint") # Velocity Setpoint
 
     def get_commands(self,pose_x,pose_y,pose_psi,v):
 
         distance_to_waypoint = []
 
-        lookahead = 0.404/2 # Base Link position is between both axles
-        front_axle_x = pose_x + lookahead * np.cos(pose_psi)
-        front_axle_y = pose_y + lookahead * np.sin(pose_psi)
+        front_axle_x = pose_x + self.lookahead * np.cos(pose_psi)
+        front_axle_y = pose_y + self.lookahead * np.sin(pose_psi)
 
         for i in range(len(self.waypoints.x)):
             distance_to_waypoint.append((front_axle_x - self.waypoints.x[i])**2 + (front_axle_y - self.waypoints.y[i])**2)

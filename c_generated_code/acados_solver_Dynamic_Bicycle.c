@@ -410,7 +410,7 @@ void Dynamic_Bicycle_acados_create_5_set_nlp_in(Dynamic_Bicycle_solver_capsule* 
     W_0[4+(NY0) * 4] = 2;
     W_0[5+(NY0) * 5] = 2;
     W_0[6+(NY0) * 6] = 2;
-    W_0[7+(NY0) * 7] = 0.02;
+    W_0[7+(NY0) * 7] = 200;
     ocp_nlp_cost_model_set(nlp_config, nlp_dims, nlp_in, 0, "W", W_0);
     free(W_0);
     double* W = calloc(NY*NY, sizeof(double));
@@ -420,7 +420,7 @@ void Dynamic_Bicycle_acados_create_5_set_nlp_in(Dynamic_Bicycle_solver_capsule* 
     W[4+(NY) * 4] = 2;
     W[5+(NY) * 5] = 2;
     W[6+(NY) * 6] = 2;
-    W[7+(NY) * 7] = 0.02;
+    W[7+(NY) * 7] = 200;
 
     for (int i = 1; i < N; i++)
     {

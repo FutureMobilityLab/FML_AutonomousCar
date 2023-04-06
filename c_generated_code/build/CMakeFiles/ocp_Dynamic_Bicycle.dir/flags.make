@@ -6,5 +6,5 @@ C_DEFINES =
 
 C_INCLUDES = -I/home/george/acados/include -I/home/george/acados/include/acados -I/home/george/acados/include/blasfeo/include -I/home/george/acados/include/hpipm/include -I/home/george/acados/include/qpOASES_e
 
-C_FLAGS = -fPIC -std=c99  -DACADOS_WITH_QPOASES
+C_FLAGS = -fPIC -std=c99  -DACADOS_WITH_QPOASES -O3 -DNDEBUG
 

@@ -48,7 +48,7 @@ class MotorCommands(Node):
         self.timeLastLooped = tempTimemsg.sec + tempTimemsg.nanosec * 10**-9
         self.a = 0
         self.v = 0
-        self.debugBool = True
+        self.debugBool = False
         self.get_logger().info(F"""Motor PI Control Gains:
         Kp: {self.Kp}
         Ki: {self.Ki}
@@ -64,14 +64,17 @@ class MotorCommands(Node):
         error = AckermannCMD.drive.speed - self.v
         steerangle = AckermannCMD.drive.steering_angle
         integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
+        if integratorTimeStep > 0.5:
+            self.errorIntegrated = 0.0
+            self.get_logger().info(f"""***INTEGRATOR TIMEOUT - RESETTING INTEGRAL***""")
+        else:
+            self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
         ThrottleDesired = self.Kp * error + self.Ki * self.errorIntegrated + self.Kt * abs(steerangle)
         if self.debugBool == True:
             self.get_logger().info(f"""Measured Velocity: {self.v}       Error: {error}    Throttle Out: {ThrottleDesired}""")
 
         ThrottleRegisterVal = self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired ##converts to register value ()
-        if integratorTimeStep > 0.5:
-            self.errorIntegrated = 0.0
-            self.get_logger().info(f"""***INTEGRATOR TIMEOUT - RESETTING INTEGRAL***""")
+        
         if ThrottleDesired > 40:
             self.timeoutCount += 1
             if self.timeoutCount > 20:
@@ -80,18 +83,18 @@ class MotorCommands(Node):
                 raise SystemExit
         else:
             self.timeoutCount = 0
-        if ThrottleRegisterVal < self.throttle_full and ThrottleRegisterVal > self.throttle_revr:
-            if abs(self.a) > self.max_accel and np.sign(self.a) == np.sign(self.v):
-                self.errorIntegrated = self.errorIntegrated
-                self.get_logger().info(F"***EXCESSIVE ACCELERATION - HOLDING INTEGRAL***")
-            else:
-                self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
-        if ThrottleRegisterVal > 30 and self.v < 0.05:
+
+        if abs(self.a) > self.max_accel and np.sign(self.a) == np.sign(self.v):
+            self.errorIntegrated = self.errorIntegrated
+            self.get_logger().info(F"***EXCESSIVE ACCELERATION - HOLDING INTEGRAL***")
+
+        if ThrottleDesired > 20 and self.v < 0.02:
             self.timeoutCount += 1
             if self.timeoutCount > 20:
                 ThrottleRegisterVal = self.throttle_idle
                 self.get_logger().info(f"*** THROTTLE ACTIVE BUT NO MOTION - ASSUMED COLLISION - SETTING IDLE AND QUITTING")
                 raise SystemExit
+            
         return ThrottleRegisterVal
     
     def CMDtoMotor(self):

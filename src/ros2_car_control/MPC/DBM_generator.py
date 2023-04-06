@@ -42,9 +42,9 @@ def acados_generator():
     Q = np.diag([1e1, 1e1, 0, 0, 1e-1, 1e-1, 1e-1])       #Should be of Size = nx
 
     R = np.eye(nu)
-    R[0, 0] = 1e-3                                                #Should be of Size = nu 
+    R[0, 0] = 1e1                                         #Should be of Size = nu 
 
-    Qe = np.diag([ 1e1, 1e1, 0, 0, 0, 1e-1, 0])            #Should be of Size = nx
+    Qe = np.diag([ 1e1, 1e1, 0, 0, 0, 1e-1, 0])           #Should be of Size = nx
 
     ocp.cost.cost_type = "LINEAR_LS"
     ocp.cost.cost_type_e = "LINEAR_LS"
