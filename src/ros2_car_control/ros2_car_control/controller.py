@@ -92,7 +92,7 @@ class Controller(Node):
                     control_params.update(youla_params)
                     self.controller_function = LTIController(self.waypoints,control_params)
             case "hinf":
-                    self.declare_parameter("hinf_GcX",4)
+                    self.declare_parameter("hinf_n_GcX",4)
                     self.declare_parameter("hinf_GcA",[1.8934, -1.0907, 0.4767, -0.2260,
                                                         1.0, 0.0, 0.0, 0.0,
                                                         0.0, 0.5, 0.0, 0.0,
@@ -102,7 +102,7 @@ class Controller(Node):
                     self.declare_parameter("hinf_GcD",[0.0])
                     self.declare_parameter("hinf_lookahead",0.5)
                     hinf_params = {
-                        "n_GcX":     self.get_parameter("hinf_GcX").value,
+                        "n_GcX":     self.get_parameter("hinf_n_GcX").value,
                         "GcA":       self.get_parameter("hinf_GcA").value,
                         "GcB":       self.get_parameter("hinf_GcB").value,
                         "GcC":       self.get_parameter("hinf_GcC").value,
