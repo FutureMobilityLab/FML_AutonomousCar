@@ -24,8 +24,14 @@ controller:
     Youla_GcB: [8.0, 0.0, 0.0, 0.0]
     Youla_GcC: [0.5445, -1.2909, 2.0142, -1.0329]
     Youla_GcD: [0.0]
+    Youla_lookahead: 0.5      # m
 
-    hinf_matrices: "Hinf_Controller.json"   # json title of Hinf Matrices
+    hinf_n_GcX: 4
+    hinf_GcA: [1.8934, -1.0907, 0.4767, -0.2260, 1.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0]
+    hinf_GcB: [8.0, 0.0, 0.0, 0.0]
+    hinf_GcC: [0.5445, -1.2909, 2.0142, -1.0329]
+    hinf_GcD: [0.0]
+    hinf_lookahead: 0.5        # m
 
     waypoints: "waypoints.json"             # json title of waypoints
 
