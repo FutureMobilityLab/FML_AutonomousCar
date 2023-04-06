@@ -8,7 +8,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from std_msgs.msg import String
 from ros2_car_control.stanleyController import StanleyController
 from ros2_car_control.mpcController import MPCController
-from ros2_car_control.youlaController import YoulaController
+from ros2_car_control.ltiController import LTIController
 from ros2_car_control.purePursuitController import PurePursuitController
 from ros2_car_control.fetchWaypoints import waypoints
 from visualization_msgs.msg import Marker
@@ -80,15 +80,37 @@ class Controller(Node):
                     self.declare_parameter("Youla_GcB",[8.0, 0.0, 0.0, 0.0])
                     self.declare_parameter("Youla_GcC",[0.5445, -1.2909, 2.0142, -1.0329])
                     self.declare_parameter("Youla_GcD",[0.0])
+                    self.declare_parameter("Youla_lookahead",0.5)
                     youla_params = {
-                        "n_GcX":self.get_parameter("Youla_GcX").value,
-                        "GcA":  self.get_parameter("Youla_GcA").value,
-                        "GcB":  self.get_parameter("Youla_GcB").value,
-                        "GcC":  self.get_parameter("Youla_GcC").value,
-                        "GcD":  self.get_parameter("Youla_GcD").value,
+                        "n_GcX":     self.get_parameter("Youla_GcX").value,
+                        "GcA":       self.get_parameter("Youla_GcA").value,
+                        "GcB":       self.get_parameter("Youla_GcB").value,
+                        "GcC":       self.get_parameter("Youla_GcC").value,
+                        "GcD":       self.get_parameter("Youla_GcD").value,
+                        "lookahead": self.get_parameter("Youla_lookahead").value
                     }
                     control_params.update(youla_params)
-                    self.controller_function = YoulaController(self.waypoints,control_params)
+                    self.controller_function = LTIController(self.waypoints,control_params)
+            case "hinf":
+                    self.declare_parameter("hinf_GcX",4)
+                    self.declare_parameter("hinf_GcA",[1.8934, -1.0907, 0.4767, -0.2260,
+                                                        1.0, 0.0, 0.0, 0.0,
+                                                        0.0, 0.5, 0.0, 0.0,
+                                                        0.0, 0.0, 0.5, 0.0])
+                    self.declare_parameter("hinf_GcB",[8.0, 0.0, 0.0, 0.0])
+                    self.declare_parameter("hinf_GcC",[0.5445, -1.2909, 2.0142, -1.0329])
+                    self.declare_parameter("hinf_GcD",[0.0])
+                    self.declare_parameter("hinf_lookahead",0.5)
+                    hinf_params = {
+                        "n_GcX":     self.get_parameter("hinf_GcX").value,
+                        "GcA":       self.get_parameter("hinf_GcA").value,
+                        "GcB":       self.get_parameter("hinf_GcB").value,
+                        "GcC":       self.get_parameter("hinf_GcC").value,
+                        "GcD":       self.get_parameter("hinf_GcD").value,
+                        "lookahead": self.get_parameter("hinf_lookahead").value
+                    }
+                    control_params.update(hinf_params)
+                    self.controller_function = LTIController(self.waypoints,control_params)
             case "mpc":
                     self.declare_parameter("mpc_tf",1.0)
                     self.declare_parameter("mpc_N",20)
