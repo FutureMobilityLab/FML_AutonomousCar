@@ -42,7 +42,7 @@ cd c_generated_code
 rm -rf build
 mkdir -p build
 cd build
-cmake .. -D BUILD_ACADOS_OCP_SOLVER_LIB = ON
+cmake .. -D BUILD_ACADOS_OCP_SOLVER_LIB=ON
 make
 mv *.so ../
 ```
