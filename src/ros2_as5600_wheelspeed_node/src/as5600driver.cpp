@@ -24,9 +24,11 @@ void AS5600Driver::handleInput()
   message.header.stamp = this->get_clock()->now();
   message.header.frame_id = "base_link";
   // Compute the velocity from absolute angle measurements.
-  message.twist.twist.linear.x = as5600_->getVelocity();
+  double current_velocity = as5600_->getVelocity();
   if (this->get_parameter("filter")) {
-
+    message.twist.twist.linear.x = fir_filter.filter(current_velocity);
+  } else {
+    message.twist.twist.linear.x = current_velocity;
   }
   // Publish the odometry message where only the linear x velocity
   // is nonzero.
