@@ -1,1 +1,3 @@
 pip uninstall ipython
+pip uninstall future-fstrings
+pip uninstall cython
