@@ -11,7 +11,8 @@ from ros2_car_control.mpcController import MPCController
 from ros2_car_control.ltiController import LTIController
 from ros2_car_control.purePursuitController import PurePursuitController
 from ros2_car_control.fetchWaypoints import waypoints
-from visualization_msgs.msg import Marker
+from visualization_msgs.msg import Marker, MarkerArray
+from tf_transformations import quaternion_from_euler
 import numpy as np
 
 class Controller(Node):
@@ -22,10 +23,12 @@ class Controller(Node):
         self.pose_subscriber = self.create_subscription(PoseWithCovarianceStamped,'amcl_pose',self.pose_callback,10)
         self.ackermann_publisher = self.create_publisher(AckermannDriveStamped,'cmd_ackermann',10)
         self.point_ref_publisher = self.create_publisher(Marker,'ref_point',10)
+        self.pose_hist_publisher = self.create_publisher(MarkerArray,'pose_hist',10)
         self.waypoints = waypoints()
         self.cmd_timer = self.create_timer(0.05, self.controller)
         self.marker_timer = self.create_timer(1.0,self.ref_point)
-        self.declare_parameter("control_method","youla")
+        self.pose_hist_timer = self.create_timer(0.25,self.pose_hist)
+        self.declare_parameter("control_method","hinf")
         self.control_method = self.get_parameter("control_method").value
         self.declare_parameter("v_max",2.0)
         self.v_max = self.get_parameter("v_max").value
@@ -35,6 +38,9 @@ class Controller(Node):
         self.run_flag = 0           # Set to 1 when home testing
         self.heartbeat_last_time = self.get_clock().now().nanoseconds
         self.final_thresh = 0.5
+        self.pose_hist_array_x = []
+        self.pose_hist_array_y = []
+        self.pose_hist_array_psi = []
 
         self.v = 0.0
         self.x = 0.0
@@ -42,7 +48,8 @@ class Controller(Node):
         self.yaw = 0.0
         self.reference_point_x = 0.0
         self.reference_point_y = 0.0
-        self.point_out = Marker()
+        self.ref_point_marker = Marker()
+        self.pose_markers = MarkerArray()
 
         self.declare_parameter("max_steer",0.65)
         self.declare_parameter("speed_setpoint",1.0)
@@ -92,7 +99,7 @@ class Controller(Node):
                     control_params.update(youla_params)
                     self.controller_function = LTIController(self.waypoints,control_params)
             case "hinf":
-                    self.declare_parameter("hinf_GcX",4)
+                    self.declare_parameter("hinf_n_GcX",4)
                     self.declare_parameter("hinf_GcA",[1.8934, -1.0907, 0.4767, -0.2260,
                                                         1.0, 0.0, 0.0, 0.0,
                                                         0.0, 0.5, 0.0, 0.0,
@@ -102,7 +109,7 @@ class Controller(Node):
                     self.declare_parameter("hinf_GcD",[0.0])
                     self.declare_parameter("hinf_lookahead",0.5)
                     hinf_params = {
-                        "n_GcX":     self.get_parameter("hinf_GcX").value,
+                        "n_GcX":     self.get_parameter("hinf_n_GcX").value,
                         "GcA":       self.get_parameter("hinf_GcA").value,
                         "GcB":       self.get_parameter("hinf_GcB").value,
                         "GcC":       self.get_parameter("hinf_GcC").value,
@@ -140,6 +147,9 @@ class Controller(Node):
         [_,_,self.yaw] = euler_from_quaternion(quaternion_pose)
         self.x = msg.pose.pose.position.x
         self.y = msg.pose.pose.position.y
+        self.pose_hist_array_x.append(self.x)
+        self.pose_hist_array_y.append(self.y)
+        self.pose_hist_array_psi.append(self.yaw)
         if self.run_flag == 0:
             self.run_flag = 1 # Allow run after telemetry first captured
             self.get_logger().info(f'TELEMETRY ONLINE -- PERMITTING CONTROL START')
@@ -148,29 +158,56 @@ class Controller(Node):
         self.heartbeat_last_time = self.get_clock().now().nanoseconds
 
     def ref_point(self):
-        self.point_out.header.frame_id = "map"
-        self.point_out.type = Marker.SPHERE
-        self.point_out.action = Marker.ADD
-        self.point_out.ns = "reference_point"
-        self.point_out.id = 1
-        self.point_out.pose.position.x = self.reference_point_x
-        self.point_out.pose.position.y = self.reference_point_y
-        self.point_out.scale.x = 0.1
-        self.point_out.scale.y = 0.1
-        self.point_out.scale.z = 0.1
-        self.point_out.pose.orientation.w = 1.0
-        self.point_out.frame_locked = False
-        self.point_out.color.a = 1.0
-        self.point_out.color.r = 1.0
-        self.point_out.lifetime = Duration(seconds=1).to_msg()
+        self.ref_point_marker.header.frame_id = "map"
+        self.ref_point_marker.type = Marker.SPHERE
+        self.ref_point_marker.action = Marker.ADD
+        self.ref_point_marker.ns = "reference_point"
+        self.ref_point_marker.id = 1
+        self.ref_point_marker.pose.position.x = self.reference_point_x
+        self.ref_point_marker.pose.position.y = self.reference_point_y
+        self.ref_point_marker.scale.x = 0.1
+        self.ref_point_marker.scale.y = 0.1
+        self.ref_point_marker.scale.z = 0.1
+        self.ref_point_marker.pose.orientation.w = 1.0
+        self.ref_point_marker.frame_locked = False
+        self.ref_point_marker.color.a = 1.0
+        self.ref_point_marker.color.r = 1.0
+        self.ref_point_marker.lifetime = Duration(seconds=1).to_msg()
 
-        self.point_ref_publisher.publish(self.point_out)
+        self.point_ref_publisher.publish(self.ref_point_marker)
 
+    def pose_hist(self):
+        self.pose_markers.markers = []
+        for i in range(len(self.pose_hist_array_x)):
+            marker_out = Marker()
+            marker_out.header.frame_id = "map"
+            marker_out.header.stamp = self.get_clock().now().to_msg()
+            marker_out.type = Marker.ARROW
+            marker_out.action = Marker.ADD
+            marker_out.ns = "wpts_"+str(i)
+            marker_out.id = i
+            marker_out.pose.position.x = self.pose_hist_array_x[i]
+            marker_out.pose.position.y = self.pose_hist_array_y[i]
+            marker_out.scale.x = 0.1
+            marker_out.scale.y = 0.01
+            marker_out.scale.z = 0.01
+            [ori_x,ori_y,ori_z,ori_w] = quaternion_from_euler(0.0,0.0,self.pose_hist_array_psi[i])
+            marker_out.pose.orientation.x = ori_x
+            marker_out.pose.orientation.y = ori_y
+            marker_out.pose.orientation.z = ori_z
+            marker_out.pose.orientation.w = ori_w
+            marker_out.frame_locked = False
+            marker_out.color.a = 1.0
+            marker_out.color.r = 1.0
+            marker_out.lifetime = Duration(seconds=1).to_msg()
+            self.pose_markers.markers.append(marker_out)   
+        self.pose_hist_publisher.publish(self.pose_markers)
 
     def controller(self):
         if self.get_clock().now().nanoseconds * 10**-9 - self.heartbeat_last_time * 10**-9 > self.heartbeat_timeout:
-            self.heartbeat_alarm = 1
-            self.get_logger().info(f'HEARTBEAT ALARM ACTIVE')
+            #self.heartbeat_alarm = 1
+            #self.get_logger().info(f'HEARTBEAT ALARM ACTIVE')
+            pass
 
         last_waypoint_dist = np.linalg.norm([self.waypoints.x[-1]-self.x,self.waypoints.y[-1]-self.y])
         
@@ -182,7 +219,7 @@ class Controller(Node):
         else:
             (self.cmd_steer,self.cmd_speed,self.reference_point_x,self.reference_point_y) = self.controller_function.get_commands(self.x,self.y,self.yaw,self.v)
 
-#        self.get_logger().info(f'Steer Command: {self.cmd_steer}')
+        self.get_logger().info(f'Steer Command: {self.cmd_steer}')
         ackermann_command = AckermannDriveStamped()
         ackermann_command.header.stamp = self.get_clock().now().to_msg()
         ackermann_command.drive.speed = self.cmd_speed

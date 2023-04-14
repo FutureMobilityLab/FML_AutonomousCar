@@ -1,17 +1,18 @@
 import numpy as np
 
-class YoulaController():
+class LTIController():
     def __init__(self,waypoints,ctrl_params):
         n_GcX = ctrl_params.get("n_GcX") #Number of controller states
         self.waypoints = waypoints
+        self.lookahead = ctrl_params.get("lookahead")
+        self.v = ctrl_params.get("speed_setpoint") # Velocity Setpoint
 
         self.Gc_states = np.zeros((n_GcX,1))
         self.GcA = np.matrix(np.array(ctrl_params.get("GcA")).reshape(n_GcX,n_GcX))
         self.GcB = np.matrix(np.array(ctrl_params.get("GcB")).reshape(n_GcX,1))
         self.GcC = np.matrix(np.array(ctrl_params.get("GcC")).reshape(1,n_GcX))
         self.GcD = np.matrix(np.array(ctrl_params.get("GcD")).reshape(1,1))
-        self.lookahead = ctrl_params.get("lookahead")
-        self.v = ctrl_params.get("speed_setpoint") # Velocity Setpoint
+
 
     def get_commands(self,pose_x,pose_y,pose_psi,v):
 
