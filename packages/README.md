@@ -3,6 +3,12 @@
 The Future Mobility Lab, autonomous vehicle project requires external code in order to function. The easiest way to install these dependencies is via Debian packages which are typically installed via the `sudo apt install ...` command. However doing this manually is laborious and error prone. In order to simplify the users experience, the cleanest way of automatically installing or removing all of these dependencies, is to create our own Debian package which can be installed or removed by a single command and will neatly install or remove all of the other requirements this project needs.   
 
 
+## Current Packages 
+
+1. **fml-acados-deps**: This package will pull in all of the dependencies for the Acados framework for realtime MPC. 
+2. **fml-autonomous-veh-deps**: This package will pull in all of the dependencies and make all of the system configuration changes required to run the required ROS2 packages.
+
+
 ## **TLDR**: 
 To install this package run ... 
 
@@ -38,7 +44,7 @@ dpkg-buildpackage -b -us -uc
 ### Installing Debian Packages 
 Note that since our package is a meta package, it will be installing other packages which must be grabbed from the internet. Since all of the source code for our package 
 
-**DO NOT** use `dpkg` to install this package (e.g ~~`sudo dpkg -i <your-package-name>.deb`~~)! The `dpkg` command is a minimalist package installer and WILL NOT pull external dependencies that we require from the internet. Instead, use a more full featured package manager like `apt`. This package manager will see that our package depends on other external packages and will fetch them from the internet, during the installation process.
+**DO NOT** use `dpkg` to install this package (e.g ~~`sudo dpkg -i <your-package-name>.deb`~~)! The `dpkg` command is a minimalist package installer and **WILL NOT** pull external dependencies that we require from the internet. Instead, use a more full featured package manager like `apt`. This package manager will see that our package depends on other external packages and will fetch them from the internet, during the installation process.
 
 ```
 sudo apt install <your-package-name>.deb
