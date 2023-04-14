@@ -121,13 +121,20 @@ print("Lap time: {}s".format(Tf * Nsim / N))
 
 #Graphing
 plt.figure(1)
+plt.subplot(121)
 plt.plot(xrefs,yrefs,'--',color='k')
 psiref_x = np.cos(simX[:,5])
 psiref_y = np.sin(simX[:,5])
 plt.plot(simX[:,0],simX[:,1])
 plt.quiver(simX[:,0],simX[:,1],psiref_x,psiref_y)
+plt.xlabel("X Position [m]")
+plt.ylabel("Y Position [m]")
 
 
-plt.figure(2)
+
+# plt.figure(2)
+plt.subplot(122)
 plt.plot(np.linspace(0,Tf*Nsim/N,Nsim),simU[:,0])
+plt.xlabel("Steer Angle [rad]")
+plt.ylabel("Time [sec]")
 plt.show()
