@@ -23,7 +23,7 @@ class Controller(Node):
         self.pose_subscriber = self.create_subscription(PoseWithCovarianceStamped,'amcl_pose',self.pose_callback,10)
         self.ackermann_publisher = self.create_publisher(AckermannDriveStamped,'cmd_ackermann',10)
         self.point_ref_publisher = self.create_publisher(Marker,'ref_point',10)
-        self.pose_hist_publisher = self.create_publisher(Marker,'pose_hist',10)
+        self.pose_hist_publisher = self.create_publisher(MarkerArray,'pose_hist',10)
         self.waypoints = waypoints()
         self.cmd_timer = self.create_timer(0.05, self.controller)
         self.marker_timer = self.create_timer(1.0,self.ref_point)
@@ -176,7 +176,7 @@ class Controller(Node):
 
         self.point_ref_publisher.publish(self.ref_point_marker)
 
-    def post_hist(self):
+    def pose_hist(self):
         self.pose_markers.markers = []
         for i in range(len(self.pose_hist_array_x)):
             marker_out = Marker()
@@ -191,7 +191,7 @@ class Controller(Node):
             marker_out.scale.x = 0.1
             marker_out.scale.y = 0.01
             marker_out.scale.z = 0.01
-            [ori_x,ori_y,ori_z,ori_w] = quaternion_from_euler(0.0,0.0,self.pose_hist_array_psi)
+            [ori_x,ori_y,ori_z,ori_w] = quaternion_from_euler(0.0,0.0,self.pose_hist_array_psi[i])
             marker_out.pose.orientation.x = ori_x
             marker_out.pose.orientation.y = ori_y
             marker_out.pose.orientation.z = ori_z
@@ -205,8 +205,9 @@ class Controller(Node):
 
     def controller(self):
         if self.get_clock().now().nanoseconds * 10**-9 - self.heartbeat_last_time * 10**-9 > self.heartbeat_timeout:
-            self.heartbeat_alarm = 1
-            self.get_logger().info(f'HEARTBEAT ALARM ACTIVE')
+            #self.heartbeat_alarm = 1
+            #self.get_logger().info(f'HEARTBEAT ALARM ACTIVE')
+            pass
 
         last_waypoint_dist = np.linalg.norm([self.waypoints.x[-1]-self.x,self.waypoints.y[-1]-self.y])
         

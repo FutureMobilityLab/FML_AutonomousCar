@@ -3,7 +3,7 @@ import numpy as np
 
 class waypoints():
      def __init__(self):
-        waypointsdir = '/home/george/FML_AutonomousCar/src/ros2_car_control/config/waypoints.json'
+        waypointsdir = '/home/rpi-hig/FML_AutonomousCar/src/ros2_car_control/config/waypoints.json'
         with open(waypointsdir,"r") as read_file:
             waypointsfile = json.load(read_file)
             untranslated_waypoints = waypointsfile['smoothed_wpts']
