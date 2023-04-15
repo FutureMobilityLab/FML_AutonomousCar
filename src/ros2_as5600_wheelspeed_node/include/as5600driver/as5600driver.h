@@ -4,7 +4,7 @@
 #include "as5600driver/as5600sensor.h"
 #include "rclcpp/rclcpp.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-#include "utils/fir_filter.cpp"
+#include "as5600driver/fir_filter.cpp"
 
 /**
  * @brief Provides methods for interfacing AS5600 hall-effect sensor 
@@ -36,14 +36,15 @@ class AS5600Driver : public rclcpp::Node {
   void declareParameters();
 
   // Node Constants.
-  static const std::chrono::duration<int64_t, std::milli> FREQUENCY = 10ms;
   // Filter designed using MATLAB's fdesign.lowpass function. The specific commands are:
   // FIReq = fdesign.lowpass('N,Fc,Ap,Ast',10,0.2,0.5,40);
   // filterCoeff = design(FIReq,'equiripple','SystemObject',true);
-  static const N_TAPS = 11;
+  static const int N_TAPS = 21;
   const double TAP_COEFFS[N_TAPS] = {
-    -2.4508e-04,  0.0257,  0.0707,  0.1313,  0.1843,
-     0.2054,      0.1843,  0.1313,  0.0707,  0.0257, -2.4508e-04};
+    -0.0030,  0.0060,  0.0120,  0.0217,  0.0344,  
+     0.0492,  0.0647,  0.0793,  0.0913,  0.0992,
+     0.1019,  0.0992,  0.0913,  0.0793,  0.0647,
+     0.0492,  0.0344,  0.0217,  0.0120,  0.0060, -0.0030};
   FIRFilter fir_filter;
 };
 

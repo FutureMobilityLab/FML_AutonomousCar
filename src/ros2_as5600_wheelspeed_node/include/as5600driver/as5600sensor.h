@@ -95,8 +95,8 @@ class AS5600Sensor {
   // AS5600 Constants
   static const int MAX_ANGLE = 4096;
   static const int ROLL_OVER_CUTOFF = 3072;
-  static const double PI = 3.14159;
-  static const double SEC_TO_MS = 1.0 / 1000.0;
+  static constexpr double PI = 3.14159;
+  static constexpr double SEC_TO_MS = 1.0 / 1000.0;
 };
 
 #endif  // AS5600SENSOR_H

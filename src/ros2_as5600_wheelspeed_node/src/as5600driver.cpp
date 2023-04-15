@@ -6,15 +6,14 @@
 using namespace std::chrono_literals;
 
 AS5600Driver::AS5600Driver()
-    : Node("as5600publisher"), as5600_{std::make_unique<AS5600Sensor>()}
+    : Node("as5600publisher"), as5600_{std::make_unique<AS5600Sensor>()}, fir_filter(N_TAPS, TAP_COEFFS)
 {
   // Declare parameters
   declareParameters();
-  // Create Filter.
-  fir_filter(N_TAPS, TAP_COEFFS);
   // Create publisher
   publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
-  timer_ = this->create_wall_timer(FREQUENCY, std::bind(&AS5600Driver::handleInput, this));
+  std::chrono::duration<int64_t, std::milli> frequency = 10ms;
+  timer_ = this->create_wall_timer(frequency, std::bind(&AS5600Driver::handleInput, this));
 }
 
 void AS5600Driver::handleInput()
@@ -25,11 +24,9 @@ void AS5600Driver::handleInput()
   message.header.frame_id = "base_link";
   // Compute the velocity from absolute angle measurements.
   double current_velocity = as5600_->getVelocity();
-  if (this->get_parameter("filter")) {
-    message.twist.twist.linear.x = fir_filter.filter(current_velocity);
-  } else {
-    message.twist.twist.linear.x = current_velocity;
-  }
+  message.twist.twist.linear.x = fir_filter.filter(current_velocity);
+  // message.twist.twist.linear.x = current_velocity;
+
   // Publish the odometry message where only the linear x velocity
   // is nonzero.
   publisher_->publish(message);
