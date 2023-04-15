@@ -4,9 +4,19 @@
 #include "as5600driver/as5600sensor.h"
 #include "rclcpp/rclcpp.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "as5600driver/fir_filter.cpp"
 
+/**
+ * @brief Provides methods for interfacing AS5600 hall-effect sensor 
+ * to ROS2 network.
+ */
 class AS5600Driver : public rclcpp::Node {
  public:
+  /**
+   * @brief Construct a new AS5600Driver instance.
+   * This creates a publisher and publishes the velocity measurement 
+   * at a set frequency.
+   */
   AS5600Driver();
 
  private:
@@ -14,8 +24,28 @@ class AS5600Driver : public rclcpp::Node {
   std::unique_ptr<AS5600Sensor> as5600_;
   size_t count_;
   rclcpp::TimerBase::SharedPtr timer_;
+
+  /**
+   * @brief Publishes the measured velocity from the AS5600 sensor.
+   */
   void handleInput();
+
+  /**
+   * @brief Sets the frequency parameter of the ROS node.
+   */
   void declareParameters();
+
+  // Node Constants.
+  // Filter designed using MATLAB's fdesign.lowpass function. The specific commands are:
+  // FIReq = fdesign.lowpass('N,Fc,Ap,Ast',10,0.2,0.5,40);
+  // filterCoeff = design(FIReq,'equiripple','SystemObject',true);
+  static const int N_TAPS = 21;
+  const double TAP_COEFFS[N_TAPS] = {
+    -0.0030,  0.0060,  0.0120,  0.0217,  0.0344,  
+     0.0492,  0.0647,  0.0793,  0.0913,  0.0992,
+     0.1019,  0.0992,  0.0913,  0.0793,  0.0647,
+     0.0492,  0.0344,  0.0217,  0.0120,  0.0060, -0.0030};
+  FIRFilter fir_filter;
 };
 
 #endif  // AS5600DRIVER_H

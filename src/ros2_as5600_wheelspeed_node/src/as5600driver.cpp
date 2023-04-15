@@ -6,7 +6,7 @@
 using namespace std::chrono_literals;
 
 AS5600Driver::AS5600Driver()
-    : Node("as5600publisher"), as5600_{std::make_unique<AS5600Sensor>()}
+    : Node("as5600publisher"), as5600_{std::make_unique<AS5600Sensor>()}, fir_filter(N_TAPS, TAP_COEFFS)
 {
   // Declare parameters
   declareParameters();
@@ -18,16 +18,24 @@ AS5600Driver::AS5600Driver()
 
 void AS5600Driver::handleInput()
 {
+  // Initialize an empty odometry message and populate the header.
   auto message = nav_msgs::msg::Odometry();
   message.header.stamp = this->get_clock()->now();
   message.header.frame_id = "base_link";
-  message.twist.twist.linear.x = as5600_->getVelocity();
+  // Compute the velocity from absolute angle measurements.
+  double current_velocity = as5600_->getVelocity();
+  message.twist.twist.linear.x = fir_filter.filter(current_velocity);
+  // message.twist.twist.linear.x = current_velocity;
+
+  // Publish the odometry message where only the linear x velocity
+  // is nonzero.
   publisher_->publish(message);
 }
 
 void AS5600Driver::declareParameters()
 {
   this->declare_parameter<int>("frequency", 0.0);
+  this->declare_parameter<bool>("filter", true);
 }
 
 int main(int argc, char* argv[])
