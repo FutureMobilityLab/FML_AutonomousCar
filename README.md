@@ -29,7 +29,7 @@ sudo apt install ./package/releases/amd64/fml-acados-deps_1.0-1_amd64.deb -y
 
 NOTE: To remove the dependencies off the system run ... 
 ```
-sudo apt purge fml-acaos-deps
+sudo apt purge fml-acados-deps
 ```
 
 ### Install Casadi
@@ -223,6 +223,7 @@ https://github.com/hiwad-aziz/ros2_mpu6050_driver
 
 ROS2 Humble Hawksbill:  
 https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html  
+
 =======
 # **Useful Aliases**:
 

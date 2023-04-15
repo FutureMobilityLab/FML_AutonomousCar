@@ -4,7 +4,7 @@ FML:
     minor_diameter: 6
 
   map:
-    path: "/home/george/FML_AutonomousCar/src/ros2_car_control/python-path-planner/maps/map_1677110999.pgm"   # Note map.yaml needs to be in the same location as it will automatically get ingested by the planner   
+    path: "/home/george/FML_AutonomousCar/src/ros2_car_control/python-path-planner/maps/lab_map.pgm"   # Note map.yaml needs to be in the same location as it will automatically get ingested by the planner   
     # path: "maps/_map2delete/map.pgm"   # Note map.yaml needs to be in the same location as it will automatically get ingested by the planner 
 
     cv:
@@ -15,17 +15,17 @@ FML:
       dilation:
         num_iter: 5
 
-    threshold: 254
+    threshold: 200
     inflate: true
-    inflation_radius: 5
+    inflation_radius: 1
 
   planner:
     algorithm: PRM #  [Astar, Dijkstra, RRT, PRM, RRTstar] 
 
     # Pixel Based Initial and Goal States
     initialize_from_pixel_indices: true
-    goal_ind: [33, 20]
-    start_ind: [ 279, 96]
+    goal_ind: [40, 40]
+    start_ind: [ 280, 110]
     # goal_ind: [218, 230]
     # start_ind: [ 148, 174]
 
