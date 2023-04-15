@@ -37,8 +37,13 @@ class AS5600Driver : public rclcpp::Node {
 
   // Node Constants.
   static const std::chrono::duration<int64_t, std::milli> FREQUENCY = 10ms;
-  static const N_TAPS = 1;
-  const double TAP_COEFFS[N_TAPS] = {0.5};
+  // Filter designed using MATLAB's fdesign.lowpass function. The specific commands are:
+  // FIReq = fdesign.lowpass('N,Fc,Ap,Ast',10,0.2,0.5,40);
+  // filterCoeff = design(FIReq,'equiripple','SystemObject',true);
+  static const N_TAPS = 11;
+  const double TAP_COEFFS[N_TAPS] = {
+    -2.4508e-04,  0.0257,  0.0707,  0.1313,  0.1843,
+     0.2054,      0.1843,  0.1313,  0.0707,  0.0257, -2.4508e-04};
   FIRFilter fir_filter;
 };
 
