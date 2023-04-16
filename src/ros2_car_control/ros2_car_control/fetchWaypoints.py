@@ -5,7 +5,7 @@ from PIL import Image
 
 class waypoints():
      def __init__(self):
-        waypointsdir = '/home/george/FML_AutonomousCar/src/ros2_car_control/config/waypoints2.json'
+        waypointsdir = '/home/george/FML_AutonomousCar/src/ros2_car_control/config/waypoints.json'
         mapdir = '/home/george/FML_AutonomousCar/src/car_slam/config/lab_map.pgm'
         mapcfgdir = '/home/george/FML_AutonomousCar/src/car_slam/config/lab_map.yaml'
         #Get Image Properties
@@ -22,11 +22,11 @@ class waypoints():
         with open(waypointsdir,"r") as read_file:
             waypointsfile = json.load(read_file)
             untranslated_waypoints = waypointsfile['smoothed_wpts']
-            self.x = np.array([x[1] for x in untranslated_waypoints]) #switch back later
-            self.y = np.array([y[0] for y in untranslated_waypoints])
+            self.x = np.array([x[0] for x in untranslated_waypoints]) #switch back later
+            self.y = np.array([y[1] for y in untranslated_waypoints])
         
             self.x = self.x#*resolution + origin[0]   #comment if not using conversions from starter map
-            self.y = -self.y#*resolution + (graph_height*resolution+origin[1])
+            self.y = self.y#*resolution + (graph_height*resolution+origin[1])
             print(self.y)
 
         x_diffs = np.diff(self.x)
