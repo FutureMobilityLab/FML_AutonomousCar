@@ -1,8 +1,8 @@
-# Install script for directory: /home/george/FML_AutonomousCar/c_generated_code
+# Install script for directory: /home/rpi-hig/FML_AutonomousCar/c_generated_code
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/george/FML_AutonomousCar/c_generated_code")
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -12,7 +12,7 @@ if(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
     string(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
            CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
   else()
-    set(CMAKE_INSTALL_CONFIG_NAME "Release")
+    set(CMAKE_INSTALL_CONFIG_NAME "")
   endif()
   message(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
 endif()
@@ -43,29 +43,29 @@ if(NOT DEFINED CMAKE_OBJDUMP)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(EXISTS "$ENV{DESTDIR}/home/george/FML_AutonomousCar/c_generated_code/libacados_ocp_solver_Dynamic_Bicycle.so" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}/home/george/FML_AutonomousCar/c_generated_code/libacados_ocp_solver_Dynamic_Bicycle.so")
+  if(EXISTS "$ENV{DESTDIR}/usr/local/libacados_ocp_solver_Dynamic_Bicycle.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}/usr/local/libacados_ocp_solver_Dynamic_Bicycle.so")
     file(RPATH_CHECK
-         FILE "$ENV{DESTDIR}/home/george/FML_AutonomousCar/c_generated_code/libacados_ocp_solver_Dynamic_Bicycle.so"
+         FILE "$ENV{DESTDIR}/usr/local/libacados_ocp_solver_Dynamic_Bicycle.so"
          RPATH "")
   endif()
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/george/FML_AutonomousCar/c_generated_code/libacados_ocp_solver_Dynamic_Bicycle.so")
+   "/usr/local/libacados_ocp_solver_Dynamic_Bicycle.so")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-  file(INSTALL DESTINATION "/home/george/FML_AutonomousCar/c_generated_code" TYPE SHARED_LIBRARY FILES "/home/george/FML_AutonomousCar/c_generated_code/build/libacados_ocp_solver_Dynamic_Bicycle.so")
-  if(EXISTS "$ENV{DESTDIR}/home/george/FML_AutonomousCar/c_generated_code/libacados_ocp_solver_Dynamic_Bicycle.so" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}/home/george/FML_AutonomousCar/c_generated_code/libacados_ocp_solver_Dynamic_Bicycle.so")
+  file(INSTALL DESTINATION "/usr/local" TYPE SHARED_LIBRARY FILES "/home/rpi-hig/FML_AutonomousCar/c_generated_code/build/libacados_ocp_solver_Dynamic_Bicycle.so")
+  if(EXISTS "$ENV{DESTDIR}/usr/local/libacados_ocp_solver_Dynamic_Bicycle.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}/usr/local/libacados_ocp_solver_Dynamic_Bicycle.so")
     file(RPATH_CHANGE
-         FILE "$ENV{DESTDIR}/home/george/FML_AutonomousCar/c_generated_code/libacados_ocp_solver_Dynamic_Bicycle.so"
-         OLD_RPATH "/home/george/acados/lib:"
+         FILE "$ENV{DESTDIR}/usr/local/libacados_ocp_solver_Dynamic_Bicycle.so"
+         OLD_RPATH "/home/rpi-hig/acados/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
-      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/home/george/FML_AutonomousCar/c_generated_code/libacados_ocp_solver_Dynamic_Bicycle.so")
+      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/usr/local/libacados_ocp_solver_Dynamic_Bicycle.so")
     endif()
   endif()
 endif()
@@ -81,5 +81,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/george/FML_AutonomousCar/c_generated_code/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/rpi-hig/FML_AutonomousCar/c_generated_code/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
