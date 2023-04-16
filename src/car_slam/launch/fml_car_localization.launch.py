@@ -89,6 +89,30 @@ def generate_launch_description():
                    {'autostart': True},
                    {'node_names': ['map_server','amcl']}]
     )
+    rviz_ref_point_recast_node = launch_ros.actions.Node(
+        package='topic_tools',
+        executable='relay',
+        name='relay',
+        parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')},
+                   {'input_topic': '/ref_point'},
+                   {'output_topic': '/ref_point_rviz'}]
+    )
+    rviz_waypoints_recast_node = launch_ros.actions.Node(
+        package='topic_tools',
+        executable='relay',
+        name='relay',
+        parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')},
+                   {'input_topic': '/waypoints'},
+                   {'output_topic': '/waypoints_rviz'}]
+    )
+    rviz_pose_hist_recast_node = launch_ros.actions.Node(
+        package='topic_tools',
+        executable='relay',
+        name='relay',
+        parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')},
+                   {'input_topic': '/pose_hist'},
+                   {'output_topic': '/pose_hist_rviz'}]
+    )
     
 
     return launch.LaunchDescription([
@@ -105,5 +129,8 @@ def generate_launch_description():
         nav2_map_server_node,
         nav2_amcl_node,
         nav2_lifecycle_manager,
-        robot_localization_map_node
+        robot_localization_map_node,
+        rviz_ref_point_recast_node,
+        rviz_waypoints_recast_node,
+        rviz_pose_hist_recast_node
     ])
