@@ -32,7 +32,7 @@ class Controller(Node):
         self.control_method = self.get_parameter("control_method").value
         self.declare_parameter("v_max",2.0)
         self.v_max = self.get_parameter("v_max").value
-        self.declare_parameter("heartbeat_timeout",0.5)
+        self.declare_parameter("heartbeat_timeout",1.0)
         self.heartbeat_timeout = self.get_parameter("heartbeat_timeout").value
         self.heartbeat_alarm = 0
         self.run_flag = 0           # Set to 1 when home testing

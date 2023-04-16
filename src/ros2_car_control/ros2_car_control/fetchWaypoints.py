@@ -5,7 +5,7 @@ from PIL import Image
 
 class waypoints():
      def __init__(self):
-        waypointsdir = '/home/rpi-hig/FML_AutonomousCar/src/ros2_car_control/config/waypoints2.json'
+        waypointsdir = '/home/rpi-hig/FML_AutonomousCar/src/ros2_car_control/config/waypoints.json'
         mapdir = '/home/rpi-hig/FML_AutonomousCar/src/car_slam/config/lab_map.pgm'
         mapcfgdir = '/home/rpi-hig/FML_AutonomousCar/src/car_slam/config/lab_map.yaml'
         #Get Image Properties
@@ -25,8 +25,8 @@ class waypoints():
             self.x = np.array([x[0] for x in untranslated_waypoints])
             self.y = np.array([y[1] for y in untranslated_waypoints])
         
-            self.x = self.x - origin[0]   #comment if not using conversions from starter map
-            self.y = -self.y #- (graph_height*resolution+origin[1])
+            self.x = self.x - origin[0] + 1.1  #comment if not using conversions from starter map
+            self.y = -self.y - origin[1] + 1.1 + (graph_height*resolution+origin[1])
             print(self.y)
 
         x_diffs = np.diff(self.x)
