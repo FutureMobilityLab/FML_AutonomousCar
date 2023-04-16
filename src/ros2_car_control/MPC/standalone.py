@@ -3,6 +3,24 @@ import numpy as np
 from DBM_generator import *
 from getPath import getPath
 import matplotlib.pyplot as plt
+import math
+
+def rmsValue(arr, n):
+    square = 0
+    mean = 0.0
+    root = 0.0
+     
+    #Calculate square
+    for i in range(0,n):
+        square += (arr[i]**2)
+     
+    #Calculate Mean
+    mean = (square / (float)(n))
+     
+    #Calculate Root
+    root = math.sqrt(mean)
+     
+    return root
 '''
 STATES: X, Y, x, y, y_dot, psi, psi_dot
 INPUTS: delta
@@ -42,7 +60,7 @@ nu = 1 # model.u.size()[0]
 # print("size nx, nu: {} | {}".format(nx,nu))
 ny = nx + nu
 
-Nsim= int(srefs[-1] * N / (v * Tf))
+Nsim= int(srefs[-1] * N * v/ (Tf))
 ds = v*Tf/N
 
 # initialize data structs
@@ -50,10 +68,11 @@ simX = np.ndarray((Nsim, nx))
 simU = np.ndarray((Nsim, nu))
 tcomp_sum = 0
 tcomp_max = 0
-x0 = np.array([xrefs[0]-0.5,yrefs[0],0,0,0,psirefs[0]+0.2,0])
+x0 = np.array([xrefs[0],yrefs[0],0,0,0,psirefs[0],0])
 acados_solver.set(0, "lbx", x0)
 acados_solver.set(0, "ubx", x0)
 # simulate
+error_array = []
 for i in range(Nsim):
     # update reference
     normArray = np.sqrt((xrefs - x0[0])**2 + (yrefs - x0[1])**2)
@@ -78,6 +97,7 @@ for i in range(Nsim):
     except IndexError:
         yref_N = np.array([xrefs[-1], yrefs[-1], 0, 0, 0, psirefs[-1], 0])
     acados_solver.set(N, "yref", yref_N)
+    
     # solve ocp
     t = time.time()
 
@@ -92,10 +112,13 @@ for i in range(Nsim):
     if elapsed > tcomp_max:
         tcomp_max = elapsed
 
+    lateral_error=np.linalg.norm([x0[0]-xrefs[start_ref],x0[1]-yrefs[start_ref]],2)
+    error_array.append(lateral_error)
+
     # get solution
     x0 = acados_solver.get(0, "x")
     u0 = acados_solver.get(0, "u")
-    print(float(u0))
+    # print(float(u0))
     for j in range(nx):
         simX[i, j] = x0[j]
     for j in range(nu):
@@ -115,18 +138,128 @@ for i in range(Nsim):
         break
 
 # Stats Printout
+RMS_Error = rmsValue(error_array,len(error_array))
 print("Average computation time: {}".format(tcomp_sum / Nsim))
 print("Maximum computation time: {}".format(tcomp_max))
 print("Lap time: {}s".format(Tf * Nsim / N))
+print("RMS ERROR:{}".format(RMS_Error))
+
+car_x_1 = simX[:,0]
+car_y_1 = simX[:,1]
+linspace_1 = np.linspace(0,Tf*Nsim/N,Nsim)
+u_1 = simU[:,0]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+v = 2.0 # Velocity Setpoint
+Nsim= int(srefs[-1] * N / (Tf))
+ds = v*Tf/N
+
+# initialize data structs
+simX = np.ndarray((Nsim, nx))
+simU = np.ndarray((Nsim, nu))
+tcomp_sum = 0
+tcomp_max = 0
+x0 = np.array([xrefs[0],yrefs[0],0,0,0,psirefs[0],0])
+acados_solver.set(0, "lbx", x0)
+acados_solver.set(0, "ubx", x0)
+# simulate
+error_array = []
+for i in range(Nsim):
+    # update reference
+    normArray = np.sqrt((xrefs - x0[0])**2 + (yrefs - x0[1])**2)
+    start_ref = np.argmin(normArray)
+    current_sref = srefs[start_ref]
+    for j in range(N):
+        try:
+            relative_s_dist = current_sref - srefs 
+            refs0_idx = len(relative_s_dist[relative_s_dist > 0])
+            sratio = ((current_sref - srefs[refs0_idx])/(srefs[refs0_idx+1]-srefs[refs0_idx]))
+            xrefs_interpolated = sratio*(xrefs[refs0_idx+1]-xrefs[refs0_idx])+xrefs[refs0_idx]
+            yrefs_interpolated = sratio*(yrefs[refs0_idx+1]-yrefs[refs0_idx])+yrefs[refs0_idx]
+            psirefs_interpolated = psirefs[refs0_idx]
+            yref = np.array([xrefs_interpolated, yrefs_interpolated, 0, 0, 0, psirefs_interpolated, 0, 0])
+        except IndexError:
+            yref = np.array([xrefs[-1], yrefs[-1], 0, 0, 0, psirefs[-1], 0, 0])
+
+        acados_solver.set(j, "yref", yref)
+        current_sref += ds
+    try:        
+        yref_N = yref[:-1]
+    except IndexError:
+        yref_N = np.array([xrefs[-1], yrefs[-1], 0, 0, 0, psirefs[-1], 0],2)
+    acados_solver.set(N, "yref", yref_N)
+    # solve ocp
+    t = time.time()
+
+    # status = acados_solver.solve()
+    acados_solver.solve()
+    # if status != 0:
+    #     print("acados returned status {} in closed loop iteration {}.".format(status, i))
+
+    elapsed = time.time() - t
+    # manage timings
+    tcomp_sum += elapsed
+    if elapsed > tcomp_max:
+        tcomp_max = elapsed
+
+    lateral_error=np.linalg.norm([x0[0]-xrefs[start_ref],x0[1]-yrefs[start_ref]])
+    error_array.append(lateral_error)        
+
+    # get solution
+    x0 = acados_solver.get(0, "x")
+    u0 = acados_solver.get(0, "u")
+    # print(float(u0))
+    for j in range(nx):
+        simX[i, j] = x0[j]
+    for j in range(nu):
+        simU[i, j] = u0[j]
+
+    # update initial condition
+    x0 = acados_solver.get(1, "x")
+    acados_solver.set(0, "lbx", x0)
+    acados_solver.set(0, "ubx", x0)
+    normArray = []  #Reset Norm Array
+
+    if x0[0] == xrefs[-1]:
+        N0 = np.where(np.diff(np.sign(simX[:, 0])))[0][0]
+        Nsim = i - N0  # correct to final number of simulation steps for plotting
+        simX = simX[N0:i, :]
+        simU = simU[N0:i, :]
+        break
+
+# Stats Printout
+RMS_Error = rmsValue(error_array,len(error_array))
+print("Average computation time: {}".format(tcomp_sum / Nsim))
+print("Maximum computation time: {}".format(tcomp_max))
+print("Lap time: {}s".format(Tf * Nsim / N))
+print("RMS ERROR:{}".format(RMS_Error))
+
+car_x_2= simX[:,0]
+car_y_2 = simX[:,1]
+linspace_2 = np.linspace(0,Tf*Nsim/N,Nsim)
+u_2 = simU[:,0]
 
 #Graphing
 plt.figure(1)
 plt.subplot(121)
 plt.plot(xrefs,yrefs,'--',color='k')
-psiref_x = np.cos(simX[:,5])
-psiref_y = np.sin(simX[:,5])
-plt.plot(simX[:,0],simX[:,1])
-plt.quiver(simX[:,0],simX[:,1],psiref_x,psiref_y)
+# psiref_x = np.cos(simX[:,5])
+# psiref_y = np.sin(simX[:,5])
+plt.plot(car_x_1,car_y_1,car_x_2,car_y_2)
+plt.legend(['Track','Car - 1 m/s','Car - 2 m/s'])
+# plt.quiver(simX[:,0],simX[:,1],psiref_x,psiref_y)
 plt.xlabel("X Position [m]")
 plt.ylabel("Y Position [m]")
 
@@ -134,7 +267,8 @@ plt.ylabel("Y Position [m]")
 
 # plt.figure(2)
 plt.subplot(122)
-plt.plot(np.linspace(0,Tf*Nsim/N,Nsim),simU[:,0])
+plt.plot(linspace_1,u_1,linspace_2,u_2)
+plt.legend(['Car - 1 m/s','Car - 2 m/s'])
 plt.xlabel("Steer Angle [rad]")
 plt.ylabel("Time [sec]")
 plt.show()
