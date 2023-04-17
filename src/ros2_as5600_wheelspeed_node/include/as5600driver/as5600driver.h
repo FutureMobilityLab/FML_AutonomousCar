@@ -27,15 +27,15 @@ class AS5600Driver : public rclcpp::Node {
   size_t count_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr subscription_;
-  float steer_angle;
-  float yaw_rate;
-  float vel;
+  double steer_angle;
+  double yaw_rate;
+  double vel;
 
   /**
    * @brief Publishes the measured velocity from the AS5600 sensor.
    */
   void handleInput();
-  float getYawRate();
+  double getYawRate();
   void steerCallback(const ackermann_msgs::msg::AckermannDriveStamped & msg);
 
   /**

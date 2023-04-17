@@ -12,7 +12,7 @@ class Teleop(Node, ABC):
         Node.__init__(self, "traxxas_teleop")
 
         self.declare_parameter("linear_max", 1.0)
-        self.declare_parameter("angular_max", 1.0)
+        self.declare_parameter("angular_max", 0.65)
         self.declare_parameter("publish_rate", 10.0)
         self.LINEAR_MAX = self.get_parameter("linear_max").value
 

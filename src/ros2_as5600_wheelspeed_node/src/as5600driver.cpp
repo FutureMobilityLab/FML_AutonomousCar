@@ -28,11 +28,12 @@ void AS5600Driver::handleInput()
   message.header.stamp = this->get_clock()->now();
   message.header.frame_id = "base_link";
   // Compute the velocity from absolute angle measurements.
-  double current_velocity = as5600_->getVelocity();
-  message.twist.twist.linear.x = fir_filter.filter(current_velocity);
+  double vel_raw = as5600_->getVelocity();
+  vel = fir_filter.filter(vel_raw);
+  message.twist.twist.linear.x = vel;
   // message.twist.twist.linear.x = current_velocity;
   message.twist.twist.angular.z = getYawRate();
-
+  // std::cout << "YAW RATE:" << message.twist.twist.angular.z << std::endl;
   // Publish the odometry message where only the linear x velocity
   // is nonzero.
   publisher_->publish(message);
@@ -43,9 +44,10 @@ void AS5600Driver::steerCallback(const ackermann_msgs::msg::AckermannDriveStampe
   steer_angle = msg.drive.steering_angle;
 }
 
-float AS5600Driver::getYawRate()
+double AS5600Driver::getYawRate()
 {
-  yaw_rate = vel * tan(steer_angle)/0.404;
+  double slip_angle = atan2(0.199*tan(steer_angle),0.404);
+  yaw_rate = vel * tan(steer_angle) * cos(slip_angle)/0.404;
   return yaw_rate;
 }
 
