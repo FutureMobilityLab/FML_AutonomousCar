@@ -9,7 +9,8 @@
                 "/opt/ros/humble/include/**",
                 "/home/george/FML_AutonomousCar/src/rplidar_ros2/include/**",
                 "/usr/include/**",
-                "${workspaceFolder}/src/ros2_as5600_wheelspeed_node/include"
+                "${workspaceFolder}/src/ros2_as5600_wheelspeed_node/include",
+                "/opt/ros/humble/include"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",

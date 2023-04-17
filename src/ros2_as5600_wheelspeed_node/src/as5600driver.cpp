@@ -14,6 +14,11 @@ AS5600Driver::AS5600Driver()
   publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
   std::chrono::duration<int64_t, std::milli> frequency = 10ms;
   timer_ = this->create_wall_timer(frequency, std::bind(&AS5600Driver::handleInput, this));
+  steer_angle = 0.0;
+  yaw_rate = 0.0;
+  vel = 0.0;
+  subscription_ = this->create_subscription<ackermann_msgs::msg::AckermannDriveStamped>(
+      "cmd_ackermann", 10, std::bind(&AS5600Driver::steerCallback, this, _1));
 }
 
 void AS5600Driver::handleInput()
@@ -26,16 +31,29 @@ void AS5600Driver::handleInput()
   double current_velocity = as5600_->getVelocity();
   message.twist.twist.linear.x = fir_filter.filter(current_velocity);
   // message.twist.twist.linear.x = current_velocity;
+  message.twist.twist.angular.z = getYawRate();
 
   // Publish the odometry message where only the linear x velocity
   // is nonzero.
   publisher_->publish(message);
 }
 
-void AS5600Driver::declareParameters()
+void AS5600Driver::steerCallback(const ackermann_msgs::msg::AckermannDriveStamped & msg)
+{
+  steer_angle = msg.drive.steering_angle;
+}
+
+float AS5600Driver::getYawRate()
+{
+  yaw_rate = vel * tan(steer_angle)/0.404;
+  return yaw_rate;
+}
+
+void AS5600Driver::declareParameters() //This is garbage perhaps
 {
   this->declare_parameter<int>("frequency", 0.0);
   this->declare_parameter<bool>("filter", true);
+  this->declare_parameter<float>("wheelbase", 0.404);
 }
 
 int main(int argc, char* argv[])

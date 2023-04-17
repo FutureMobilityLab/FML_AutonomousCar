@@ -19,9 +19,10 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(ackermann_msgs REQUIRED)
 
 add_executable(as5600driver src/as5600driver.cpp src/as5600sensor.cpp)
-ament_target_dependencies(as5600driver rclcpp nav_msgs)
+ament_target_dependencies(as5600driver rclcpp nav_msgs ackermann_msgs)
 target_link_libraries(as5600driver i2c)
 target_include_directories(
   as5600driver PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
