@@ -5,6 +5,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "as5600driver/fir_filter.cpp"
+#include "ackermann_msgs/msg/ackermann_drive_stamped.hpp"
+using std::placeholders::_1;
 
 /**
  * @brief Provides methods for interfacing AS5600 hall-effect sensor 
@@ -24,11 +26,17 @@ class AS5600Driver : public rclcpp::Node {
   std::unique_ptr<AS5600Sensor> as5600_;
   size_t count_;
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Subscription<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr subscription_;
+  double steer_angle;
+  double yaw_rate;
+  double vel;
 
   /**
    * @brief Publishes the measured velocity from the AS5600 sensor.
    */
   void handleInput();
+  double getYawRate();
+  void steerCallback(const ackermann_msgs::msg::AckermannDriveStamped & msg);
 
   /**
    * @brief Sets the frequency parameter of the ROS node.
