@@ -5,9 +5,9 @@ from PIL import Image
 
 class waypoints():
      def __init__(self):
-        waypointsdir = '/home/george/FML_AutonomousCar/src/ros2_car_control/config/waypoints.json'
-        mapdir = '/home/george/FML_AutonomousCar/src/car_slam/config/lab_map.pgm'
-        mapcfgdir = '/home/george/FML_AutonomousCar/src/car_slam/config/lab_map.yaml'
+        waypointsdir = '/home/rpi-hig/FML_AutonomousCar/src/ros2_car_control/config/waypoints.json'
+        mapdir = '/home/rpi-hig/FML_AutonomousCar/src/car_slam/config/lab_map.pgm'
+        mapcfgdir = '/home/rpi-hig/FML_AutonomousCar/src/car_slam/config/lab_map.yaml'
         #Get Image Properties
         graph_height = Image.open(mapdir).size[1]
         #print(graph_height)

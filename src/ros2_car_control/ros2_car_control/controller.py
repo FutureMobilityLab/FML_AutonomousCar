@@ -25,8 +25,8 @@ class Controller(Node):
         self.point_ref_publisher = self.create_publisher(Marker,'ref_point',10)
         self.pose_hist_publisher = self.create_publisher(MarkerArray,'pose_hist',10)
         self.waypoints = waypoints()
-        self.cmd_timer = self.create_timer(0.025, self.controller)
-        self.marker_timer = self.create_timer(1.0,self.ref_point)
+        self.cmd_timer = self.create_timer(0.05, self.controller)
+        self.marker_timer = self.create_timer(0.5,self.ref_point)
         self.pose_hist_timer = self.create_timer(0.25,self.pose_hist)
         self.declare_parameter("control_method","hinf")
         self.control_method = self.get_parameter("control_method").value
@@ -219,7 +219,7 @@ class Controller(Node):
         else:
             (self.cmd_steer,self.cmd_speed,self.reference_point_x,self.reference_point_y) = self.controller_function.get_commands(self.x,self.y,self.yaw,self.v)
 
-        self.steer_cmd = np.clip(self.steer_cmd,-self.max_steer,self.max_steer)
+        self.cmd_steer = np.clip(self.cmd_steer,-0.65,0.65)
 
         self.get_logger().info(f'Steer Command: {self.cmd_steer}')
         ackermann_command = AckermannDriveStamped()

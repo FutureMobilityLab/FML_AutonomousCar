@@ -48,9 +48,9 @@ def press(key):
     if key == "s":
         TraxxasI2C.ThrottlePercent -= 0.01
     if key == "a":
-        TraxxasI2C.SteerCMD += 0.01
+        TraxxasI2C.SteerCMD += 0.05
     if key == "d":
-        TraxxasI2C.SteerCMD -= 0.01
+        TraxxasI2C.SteerCMD -= 0.05
     if key == "x":
         TraxxasI2C.ThrottlePercent = 0
     if key == "c":
