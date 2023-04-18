@@ -25,7 +25,7 @@ class Controller(Node):
         self.point_ref_publisher = self.create_publisher(Marker,'ref_point',10)
         self.pose_hist_publisher = self.create_publisher(MarkerArray,'pose_hist',10)
         self.waypoints = waypoints()
-        self.cmd_timer = self.create_timer(0.05, self.controller)
+        self.cmd_timer = self.create_timer(0.025, self.controller)
         self.marker_timer = self.create_timer(1.0,self.ref_point)
         self.pose_hist_timer = self.create_timer(0.25,self.pose_hist)
         self.declare_parameter("control_method","hinf")
