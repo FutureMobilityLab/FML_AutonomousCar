@@ -7,7 +7,7 @@ controller:
 
     wheelbase: .404           # m
 
-    control_method: "stanley" # controller type SELECT FROM: stanley | youla | mpc | hinf | pp
+    control_method: "pp" # controller type SELECT FROM: stanley | youla | mpc | hinf | pp
 
     stanley_k: 1.0              # stanley controller gain
     stanley_k_soft: 1.0         # stanley softening gain
@@ -17,7 +17,7 @@ controller:
     mpc_nx: 7                 # number of states
     mpc_nu: 1                 # number of inputs
 
-    pp_lookahead: 0.25         # pure pursuit lookahead dist [m]
+    pp_lookahead: 0.5         # pure pursuit lookahead dist [m]
 
     Youla_n_GcX: 4
     Youla_GcA: [1.8934, -1.0907, 0.4767, -0.2260,
