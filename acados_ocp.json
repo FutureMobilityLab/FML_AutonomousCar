@@ -1,7 +1,7 @@
 {
-    "acados_include_path": "/home/rpi-hig/acados/include",
-    "acados_lib_path": "/home/rpi-hig/acados/lib",
-    "code_export_directory": "/home/rpi-hig/FML_AutonomousCar/c_generated_code",
+    "acados_include_path": "/home/george/acados/include",
+    "acados_lib_path": "/home/george/acados/lib",
+    "code_export_directory": "/home/george/FML_AutonomousCar/c_generated_code",
     "constraints": {
         "C": [],
         "C_e": [],
