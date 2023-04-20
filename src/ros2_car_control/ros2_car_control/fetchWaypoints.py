@@ -25,8 +25,8 @@ class waypoints():
             self.x = np.array([x[0] for x in untranslated_waypoints])
             self.y = np.array([y[1] for y in untranslated_waypoints])
         
-            self.x = self.x - origin[0] + 0.95  #comment if not using conversions from starter map
-            self.y = -self.y - origin[1] + 1.1 + (graph_height*resolution+origin[1])
+            self.x = self.x - origin[0] + 1.3   #comment if not using conversions from starter map
+            self.y = -self.y + origin[1] - 1.4 + 2*(graph_height*resolution)
             #print(self.y)
 
         x_diffs = np.diff(self.x)

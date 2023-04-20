@@ -18,12 +18,12 @@ import numpy as np
 class Controller(Node):
     def __init__(self):
         super().__init__("car_controller")
-        self.odometry_subscriber = self.create_subscription(Odometry,'odometry/filtered',self.odometry_callback,10)
+        self.odometry_subscriber = self.create_subscription(Odometry,'odometry/filtered',self.odometry_callback,11)
         self.heartbeat_subscriber = self.create_subscription(String,'heartbeat',self.heartbeat_callback,1)
-        self.pose_subscriber = self.create_subscription(PoseWithCovarianceStamped,'amcl_pose',self.pose_callback,10)
-        self.ackermann_publisher = self.create_publisher(AckermannDriveStamped,'cmd_ackermann',10)
-        self.point_ref_publisher = self.create_publisher(Marker,'ref_point',10)
-        self.pose_hist_publisher = self.create_publisher(MarkerArray,'pose_hist',10)
+        self.pose_subscriber = self.create_subscription(PoseWithCovarianceStamped,'amcl_pose',self.pose_callback,1)
+        self.ackermann_publisher = self.create_publisher(AckermannDriveStamped,'cmd_ackermann',1)
+        self.point_ref_publisher = self.create_publisher(Marker,'ref_point',1)
+        self.pose_hist_publisher = self.create_publisher(MarkerArray,'pose_hist',1)
         self.waypoints = waypoints()
         self.cmd_timer = self.create_timer(0.05, self.controller)
         self.marker_timer = self.create_timer(0.5,self.ref_point)
