@@ -2,12 +2,14 @@ import json
 import numpy as np
 import yaml
 from PIL import Image
+import os
 
 class waypoints():
      def __init__(self):
-        waypointsdir = '/home/george/FML_AutonomousCar/src/ros2_car_control/config/waypoints.json'
-        mapdir = '/home/george/FML_AutonomousCar/src/car_slam/config/lab_map.pgm'
-        mapcfgdir = '/home/george/FML_AutonomousCar/src/car_slam/config/lab_map.yaml'
+        username = os.getlogin()
+        waypointsdir = str('/home/'+username+'/FML_AutonomousCar/src/ros2_car_control/config/waypoints.json')
+        mapdir = str('/home/'+username+'/FML_AutonomousCar/src/car_slam/config/lab_map.pgm')
+        mapcfgdir = str('/home/'+username+'/FML_AutonomousCar/src/car_slam/config/lab_map.yaml')
         #Get Image Properties
         graph_height = Image.open(mapdir).size[1]
         #print(graph_height)

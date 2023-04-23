@@ -27,7 +27,7 @@ class TopicSubscriberCSV(Node):
         self.amcl_subscription = self.create_subscription(PoseWithCovarianceStamped,'amcl_pose',self.amcl_callback,10)
         self.cmd_subscription = self.create_subscription(AckermannDriveStamped,'cmd_ackermann',self.cmd_callback,10)
 
-        self.subscription  # prevent unused variable warning
+      #   self.subscription  # prevent unused variable warning
 
     def send_to_file(self,list):
       with open('ROS_Bag_Parsed.csv','a') as writefile:
@@ -64,7 +64,7 @@ class TopicSubscriberCSV(Node):
        time_sec = msg.header.stamp.sec
        time_nanosec = msg.header.stamp.nanosec
        v_filt = msg.twist.twist.linear.x
-       csv_msg = ["imu",time_sec,time_nanosec, None, None, None, None, None, None, None,v_filt, None, None]
+       csv_msg = ["odom_filtered",time_sec,time_nanosec, None, None, None, None, None, None, None,v_filt, None, None]
        self.send_to_file(csv_msg)
 
     def amcl_callback(self,msg):
@@ -83,7 +83,7 @@ class TopicSubscriberCSV(Node):
        time_nanosec = msg.header.stamp.nanosec
        cmd_speed = msg.drive.speed
        cmd_steer = msg.drive.steering_angle
-       csv_msg = ["amcl_pose",time_sec,time_nanosec, None, None, None, None, None, None, None, None, cmd_speed, cmd_steer]
+       csv_msg = ["cmd_ackermann",time_sec,time_nanosec, None, None, None, None, None, None, None, None, cmd_speed, cmd_steer]
        self.send_to_file(csv_msg)
        
        
