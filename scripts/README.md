@@ -25,3 +25,13 @@ Additionally, please confirm motor_driver node has correctly set register values
 ## TraxxasManualCMD.py
 
 This script is useful for low level confirmation of I2C Communication to the motor driver and servo. Additionally, this script can be run before testing to guarantee that throttle registers are set to idle, such that the motor controller can immediately begin sending commands at startup. Throttle registers reset each time power is lost.
+
+## Results.py
+
+This script takes in a map file (.pgm), waypoints file (.json), and parsed rosbag file (.csv) to generate a graph of the vehicle's test run over a given map.
+
+The map file is sourced from FML_AutonomousCar/src/car_slam/config/
+
+The waypoints file is sourced from FML_AutonomousCar/src/ros2_car_control/config/
+
+The parsed bag file is sourced from FML_AutonomousCar/Testing/

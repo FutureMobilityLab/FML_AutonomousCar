@@ -11,14 +11,16 @@ AS5600Driver::AS5600Driver()
   // Declare parameters
   declareParameters();
   // Create publisher
-  publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
+  rclcpp::QoS FMLCarQoS(1);
+  FMLCarQoS.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
+  publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", FMLCarQoS);
   std::chrono::duration<int64_t, std::milli> frequency = 10ms;
   timer_ = this->create_wall_timer(frequency, std::bind(&AS5600Driver::handleInput, this));
   steer_angle = 0.0;
   yaw_rate = 0.0;
   vel = 0.0;
   subscription_ = this->create_subscription<ackermann_msgs::msg::AckermannDriveStamped>(
-      "cmd_ackermann", 10, std::bind(&AS5600Driver::steerCallback, this, _1));
+      "cmd_ackermann", FMLCarQoS, std::bind(&AS5600Driver::steerCallback, this, _1));
 }
 
 void AS5600Driver::handleInput()

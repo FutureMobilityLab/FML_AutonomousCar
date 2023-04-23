@@ -4,10 +4,9 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
-        - /Status1
-        - /Marker1
-        - /MarkerArray1
+        - /PoseWithCovariance1/Covariance1
+        - /PoseWithCovariance1/Covariance1/Position1
+        - /PoseWithCovariance1/Covariance1/Orientation1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -35,7 +34,7 @@ Visualization Manager:
       Cell Size: 1
       Class: rviz_default_plugins/Grid
       Color: 160; 160; 164
-      Enabled: true
+      Enabled: false
       Line Style:
         Line Width: 0.029999999329447746
         Value: Lines
@@ -48,7 +47,7 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
-      Value: true
+      Value: false
     - Alpha: 0.699999988079071
       Class: rviz_default_plugins/Map
       Color Scheme: map
@@ -74,11 +73,11 @@ Visualization Manager:
       Axes Length: 1
       Axes Radius: 0.10000000149011612
       Class: rviz_default_plugins/PoseWithCovariance
-      Color: 255; 25; 0
+      Color: 0; 0; 255
       Covariance:
         Orientation:
           Alpha: 0.5
-          Color: 255; 255; 127
+          Color: 127; 255; 127
           Color Style: Unique
           Frame: Local
           Offset: 1
@@ -86,7 +85,7 @@ Visualization Manager:
           Value: true
         Position:
           Alpha: 0.30000001192092896
-          Color: 204; 51; 204
+          Color: 127; 127; 255
           Scale: 1
           Value: true
         Value: true
@@ -128,7 +127,7 @@ Visualization Manager:
       Value: true
     - Alpha: 1
       Class: nav2_rviz_plugins/ParticleCloud
-      Color: 255; 25; 0
+      Color: 0; 0; 255
       Enabled: true
       Max Arrow Length: 0.30000001192092896
       Min Arrow Length: 0.019999999552965164
@@ -146,7 +145,7 @@ Visualization Manager:
       Enabled: true
       Name: Marker
       Namespaces:
-        reference_point: true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -159,506 +158,7 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        wpts_0: true
-        wpts_1: true
-        wpts_10: true
-        wpts_100: true
-        wpts_101: true
-        wpts_102: true
-        wpts_103: true
-        wpts_104: true
-        wpts_105: true
-        wpts_106: true
-        wpts_107: true
-        wpts_108: true
-        wpts_109: true
-        wpts_11: true
-        wpts_110: true
-        wpts_111: true
-        wpts_112: true
-        wpts_113: true
-        wpts_114: true
-        wpts_115: true
-        wpts_116: true
-        wpts_117: true
-        wpts_118: true
-        wpts_119: true
-        wpts_12: true
-        wpts_120: true
-        wpts_121: true
-        wpts_122: true
-        wpts_123: true
-        wpts_124: true
-        wpts_125: true
-        wpts_126: true
-        wpts_127: true
-        wpts_128: true
-        wpts_129: true
-        wpts_13: true
-        wpts_130: true
-        wpts_131: true
-        wpts_132: true
-        wpts_133: true
-        wpts_134: true
-        wpts_135: true
-        wpts_136: true
-        wpts_137: true
-        wpts_138: true
-        wpts_139: true
-        wpts_14: true
-        wpts_140: true
-        wpts_141: true
-        wpts_142: true
-        wpts_143: true
-        wpts_144: true
-        wpts_145: true
-        wpts_146: true
-        wpts_147: true
-        wpts_148: true
-        wpts_149: true
-        wpts_15: true
-        wpts_150: true
-        wpts_151: true
-        wpts_152: true
-        wpts_153: true
-        wpts_154: true
-        wpts_155: true
-        wpts_156: true
-        wpts_157: true
-        wpts_158: true
-        wpts_159: true
-        wpts_16: true
-        wpts_160: true
-        wpts_161: true
-        wpts_162: true
-        wpts_163: true
-        wpts_164: true
-        wpts_165: true
-        wpts_166: true
-        wpts_167: true
-        wpts_168: true
-        wpts_169: true
-        wpts_17: true
-        wpts_170: true
-        wpts_171: true
-        wpts_172: true
-        wpts_173: true
-        wpts_174: true
-        wpts_175: true
-        wpts_176: true
-        wpts_177: true
-        wpts_178: true
-        wpts_179: true
-        wpts_18: true
-        wpts_180: true
-        wpts_181: true
-        wpts_182: true
-        wpts_183: true
-        wpts_184: true
-        wpts_185: true
-        wpts_186: true
-        wpts_187: true
-        wpts_188: true
-        wpts_189: true
-        wpts_19: true
-        wpts_190: true
-        wpts_191: true
-        wpts_192: true
-        wpts_193: true
-        wpts_194: true
-        wpts_195: true
-        wpts_196: true
-        wpts_197: true
-        wpts_198: true
-        wpts_199: true
-        wpts_2: true
-        wpts_20: true
-        wpts_200: true
-        wpts_201: true
-        wpts_202: true
-        wpts_203: true
-        wpts_204: true
-        wpts_205: true
-        wpts_206: true
-        wpts_207: true
-        wpts_208: true
-        wpts_209: true
-        wpts_21: true
-        wpts_210: true
-        wpts_211: true
-        wpts_212: true
-        wpts_213: true
-        wpts_214: true
-        wpts_215: true
-        wpts_216: true
-        wpts_217: true
-        wpts_218: true
-        wpts_219: true
-        wpts_22: true
-        wpts_220: true
-        wpts_221: true
-        wpts_222: true
-        wpts_223: true
-        wpts_224: true
-        wpts_225: true
-        wpts_226: true
-        wpts_227: true
-        wpts_228: true
-        wpts_229: true
-        wpts_23: true
-        wpts_230: true
-        wpts_231: true
-        wpts_232: true
-        wpts_233: true
-        wpts_234: true
-        wpts_235: true
-        wpts_236: true
-        wpts_237: true
-        wpts_238: true
-        wpts_239: true
-        wpts_24: true
-        wpts_240: true
-        wpts_241: true
-        wpts_242: true
-        wpts_243: true
-        wpts_244: true
-        wpts_245: true
-        wpts_246: true
-        wpts_247: true
-        wpts_248: true
-        wpts_249: true
-        wpts_25: true
-        wpts_250: true
-        wpts_251: true
-        wpts_252: true
-        wpts_253: true
-        wpts_254: true
-        wpts_255: true
-        wpts_256: true
-        wpts_257: true
-        wpts_258: true
-        wpts_259: true
-        wpts_26: true
-        wpts_260: true
-        wpts_261: true
-        wpts_262: true
-        wpts_263: true
-        wpts_264: true
-        wpts_265: true
-        wpts_266: true
-        wpts_267: true
-        wpts_268: true
-        wpts_269: true
-        wpts_27: true
-        wpts_270: true
-        wpts_271: true
-        wpts_272: true
-        wpts_273: true
-        wpts_274: true
-        wpts_275: true
-        wpts_276: true
-        wpts_277: true
-        wpts_278: true
-        wpts_279: true
-        wpts_28: true
-        wpts_280: true
-        wpts_281: true
-        wpts_282: true
-        wpts_283: true
-        wpts_284: true
-        wpts_285: true
-        wpts_286: true
-        wpts_287: true
-        wpts_288: true
-        wpts_289: true
-        wpts_29: true
-        wpts_290: true
-        wpts_291: true
-        wpts_292: true
-        wpts_293: true
-        wpts_294: true
-        wpts_295: true
-        wpts_296: true
-        wpts_297: true
-        wpts_298: true
-        wpts_299: true
-        wpts_3: true
-        wpts_30: true
-        wpts_300: true
-        wpts_301: true
-        wpts_302: true
-        wpts_303: true
-        wpts_304: true
-        wpts_305: true
-        wpts_306: true
-        wpts_307: true
-        wpts_308: true
-        wpts_309: true
-        wpts_31: true
-        wpts_310: true
-        wpts_311: true
-        wpts_312: true
-        wpts_313: true
-        wpts_314: true
-        wpts_315: true
-        wpts_316: true
-        wpts_317: true
-        wpts_318: true
-        wpts_319: true
-        wpts_32: true
-        wpts_320: true
-        wpts_321: true
-        wpts_322: true
-        wpts_323: true
-        wpts_324: true
-        wpts_325: true
-        wpts_326: true
-        wpts_327: true
-        wpts_328: true
-        wpts_329: true
-        wpts_33: true
-        wpts_330: true
-        wpts_331: true
-        wpts_332: true
-        wpts_333: true
-        wpts_334: true
-        wpts_335: true
-        wpts_336: true
-        wpts_337: true
-        wpts_338: true
-        wpts_339: true
-        wpts_34: true
-        wpts_340: true
-        wpts_341: true
-        wpts_342: true
-        wpts_343: true
-        wpts_344: true
-        wpts_345: true
-        wpts_346: true
-        wpts_347: true
-        wpts_348: true
-        wpts_349: true
-        wpts_35: true
-        wpts_350: true
-        wpts_351: true
-        wpts_352: true
-        wpts_353: true
-        wpts_354: true
-        wpts_355: true
-        wpts_356: true
-        wpts_357: true
-        wpts_358: true
-        wpts_359: true
-        wpts_36: true
-        wpts_360: true
-        wpts_361: true
-        wpts_362: true
-        wpts_363: true
-        wpts_364: true
-        wpts_365: true
-        wpts_366: true
-        wpts_367: true
-        wpts_368: true
-        wpts_369: true
-        wpts_37: true
-        wpts_370: true
-        wpts_371: true
-        wpts_372: true
-        wpts_373: true
-        wpts_374: true
-        wpts_375: true
-        wpts_376: true
-        wpts_377: true
-        wpts_378: true
-        wpts_379: true
-        wpts_38: true
-        wpts_380: true
-        wpts_381: true
-        wpts_382: true
-        wpts_383: true
-        wpts_384: true
-        wpts_385: true
-        wpts_386: true
-        wpts_387: true
-        wpts_388: true
-        wpts_389: true
-        wpts_39: true
-        wpts_390: true
-        wpts_391: true
-        wpts_392: true
-        wpts_393: true
-        wpts_394: true
-        wpts_395: true
-        wpts_396: true
-        wpts_397: true
-        wpts_398: true
-        wpts_399: true
-        wpts_4: true
-        wpts_40: true
-        wpts_400: true
-        wpts_401: true
-        wpts_402: true
-        wpts_403: true
-        wpts_404: true
-        wpts_405: true
-        wpts_406: true
-        wpts_407: true
-        wpts_408: true
-        wpts_409: true
-        wpts_41: true
-        wpts_410: true
-        wpts_411: true
-        wpts_412: true
-        wpts_413: true
-        wpts_414: true
-        wpts_415: true
-        wpts_416: true
-        wpts_417: true
-        wpts_418: true
-        wpts_419: true
-        wpts_42: true
-        wpts_420: true
-        wpts_421: true
-        wpts_422: true
-        wpts_423: true
-        wpts_424: true
-        wpts_425: true
-        wpts_426: true
-        wpts_427: true
-        wpts_428: true
-        wpts_429: true
-        wpts_43: true
-        wpts_430: true
-        wpts_431: true
-        wpts_432: true
-        wpts_433: true
-        wpts_434: true
-        wpts_435: true
-        wpts_436: true
-        wpts_437: true
-        wpts_438: true
-        wpts_439: true
-        wpts_44: true
-        wpts_440: true
-        wpts_441: true
-        wpts_442: true
-        wpts_443: true
-        wpts_444: true
-        wpts_445: true
-        wpts_446: true
-        wpts_447: true
-        wpts_448: true
-        wpts_449: true
-        wpts_45: true
-        wpts_450: true
-        wpts_451: true
-        wpts_452: true
-        wpts_453: true
-        wpts_454: true
-        wpts_455: true
-        wpts_456: true
-        wpts_457: true
-        wpts_458: true
-        wpts_459: true
-        wpts_46: true
-        wpts_460: true
-        wpts_461: true
-        wpts_462: true
-        wpts_463: true
-        wpts_464: true
-        wpts_465: true
-        wpts_466: true
-        wpts_467: true
-        wpts_468: true
-        wpts_469: true
-        wpts_47: true
-        wpts_470: true
-        wpts_471: true
-        wpts_472: true
-        wpts_473: true
-        wpts_474: true
-        wpts_475: true
-        wpts_476: true
-        wpts_477: true
-        wpts_478: true
-        wpts_479: true
-        wpts_48: true
-        wpts_480: true
-        wpts_481: true
-        wpts_482: true
-        wpts_483: true
-        wpts_484: true
-        wpts_485: true
-        wpts_486: true
-        wpts_487: true
-        wpts_488: true
-        wpts_489: true
-        wpts_49: true
-        wpts_490: true
-        wpts_491: true
-        wpts_492: true
-        wpts_493: true
-        wpts_494: true
-        wpts_495: true
-        wpts_496: true
-        wpts_497: true
-        wpts_498: true
-        wpts_499: true
-        wpts_5: true
-        wpts_50: true
-        wpts_51: true
-        wpts_52: true
-        wpts_53: true
-        wpts_54: true
-        wpts_55: true
-        wpts_56: true
-        wpts_57: true
-        wpts_58: true
-        wpts_59: true
-        wpts_6: true
-        wpts_60: true
-        wpts_61: true
-        wpts_62: true
-        wpts_63: true
-        wpts_64: true
-        wpts_65: true
-        wpts_66: true
-        wpts_67: true
-        wpts_68: true
-        wpts_69: true
-        wpts_7: true
-        wpts_70: true
-        wpts_71: true
-        wpts_72: true
-        wpts_73: true
-        wpts_74: true
-        wpts_75: true
-        wpts_76: true
-        wpts_77: true
-        wpts_78: true
-        wpts_79: true
-        wpts_8: true
-        wpts_80: true
-        wpts_81: true
-        wpts_82: true
-        wpts_83: true
-        wpts_84: true
-        wpts_85: true
-        wpts_86: true
-        wpts_87: true
-        wpts_88: true
-        wpts_89: true
-        wpts_9: true
-        wpts_90: true
-        wpts_91: true
-        wpts_92: true
-        wpts_93: true
-        wpts_94: true
-        wpts_95: true
-        wpts_96: true
-        wpts_97: true
-        wpts_98: true
-        wpts_99: true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -670,8 +170,7 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        wpts_0: true
-        wpts_1: true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -724,26 +223,21 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz_default_plugins/Orbit
-      Distance: 14.96229362487793
+      Angle: 4.711999893188477
+      Class: rviz_default_plugins/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 2.5889477729797363
-        Y: -5.48875617980957
-        Z: -3.985992908477783
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Scale: 96.2419662475586
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 3.1415913105010986
+      Value: TopDownOrtho (rviz_default_plugins)
+      X: 2.686861276626587
+      Y: -5.428518295288086
     Saved: ~
 Window Geometry:
   Displays:

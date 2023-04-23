@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.executors import ExternalShutdownException
-from rclpy.node import Node
+from rclpy.node import Node, QoSProfile
 from ackermann_msgs.msg import AckermannDriveStamped
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
@@ -16,9 +16,10 @@ class MotorCommands(Node):
 
     def __init__(self):
         super().__init__("motor_driver")
-        self.command_subscription = self.create_subscription(AckermannDriveStamped,'cmd_ackermann',self.ackermann_callback,10)
-        self.speed_subscription = self.create_subscription(Odometry,'odom',self.odom_callback,10)
-        self.accel_subscription = self.create_subscription(Imu,'imu',self.accel_callback,10)
+        FMLCarQoS = QoSProfile(history =1,depth = 1,reliability =2,durability=2)
+        self.command_subscription = self.create_subscription(AckermannDriveStamped,'cmd_ackermann',self.ackermann_callback,FMLCarQoS)
+        self.speed_subscription = self.create_subscription(Odometry,'odom',self.odom_callback,FMLCarQoS)
+        self.accel_subscription = self.create_subscription(Imu,'imu',self.accel_callback,FMLCarQoS)
         self.command_subscription  # prevents unused variable warning
         self.speed_subscription
         # Sets Default Parameters
