@@ -6,6 +6,7 @@ class LTIController():
         self.waypoints = waypoints
         self.lookahead = ctrl_params.get("lookahead")
         self.v = ctrl_params.get("speed_setpoint") # Velocity Setpoint
+        self.max_steer = ctrl_params.get("max_steer")
 
         self.Gc_states = np.zeros((n_GcX,1))
         self.GcA = np.matrix(np.array(ctrl_params.get("GcA")).reshape(n_GcX,n_GcX))
@@ -54,6 +55,8 @@ class LTIController():
         new_Gc_states = self.GcA @ self.Gc_states + self.GcB @ lateral_error
         steering_angle = float(self.GcC @ self.Gc_states + self.GcD @ lateral_error)
 
-        self.Gc_states = new_Gc_states
+
+        if abs(steering_angle) < self.max_steer:                                # Attempting to prevent wind-up which occurs immediately with controller
+            self.Gc_states = new_Gc_states
         speed_cmd = self.v
         return steering_angle, speed_cmd, self.waypoints.x[nearest_waypoint_index], self.waypoints.y[nearest_waypoint_index]

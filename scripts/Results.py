@@ -7,7 +7,7 @@ import json, yaml
 
 MapYamlName = "lab_map.yaml"                                                                             
 WaypointsJsonName = "waypoints.json"  
-TestRunCSVName = "YoulaTest1mps.csv"
+TestRunCSVName = "PPTest1mps.csv"
 
 def rmsValue(arr, n):
     square = 0
