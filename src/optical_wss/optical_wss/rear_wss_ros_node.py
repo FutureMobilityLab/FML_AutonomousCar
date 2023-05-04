@@ -43,7 +43,7 @@ class RearWss(Node):
         self.get_logger().info('Arduino-Rpi connection complete.')
 
         # Begin sensor loop.
-        self.time_of_last_msg = self.get_clock().now().nanoseconds * 10e-9
+        self.time_of_last_msg = self.get_clock().now().nanoseconds * 1e-9
         self.wss_timer = self.create_timer(0.01, self.get_wss)
 
     def get_wss(self):
@@ -56,7 +56,7 @@ class RearWss(Node):
 
         # It is possible that the arduino does not send a message. So we handle
         # this with a timeout.
-        time_now = self.get_clock().now().nanoseconds * 10e-9
+        time_now = self.get_clock().now().nanoseconds * 1e-9
         # The first and last messages may be cutoff, but the middle messages
         # will not be.
         if len(msgs) < 3:
