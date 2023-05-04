@@ -68,6 +68,4 @@ void loop() {
   Serial.print(",");
   Serial.print("RR,");
   Serial.println(RRWheelSpeed);
-
-  delay(1); // delay 1 ms.
 }

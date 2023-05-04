@@ -22,6 +22,7 @@ class RearWss(Node):
         # Reset the input buffer to clear incomplete data.
         self.serial_connection.reset_input_buffer()
         time.sleep(0.5)  # sleep for half second for buffer to clear.
+        self.msg_buffer = ''
 
         self.wheel_radius = 0.057  # [m]
         self.track = 0.28  # [m]
@@ -44,13 +45,16 @@ class RearWss(Node):
 
         # Begin sensor loop.
         self.time_of_last_msg = self.get_clock().now().nanoseconds * 1e-9
-        self.wss_timer = self.create_timer(0.01, self.get_wss)
+        self.wss_timer = self.create_timer(0.02, self.get_wss)
 
     def get_wss(self):
         self.get_logger().info(
             f'InWaiting:{self.serial_connection.in_waiting}')
         # Read all messages, they are separated by new line character.
-        msgs = self.serial_connection.read_all().decode('utf-8').split('\n')
+        self.msg_buffer += self.serial_connection.read_all().decode('utf-8')
+        if len(self.msg_buffer) > 50:
+            self.msg_buffer = self.msg_buffer[len(self.msg_buffer) - 50:]
+        msgs = self.msg_buffer.split('\n')
         self.get_logger().info(
             f'Read:{msgs}, InWaiting:{self.serial_connection.in_waiting}')
 
