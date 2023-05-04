@@ -23,6 +23,7 @@ void setup() {
   RearLeftState = false;
   RearRightState = false;
   RLWheelSpeed = 0.;
+  delay(1000);
   Serial.println("Setup Complete");
 }
 

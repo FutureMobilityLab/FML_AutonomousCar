@@ -43,31 +43,48 @@ class RearWss(Node):
         self.get_logger().info('Arduino-Rpi connection complete.')
 
         # Begin sensor loop.
+        self.time_of_last_msg = self.get_clock().now()
         self.wss_timer = self.create_timer(0.01, self.get_wss)
 
     def get_wss(self):
         self.get_logger().info(
             f'InWaiting:{self.serial_connection.in_waiting}')
-        lines = self.serial_connection.readlines(10)
+        # Read all messages, they are separated by new line character.
+        msgs = self.serial_connection.read_all().decode('utf-8').split('\n')
+
+        # It is possible that the arduino does not send a message. So we handle
+        # this with a timeout.
+        time_now = self.get_clock().now()
+        # The first and last messages may be cutoff, but the middle messages
+        # will not be.
+        if len(msgs) < 3:
+            if time_now - self.time_of_last_msg < 1:
+                raise IOError
+        else:
+            self.time_of_last_msg = time_now
+
         self.get_logger().info(
-            f'Read: {len(lines)}, InWaiting:{self.serial_connection.in_waiting}')
-        parsed_lines = [l.decode('utf-8').rstrip().split(',') for l in lines]
-        self.get_logger().info(f'stripped lines: {len(parsed_lines)}')
-        has_rl = False
-        has_rr = False
-        for line in reversed(parsed_lines):
-            if line[0] == 'RL' and not has_rl:
-                self.rl_wss = float(line[1])*self.wheel_radius
-                self.get_logger().info(f'RL: {self.rl_wss}')
-                has_rl = True
-            if line[0] == 'RR' and not has_rr:
-                self.rr_wss = float(line[1])*self.wheel_radius
-                self.get_logger().info(f'RR: {self.rr_wss}')
-                has_rr = True
-            if has_rr and has_rl:
-                self.get_logger().info(f'Got both rr and rl messages.')
-                break
+            f'Read:{lines}, InWaiting:{self.serial_connection.in_waiting}')
+        # It is assumed the last messages are the most recent.
+        for msg in reversed(msgs):
+            # The msgs are not guaranteed to have both RR and RL. Some of the
+            # messages are cutoff. So we filter those out.
+            if "RR" not in msg and "RL" not in msg:
+                continue
+            lines = msg.rstrip().split(',')
+            # If we have a full message, the first line should be RL.
+            for line in lines:
+                if line[0] == 'RL':
+                    self.rl_wss = float(line[1])*self.wheel_radius
+                    self.rr_wss = float(line[3])*self.wheel_radius
+                    self.get_logger().info(f'RL: {self.rl_wss}')
+                    self.get_logger().info(f'RR: {self.rr_wss}')
+                else:
+                    break
         self.get_logger().info(f'Exited loop. Creating twist message.')
+
+        # It is not guaranteed that msgs will contain messages. Publish the
+        # velocity anyway.
         twist = TwistStamped()
         twist.header.stamp = self.get_clock().now().to_msg()
         twist.twist.linear.x = (self.rr_wss + self.rl_wss) / 2
