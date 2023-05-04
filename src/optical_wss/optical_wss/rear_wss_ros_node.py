@@ -52,7 +52,7 @@ class RearWss(Node):
         # Read all messages, they are separated by new line character.
         msgs = self.serial_connection.read_all().decode('utf-8').split('\n')
         self.get_logger().info(
-            f'Read:{msg}, InWaiting:{self.serial_connection.in_waiting}')
+            f'Read:{msgs}, InWaiting:{self.serial_connection.in_waiting}')
 
         # It is possible that the arduino does not send a message. So we handle
         # this with a timeout.
