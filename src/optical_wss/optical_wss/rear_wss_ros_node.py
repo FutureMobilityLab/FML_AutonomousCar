@@ -60,7 +60,8 @@ class RearWss(Node):
         # The first and last messages may be cutoff, but the middle messages
         # will not be.
         if len(msgs) < 3:
-            if time_now - self.time_of_last_msg < 1:
+            self.get_logger().info(f'time:{time_now}')
+            if time_now - self.time_of_last_msg < 1.:
                 raise IOError
         else:
             self.time_of_last_msg = time_now
