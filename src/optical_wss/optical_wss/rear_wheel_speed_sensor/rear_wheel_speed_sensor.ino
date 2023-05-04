@@ -41,8 +41,6 @@ void loop() {
     RearLeftStartTime = CurrentTime;
     // Compute wheel speed as rad/s.
     RLWheelSpeed = RADPERTICK / ElapsedTime * 1E3;
-    Serial.print("RL,");
-    Serial.println(RLWheelSpeed);
     RearLeftState = RearLeftInterrupted;
   } else if (CurrentTime - RearLeftStartTime > MAXTIME) {
     RearLeftStartTime = CurrentTime;

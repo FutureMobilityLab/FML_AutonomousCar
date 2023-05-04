@@ -50,20 +50,13 @@ class RearWss(Node):
     def get_wss(self):
         self.get_logger().info(
             f'InWaiting:{self.serial_connection.in_waiting}')
-        # Read all messages, they are separated by new line character.
-        self.msg_buffer += self.serial_connection.read_all().decode('utf-8')
-        if len(self.msg_buffer) > 50:
-            self.msg_buffer = self.msg_buffer[len(self.msg_buffer) - 50:]
-        msgs = self.msg_buffer.split('\n')
-        self.get_logger().info(
-            f'Read:{msgs}, InWaiting:{self.serial_connection.in_waiting}')
-
+        new_msg = self.serial_connection.read_all().decode('utf-8')
         # It is possible that the arduino does not send a message. So we handle
         # this with a timeout.
         time_now = self.get_clock().now().nanoseconds * 1e-9
         # The first and last messages may be cutoff, but the middle messages
         # will not be.
-        if len(msgs) < 3:
+        if len(new_msg) < 15:
             self.get_logger().info(f'time:{time_now}')
             if time_now - self.time_of_last_msg > 1.:
                 self.get_logger().info(
@@ -71,6 +64,14 @@ class RearWss(Node):
                 raise IOError
         else:
             self.time_of_last_msg = time_now
+        self.msg_buffer += new_msg
+
+        # Keep only the last 50 chars because they are newest.
+        if len(self.msg_buffer) > 50:
+            self.msg_buffer = self.msg_buffer[len(self.msg_buffer) - 50:]
+        msgs = self.msg_buffer.split('\n')
+        self.get_logger().info(
+            f'Read:{msgs}, InWaiting:{self.serial_connection.in_waiting}')
 
         # It is assumed the last messages are the most recent.
         for msg in reversed(msgs):
@@ -79,15 +80,15 @@ class RearWss(Node):
             if "RR" not in msg and "RL" not in msg:
                 continue
             lines = msg.rstrip().split(',')
-            # If we have a full message, the first line should be RL.
+            # A full message will have 4 lines.
+            if len(lines) < 4:
+                continue
             for line in lines:
                 if line[0] == 'RL':
                     self.rl_wss = float(line[1])*self.wheel_radius
                     self.rr_wss = float(line[3])*self.wheel_radius
                     self.get_logger().info(f'RL: {self.rl_wss}')
                     self.get_logger().info(f'RR: {self.rr_wss}')
-                else:
-                    break
         self.get_logger().info(f'Exited loop. Creating twist message.')
 
         # It is not guaranteed that msgs will contain messages. Publish the
