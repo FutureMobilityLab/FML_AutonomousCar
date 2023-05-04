@@ -18,6 +18,7 @@ class RearWss(Node):
         super().__init__('rear_wss')
         # Setup serial connection with 9600 baud rate and a timeout of 1 sec.
         self.serial_connection = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+        time.sleep(2)  # wait for connection to be established.
         # Reset the input buffer to clear incomplete data.
         self.serial_connection.reset_input_buffer()
         time.sleep(0.5)  # sleep for half second for buffer to clear.
@@ -45,8 +46,11 @@ class RearWss(Node):
         self.wss_timer = self.create_timer(0.01, self.get_wss)
 
     def get_wss(self):
+        self.get_logger().info(
+            f'InWaiting:{self.serial_connection.in_waiting}')
         lines = self.serial_connection.readlines(10)
-        self.get_logger().info(f'Read from serial connection: {len(lines)}')
+        self.get_logger().info(
+            f'Read: {len(lines)}, InWaiting:{self.serial_connection.in_waiting}')
         parsed_lines = [l.decode('utf-8').rstrip().split(',') for l in lines]
         self.get_logger().info(f'stripped lines: {len(parsed_lines)}')
         has_rl = False
@@ -71,6 +75,8 @@ class RearWss(Node):
         self.twist_publisher.publish(twist)
         self.get_logger().info(f'Finished publishing, clearing connection.')
         self.serial_connection.flush()
+        self.get_logger().info(
+            f'Finished flush: InWaiting:{self.serial_connection.in_waiting}')
 
 
 def main(args=None):
