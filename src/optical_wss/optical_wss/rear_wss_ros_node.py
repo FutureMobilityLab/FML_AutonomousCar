@@ -83,6 +83,9 @@ class RearWss(Node):
             # A full message will have 4 lines.
             if len(lines) < 4:
                 continue
+            # A full message will not have any empty lines.
+            if not all([len(l) > 0 for l in lines]):
+                continue
             self.rl_wss = float(lines[1])*self.wheel_radius
             self.rr_wss = float(lines[3])*self.wheel_radius
             self.get_logger().info(f'RL: {self.rl_wss}')
