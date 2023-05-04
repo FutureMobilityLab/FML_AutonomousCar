@@ -83,12 +83,10 @@ class RearWss(Node):
             # A full message will have 4 lines.
             if len(lines) < 4:
                 continue
-            for line in lines:
-                if line[0] == 'RL':
-                    self.rl_wss = float(line[1])*self.wheel_radius
-                    self.rr_wss = float(line[3])*self.wheel_radius
-                    self.get_logger().info(f'RL: {self.rl_wss}')
-                    self.get_logger().info(f'RR: {self.rr_wss}')
+            self.rl_wss = float(lines[1])*self.wheel_radius
+            self.rr_wss = float(lines[3])*self.wheel_radius
+            self.get_logger().info(f'RL: {self.rl_wss}')
+            self.get_logger().info(f'RR: {self.rr_wss}')
         self.get_logger().info(f'Exited loop. Creating twist message.')
 
         # It is not guaranteed that msgs will contain messages. Publish the
