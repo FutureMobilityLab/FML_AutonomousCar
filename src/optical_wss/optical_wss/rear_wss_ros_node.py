@@ -24,6 +24,11 @@ class RearWss(Node):
 
         self.wheel_radius = 0.057  # [m]
         self.track = 0.28  # [m]
+        # Store previous values between publications. This is like a zero-order
+        # hold. The arduino is not guaranteed to publish both sensor readings
+        # everytime.
+        self.rl_wss = 0  # [m/s]
+        self.rr_wss = 0  # [m/s]
 
         self.twist_publisher = self.create_publisher(
             TwistStamped, 'rear_wss', 10)
@@ -43,25 +48,26 @@ class RearWss(Node):
         lines = self.serial_connection.readlines(10)
         self.get_logger().info(f'Read from serial connection: {len(lines)}')
         parsed_lines = [l.decode('utf-8').rstrip().split(',') for l in lines]
-        self.get_logger().info(f'stripped lines: {len(lines)}')
+        self.get_logger().info(f'stripped lines: {len(parsed_lines)}')
         has_rl = False
         has_rr = False
-        for line in parsed_lines.reverse():
+        for line in reversed(parsed_lines):
             if line[0] == 'RL' and not has_rl:
-                rl_wss = float(line[1])*self.wheel_radius
-                self.get_logger().info(f'RL: {rl_wss}')
+                self.rl_wss = float(line[1])*self.wheel_radius
+                self.get_logger().info(f'RL: {self.rl_wss}')
                 has_rl = True
             if line[0] == 'RR' and not has_rr:
-                rr_wss = float(line[1])*self.wheel_radius
-                self.get_logger().info(f'RR: {rl_wss}')
+                self.rr_wss = float(line[1])*self.wheel_radius
+                self.get_logger().info(f'RR: {self.rr_wss}')
                 has_rr = True
             if has_rr and has_rl:
+                self.get_logger().info(f'Got both rr and rl messages.')
                 break
         self.get_logger().info(f'Exited loop. Creating twist message.')
         twist = TwistStamped()
         twist.header.stamp = self.get_clock().now().to_msg()
-        twist.twist.linear.x = (rr_wss + rl_wss) / 2
-        twist.twist.angular.z = (rr_wss - rl_wss) / self.track
+        twist.twist.linear.x = (self.rr_wss + self.rl_wss) / 2
+        twist.twist.angular.z = (self.rr_wss - self.rl_wss) / self.track
         self.twist_publisher.publish(twist)
         self.get_logger().info(f'Finished publishing, clearing connection.')
         self.serial_connection.flush()
