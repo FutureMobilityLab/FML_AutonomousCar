@@ -61,7 +61,7 @@ class RearWss(Node):
         # will not be.
         if len(msgs) < 3:
             self.get_logger().info(f'time:{time_now}')
-            if time_now - self.time_of_last_msg < 1.:
+            if time_now - self.time_of_last_msg > 1.:
                 self.get_logger().info(
                     f'time:{time_now - self.time_of_last_msg}')
                 raise IOError
