@@ -90,6 +90,7 @@ class RearWss(Node):
             self.rr_wss = float(lines[3])*self.wheel_radius
             self.get_logger().info(f'RL: {self.rl_wss}')
             self.get_logger().info(f'RR: {self.rr_wss}')
+            break
         self.get_logger().info(f'Exited loop. Creating twist message.')
 
         # It is not guaranteed that msgs will contain messages. Publish the

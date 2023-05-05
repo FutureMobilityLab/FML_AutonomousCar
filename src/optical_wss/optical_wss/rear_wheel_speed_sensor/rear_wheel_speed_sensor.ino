@@ -62,8 +62,8 @@ void loop() {
   // Communicate right and left wheel speed at the same time. 
   // Note: some of the wheel speeds are at most MAXTIME ms old.
   Serial.print("RL,");
-  Serial.print(RLWheelSpeed);
+  Serial.print(RLWheelSpeed, 4);
   Serial.print(",");
   Serial.print("RR,");
-  Serial.println(RRWheelSpeed);
+  Serial.println(RRWheelSpeed, 4);
 }
