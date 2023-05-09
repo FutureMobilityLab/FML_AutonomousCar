@@ -1,63 +1,58 @@
 // Code for an arduino nano to read from the rear wheel speed sensors. The sensors are IR optical
 // interruptors. The serial connection is intended to be read by a raspberry pi using the UART
 // protocol. For more information see: https://roboticsbackend.com/raspberry-pi-arduino-serial-communication/#Arduino_code
-#define RL_WSS_PIN A0
-#define RR_WSS_PIN A1
+#define RL_WSS_PIN 12
+#define RR_WSS_PIN 13
 
-bool RearLeftState;
-bool RearRightState;
-unsigned long RearLeftStartTime;
-unsigned long RearRightStartTime;
-float RLWheelSpeed;
-float RRWheelSpeed;
+int RearLeftState; // 1 for HIGH, 0 for LOW
+int RearRightState; // 1 for HIGH, 0 for LOW
+unsigned long startTime;
 // Assume there are 20 slots in the disk and each tick is either a rise or fall of the interrupt.
 const float RADPERTICK = 2*PI / 40;
-const float TRACK = 0.28; // track width [m]
-const int MAXTIME = 100; // maximum time to wait till assuming zero velocity [ms]
+const unsigned long SAMPLETIME = 100000; // [us]
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  RearLeftStartTime = millis();
-  RearRightStartTime = millis();
-  RearLeftState = false;
-  RearRightState = false;
-  RLWheelSpeed = 0.;
-  delay(1000);
+  Serial.begin(115200);
+  delay(100);
+  RearLeftState = 0;
+  RearRightState = 0;
+  startTime = micros();
+  pinMode(RL_WSS_PIN, INPUT);
+  pinMode(RR_WSS_PIN, INPUT);
   Serial.println("Setup Complete");
 }
 
+// To make this loop run fast call Serial.println() as little as possible.
+// analogRead runs about 16 times slower than digitalRead. See if we can use 
+// digitalRead on the interruptors.
+
 void loop() {
-  // Read from IR interruptors.
-  int RearLeft = analogRead(RL_WSS_PIN);
-  bool RearLeftInterrupted = RearLeft < 255;
-  int RearRight = analogRead(RR_WSS_PIN);
-  bool RearRightInterrupted = RearRight < 255;
-  unsigned long CurrentTime = millis();
+  unsigned long now = micros();
+  int RLWheelStateChanges = 0;
+  int RRWheelStateChanges = 0;
 
-  // If the rear left has changed state.
-  if (RearLeftState != RearLeftInterrupted) {
-    unsigned long ElapsedTime = CurrentTime - RearLeftStartTime;
-    RearLeftStartTime = CurrentTime;
-    // Compute wheel speed as rad/s.
-    RLWheelSpeed = RADPERTICK / ElapsedTime * 1E3;
-    RearLeftState = RearLeftInterrupted;
-  } else if (CurrentTime - RearLeftStartTime > MAXTIME) {
-    RearLeftStartTime = CurrentTime;
-    RLWheelSpeed = 0.0;
-  }
+  // Read IR interruptors until sample time.
+  while (now - startTime < SAMPLETIME) {
+    // Get state of IR interruptors.
+    int RearLeftNewState = digitalRead(RL_WSS_PIN);
+    int RearRightNewState = digitalRead(RR_WSS_PIN);
 
-  // If the rear right has changed state.
-  if (RearRightState != RearRightInterrupted) {
-    unsigned long ElapsedTime = CurrentTime - RearRightStartTime;
-    RearRightStartTime = CurrentTime;
-    // Compute wheel speed as rad/s.
-    RRWheelSpeed = RADPERTICK / ElapsedTime * 1E3;
-    RearRightState = RearRightInterrupted;
-  } else if (CurrentTime - RearRightStartTime > MAXTIME) {
-    RearRightStartTime = CurrentTime;
-    RRWheelSpeed = 0.0;
+    // If the rear left has changed state.
+    if (RearLeftState != RearLeftNewState) {
+      RLWheelStateChanges += 1;
+      RearLeftState = RearLeftNewState;
+    }
+
+    // If the rear right has changed state.
+    if (RearRightState != RearRightNewState) {
+      RRWheelStateChanges += 1;
+      RearRightState = RearRightNewState;
+    }
+    now = micros();
   }
+  float RLWheelSpeed = (float)RLWheelStateChanges * RADPERTICK / SAMPLETIME * 1E6;
+  float RRWheelSpeed = (float)RRWheelStateChanges * RADPERTICK / SAMPLETIME * 1E6;
 
   // Communicate right and left wheel speed at the same time. 
   // Note: some of the wheel speeds are at most MAXTIME ms old.
@@ -66,4 +61,7 @@ void loop() {
   Serial.print(",");
   Serial.print("RR,");
   Serial.println(RRWheelSpeed, 4);
+
+  // The sample rate should not be influenced by the delay in Serial.print.
+  startTime = now;
 }

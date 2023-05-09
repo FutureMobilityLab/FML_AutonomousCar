@@ -17,11 +17,10 @@ class RearWss(Node):
     def __init__(self):
         super().__init__('rear_wss')
         # Setup serial connection with 9600 baud rate and a timeout of 1 sec.
-        self.serial_connection = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
-        time.sleep(2)  # wait for connection to be established.
+        self.serial_connection = serial.Serial(
+            '/dev/ttyACM0', 115200, timeout=1)
         # Reset the input buffer to clear incomplete data.
         self.serial_connection.reset_input_buffer()
-        time.sleep(0.5)  # sleep for half second for buffer to clear.
         self.msg_buffer = ''
 
         self.wheel_radius = 0.057  # [m]
@@ -45,7 +44,7 @@ class RearWss(Node):
 
         # Begin sensor loop.
         self.time_of_last_msg = self.get_clock().now().nanoseconds * 1e-9
-        self.wss_timer = self.create_timer(0.02, self.get_wss)
+        self.wss_timer = self.create_timer(0.1, self.get_wss)
 
     def get_wss(self):
         self.get_logger().info(
