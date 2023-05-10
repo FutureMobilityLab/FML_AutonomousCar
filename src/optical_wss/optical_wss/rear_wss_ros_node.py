@@ -47,8 +47,6 @@ class RearWss(Node):
         self.wss_timer = self.create_timer(0.1, self.get_wss)
 
     def get_wss(self):
-        self.get_logger().info(
-            f'InWaiting:{self.serial_connection.in_waiting}')
         new_msg = self.serial_connection.read_all().decode('utf-8')
         # It is possible that the arduino does not send a message. So we handle
         # this with a timeout.
@@ -56,9 +54,8 @@ class RearWss(Node):
         # The first and last messages may be cutoff, but the middle messages
         # will not be.
         if len(new_msg) < 15:
-            self.get_logger().info(f'time:{time_now}')
             if time_now - self.time_of_last_msg > 1.:
-                self.get_logger().info(
+                self.get_logger().error(
                     f'time:{time_now - self.time_of_last_msg}')
                 raise IOError
         else:
@@ -69,8 +66,6 @@ class RearWss(Node):
         if len(self.msg_buffer) > 50:
             self.msg_buffer = self.msg_buffer[len(self.msg_buffer) - 50:]
         msgs = self.msg_buffer.split('\n')
-        self.get_logger().info(
-            f'Read:{msgs}, InWaiting:{self.serial_connection.in_waiting}')
 
         # It is assumed the last messages are the most recent.
         for msg in reversed(msgs):
@@ -87,10 +82,7 @@ class RearWss(Node):
                 continue
             self.rl_wss = float(lines[1])*self.wheel_radius
             self.rr_wss = float(lines[3])*self.wheel_radius
-            self.get_logger().info(f'RL: {self.rl_wss}')
-            self.get_logger().info(f'RR: {self.rr_wss}')
             break
-        self.get_logger().info(f'Exited loop. Creating twist message.')
 
         # It is not guaranteed that msgs will contain messages. Publish the
         # velocity anyway.
@@ -99,10 +91,7 @@ class RearWss(Node):
         twist.twist.linear.x = (self.rr_wss + self.rl_wss) / 2
         twist.twist.angular.z = (self.rr_wss - self.rl_wss) / self.track
         self.twist_publisher.publish(twist)
-        self.get_logger().info(f'Finished publishing, clearing connection.')
         self.serial_connection.flush()
-        self.get_logger().info(
-            f'Finished flush: InWaiting:{self.serial_connection.in_waiting}')
 
 
 def main(args=None):
