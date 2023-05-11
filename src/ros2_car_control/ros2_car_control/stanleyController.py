@@ -1,5 +1,6 @@
 # from controller import Controller
 import numpy as np
+import time
 
 class StanleyController():
     def __init__(self,waypoints,ctrl_params):
@@ -19,9 +20,13 @@ class StanleyController():
 
         front_axle_x = x + self.L/2.0 * np.cos(yaw)
         front_axle_y = y + self.L/2.0 * np.sin(yaw)
+        now = time.time()
+        print(f"Getting closest waypoint:{now}")
         for i in range(len(self.waypoints.x)):
             distance_to_waypoint.append(np.sqrt((front_axle_x - self.waypoints.x[i])**2 + (front_axle_y - self.waypoints.y[i])**2))
             nearest_waypoint_index = distance_to_waypoint.index(min(distance_to_waypoint))
+        print(f"Done getting closest waypoint, took: {time.time() - now}s")
+        now = time.time()
 
         yaw_ref = self.waypoints.psi[nearest_waypoint_index]
         body_to_ref = np.array([front_axle_x - self.waypoints.x[nearest_waypoint_index], front_axle_y - self.waypoints.y[nearest_waypoint_index],0.0])
@@ -48,5 +53,6 @@ class StanleyController():
         if self.debug_bool == True:
             print('Psi: '+str(yaw_term)+'\tTangent Term: '+str(tangent_term))
             print('Stanley Output: '+str(steering_angle))
+        print(f'Done computing stanley output, took:{time.time() - now}s')
 
         return steering_angle, speed_cmd, self.waypoints.x[nearest_waypoint_index], self.waypoints.y[nearest_waypoint_index]
