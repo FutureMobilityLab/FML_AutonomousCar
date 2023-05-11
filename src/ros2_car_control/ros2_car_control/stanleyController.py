@@ -1,5 +1,6 @@
 # from controller import Controller
 import numpy as np
+import time
 
 class StanleyController():
     def __init__(self,waypoints,ctrl_params):
@@ -17,20 +18,23 @@ class StanleyController():
     def get_commands(self,x,y,yaw,v):
         distance_to_waypoint = []
 
-        front_axle_x = x + self.L/2.0 * np.cos(yaw)
-        front_axle_y = y + self.L/2.0 * np.sin(yaw)
-        for i in range(len(self.waypoints.x)):
-            distance_to_waypoint.append(np.sqrt((front_axle_x - self.waypoints.x[i])**2 + (front_axle_y - self.waypoints.y[i])**2))
-            nearest_waypoint_index = distance_to_waypoint.index(min(distance_to_waypoint))
+        front_axle = np.array([[x + self.L/2.0 * np.cos(yaw), y + self.L/2.0 * np.sin(yaw)]])
+        now = time.time()
+        print(f"Getting closest waypoint:{now}")
+        waypoints = np.array([self.waypoints.x, self.waypoints.y]).T
+        dist = np.linalg.norm(front_axle - waypoints,axis=0)
+        nearest_waypoint_index = np.argmin(dist)
+        print(f"Done getting closest waypoint, took: {time.time() - now}s")
+        now = time.time()
 
         yaw_ref = self.waypoints.psi[nearest_waypoint_index]
-        body_to_ref = np.array([front_axle_x - self.waypoints.x[nearest_waypoint_index], front_axle_y - self.waypoints.y[nearest_waypoint_index],0.0])
+        body_to_ref = np.array([front_axle[0,0] - self.waypoints.x[nearest_waypoint_index], front_axle[0,1] - self.waypoints.y[nearest_waypoint_index],0.0])
         path_vector = np.array([np.cos(yaw_ref), np.sin(yaw_ref),0.0])
-        crosstrack_error = distance_to_waypoint[nearest_waypoint_index]
+        crosstrack_error = dist[nearest_waypoint_index]
         error_sign = np.sign(np.cross(body_to_ref,path_vector)[2])
         
         if self.debug_bool == True:
-            print('Pose: '+str(front_axle_x)+' '+str(front_axle_y)+'\tNearest Points: '+str(self.waypoints.x[nearest_waypoint_index])+' '+str(self.waypoints.y[nearest_waypoint_index]))
+            print('Pose: '+str(front_axle[0,0])+' '+str(front_axle[0,1])+'\tNearest Points: '+str(self.waypoints.x[nearest_waypoint_index])+' '+str(self.waypoints.y[nearest_waypoint_index]))
             print('Crosstrack Error:'+str(crosstrack_error)+'\tCrosstrack Vector:'+str(path_vector))
         # Stanley Control law.
         yaw_term = yaw_ref - yaw
@@ -48,5 +52,6 @@ class StanleyController():
         if self.debug_bool == True:
             print('Psi: '+str(yaw_term)+'\tTangent Term: '+str(tangent_term))
             print('Stanley Output: '+str(steering_angle))
+        print(f'Done computing stanley output, took:{time.time() - now}s')
 
         return steering_angle, speed_cmd, self.waypoints.x[nearest_waypoint_index], self.waypoints.y[nearest_waypoint_index]

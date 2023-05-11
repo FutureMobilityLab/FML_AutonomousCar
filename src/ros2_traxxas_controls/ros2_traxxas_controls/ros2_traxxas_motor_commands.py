@@ -3,6 +3,7 @@ from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node, QoSProfile
 from ackermann_msgs.msg import AckermannDriveStamped
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import Imu
 from board import SCL, SDA
 import busio
@@ -10,16 +11,22 @@ from adafruit_motor import servo
 from adafruit_pca9685 import PCA9685
 import numpy as np
 
-boundedSignal = lambda x, l, u: l if x < l else u if x > u else x
+
+def boundedSignal(x, l, u): return l if x < l else u if x > u else x
+
 
 class MotorCommands(Node):
 
     def __init__(self):
         super().__init__("motor_driver")
-        FMLCarQoS = QoSProfile(history =1,depth = 1,reliability =2,durability=2)
-        self.command_subscription = self.create_subscription(AckermannDriveStamped,'cmd_ackermann',self.ackermann_callback,FMLCarQoS)
-        self.speed_subscription = self.create_subscription(Odometry,'odom',self.odom_callback,FMLCarQoS)
-        self.accel_subscription = self.create_subscription(Imu,'imu',self.accel_callback,FMLCarQoS)
+        FMLCarQoS = QoSProfile(history=1, depth=1, reliability=2, durability=2)
+        self.command_subscription = self.create_subscription(
+            AckermannDriveStamped, 'cmd_ackermann', self.ackermann_callback,
+            FMLCarQoS)
+        self.speed_subscription = self.create_subscription(
+            TwistStamped, 'rear_wss', self.odom_callback, FMLCarQoS)
+        self.accel_subscription = self.create_subscription(
+            Imu, 'imu', self.accel_callback, FMLCarQoS)
         self.command_subscription  # prevents unused variable warning
         self.speed_subscription
         # Sets Default Parameters
@@ -41,7 +48,8 @@ class MotorCommands(Node):
         self.max_steer_angle = self.get_parameter("max_steer_angle").value
         self.max_accel = self.get_parameter("max_accel").value
         # Unchanging Parameters
-        self.throttle_pcnt_increment = (self.throttle_full-self.throttle_idle)/100
+        self.throttle_pcnt_increment = (
+            self.throttle_full-self.throttle_idle)/100
         self.errorIntegrated = 0
         tempTimeStamp = self.get_clock().now()
         tempTimemsg = tempTimeStamp.to_msg()
@@ -55,13 +63,13 @@ class MotorCommands(Node):
         Ki: {self.Ki}
         Kt: {self.Kt}""")
 
-    def getTimeDiff(self,timestamp):
+    def getTimeDiff(self, timestamp):
         timeNow = timestamp.sec + timestamp.nanosec * 10**-9
         timediff = timeNow - self.timeLastLooped
         self.timeLastLooped = timeNow
         return (timediff)
-    
-    def LoopPID(self,AckermannCMD):
+
+    def LoopPID(self, AckermannCMD):
         error = AckermannCMD.drive.speed - self.v
         steerangle = AckermannCMD.drive.steering_angle
         integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
@@ -70,12 +78,15 @@ class MotorCommands(Node):
             self.get_logger().info(f"""***INTEGRATOR TIMEOUT - RESETTING INTEGRAL***""")
         else:
             self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
-        ThrottleDesired = self.Kp * error + self.Ki * self.errorIntegrated + self.Kt * abs(steerangle)
+        ThrottleDesired = self.Kp * error + self.Ki * \
+            self.errorIntegrated + self.Kt * abs(steerangle)
         if self.debugBool == True:
-            self.get_logger().info(f"""Measured Velocity: {self.v}       Error: {error}    Throttle Out: {ThrottleDesired}""")
+            self.get_logger().info(
+                f"""Measured Velocity: {self.v}\tError: {error}\tThrottle Out: {ThrottleDesired}""")
 
-        ThrottleRegisterVal = self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired ##converts to register value ()
-        
+        ThrottleRegisterVal = self.throttle_idle + self.throttle_pcnt_increment * \
+            ThrottleDesired  # converts to register value ()
+
         if ThrottleDesired > 40:
             self.timeoutCount += 1
             if self.timeoutCount > 20:
@@ -93,17 +104,21 @@ class MotorCommands(Node):
             self.timeoutCount += 1
             if self.timeoutCount > 20:
                 ThrottleRegisterVal = self.throttle_idle
-                self.get_logger().info(f"*** THROTTLE ACTIVE BUT NO MOTION - ASSUMED COLLISION - SETTING IDLE AND QUITTING")
+                self.get_logger().info(
+                    f"*** THROTTLE ACTIVE BUT NO MOTION - ASSUMED COLLISION - SETTING IDLE AND QUITTING")
                 raise SystemExit
-            
+
         return ThrottleRegisterVal
-    
+
     def CMDtoMotor(self):
         i2c = busio.I2C(SCL, SDA)
         pca = PCA9685(i2c)
         pca.frequency = 50
         TraxxasServo = servo.Servo(pca.channels[0])
-        steeringClipped = boundedSignal(self.ackermann_cmd.drive.steering_angle,-self.max_steer_angle,self.max_steer_angle)
+        steeringClipped = boundedSignal(
+            self.ackermann_cmd.drive.steering_angle,
+            -self.max_steer_angle,
+            self.max_steer_angle)
         TraxxasServo.angle = (steeringClipped * 180.0 / 3.14159265) + 90.0
         pca.deinit()
 
@@ -111,22 +126,23 @@ class MotorCommands(Node):
         pca = PCA9685(i2c)
         pca.frequency = 50
         ThrottleCMD = self.LoopPID(self.ackermann_cmd)
-        ThrottleCMDClipped = int(boundedSignal(ThrottleCMD,self.throttle_revr,self.throttle_full))
+        ThrottleCMDClipped = int(boundedSignal(
+            ThrottleCMD, self.throttle_revr, self.throttle_full))
         pca.channels[1].duty_cycle = ThrottleCMDClipped
         pca.deinit()
         # self.get_logger().info(f"""Throttle Command: {ThrottleCMDClipped}   Steering Command: {TraxxasServo.angle}""")
 
+    def odom_callback(self, msg):
+        self.v = msg.twist.linear.x
 
-    def odom_callback(self,msg):
-        self.v = msg.twist.twist.linear.x
-
-    def accel_callback(self,msg):
+    def accel_callback(self, msg):
         self.a = msg.linear_acceleration.x
 
-    def ackermann_callback(self,ackermann_cmd):
+    def ackermann_callback(self, ackermann_cmd):
         self.ackermann_cmd = ackermann_cmd
         self.CMDtoMotor()
-        
+
+
 def main(args=None):
     rclpy.init(args=args)
 
@@ -152,12 +168,12 @@ def main(args=None):
     pca.frequency = 50
     pca.channels[1].duty_cycle = motor_commands.throttle_idle
     pca.deinit()
-    rclpy.logging.get_logger("EXITCMD").info(f"""FINAL THROTTLE: {motor_commands.throttle_idle}   FINAL STEER: {TraxxasServo.angle}""")
+    rclpy.logging.get_logger("EXITCMD").info(
+        f"""FINAL THROTTLE: {motor_commands.throttle_idle}   FINAL STEER: {TraxxasServo.angle}""")
     rclpy.logging.get_logger("Quitting Motor Controller Node").info("Done")
     motor_commands.destroy_node()
     rclpy.try_shutdown()
 
-    
 
 if __name__ == '__main__':
     main()

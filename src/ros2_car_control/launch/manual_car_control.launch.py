@@ -3,8 +3,21 @@ from launch.substitutions import LaunchConfiguration
 import launch_ros
 import os
 
+
 def generate_launch_description():
-    trxs_pkg_share = launch_ros.substitutions.FindPackageShare(package='ros2_traxxas_controls').find('ros2_traxxas_controls')
+    # For finding yaml config files for optical wss package.
+    wss_pkg_share = launch_ros.substitutions.FindPackageShare(
+        package='optical_wss').find('optical_wss')
+    # For finding yaml config files for traxxas controls package.
+    trxs_pkg_share = launch_ros.substitutions.FindPackageShare(
+        package='ros2_traxxas_controls').find('ros2_traxxas_controls')
+
+    optical_wss_node = launch_ros.actions.Node(
+        package='optical_wss',
+        executable='optical_wss',
+        name='optical_wss',
+        parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
+    )
 
     traxxas_driver_node = launch_ros.actions.Node(
         package='ros2_traxxas_controls',
@@ -12,11 +25,12 @@ def generate_launch_description():
         name='motor_driver',
         output='screen',
         parameters=[os.path.join(trxs_pkg_share, 'config/motor_driver.yaml'),
-            {'use_sim_time': LaunchConfiguration('use_sim_time')}]
+                    {'use_sim_time': LaunchConfiguration('use_sim_time')}]
     )
 
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='use_sim_time', default_value='False',
-                                            description='Flag to enable use_sim_time'),
+                                             description='Flag to enable use_sim_time'),
+        optical_wss_node,
         traxxas_driver_node,
     ])
