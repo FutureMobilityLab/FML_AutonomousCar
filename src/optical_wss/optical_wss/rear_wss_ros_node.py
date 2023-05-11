@@ -44,7 +44,7 @@ class RearWss(Node):
 
         # Begin sensor loop.
         self.time_of_last_msg = self.get_clock().now().nanoseconds * 1e-9
-        self.wss_timer = self.create_timer(0.1, self.get_wss)
+        self.wss_timer = self.create_timer(0.05, self.get_wss)
 
     def get_wss(self):
         new_msg = self.serial_connection.read_all().decode('utf-8')
