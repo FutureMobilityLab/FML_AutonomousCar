@@ -181,7 +181,6 @@ class Controller(Node):
     def pose_hist(self):
         self.pose_markers.markers = []
         now = self.get_clock().now().nanoseconds * 10**-9
-        self.get_logger().info(f'Iterating through pose history:{now}')
         for i in range(len(self.pose_hist_array_x)):
             marker_out = Marker()
             marker_out.header.frame_id = "map"
@@ -206,10 +205,10 @@ class Controller(Node):
             marker_out.lifetime = Duration(seconds=1).to_msg()
             self.pose_markers.markers.append(marker_out)  
         duration = self.get_clock().now().nanoseconds * 10**-9 
-        self.get_logger().info(f'Done iterating:{duration}\t took:{duration - now}s') 
+        self.get_logger().info(f'Done iterating took:{duration - now}s') 
         self.pose_hist_publisher.publish(self.pose_markers)
         now = self.get_clock().now().nanoseconds * 10**-9
-        self.get_logger().info(f'Done publishing markers:{now}\t took:{now - duration}s') 
+        self.get_logger().info(f'Done publishing markers took:{now - duration}s') 
 
     def controller(self):
         if self.get_clock().now().nanoseconds * 10**-9 - self.heartbeat_last_time * 10**-9 > self.heartbeat_timeout:
@@ -226,10 +225,9 @@ class Controller(Node):
             self.cmd_speed = 0.0
         else:
             now = self.get_clock().now().nanoseconds * 10**-9
-            self.get_logger().info(f'Computing controller command:{now}')
             (self.cmd_steer,self.cmd_speed,self.reference_point_x,self.reference_point_y) = self.controller_function.get_commands(self.x,self.y,self.yaw,self.v)
             duration = self.get_clock().now().nanoseconds * 10**-9 
-            self.get_logger().info(f'Done computing controller cmd:{duration}\t took:{duration - now}s')
+            self.get_logger().info(f'Done computing controller cmd took:{duration - now}s')
 
         self.cmd_steer = np.clip(self.cmd_steer,-0.65,0.65)
 
@@ -239,10 +237,9 @@ class Controller(Node):
         ackermann_command.drive.speed = self.cmd_speed
         ackermann_command.drive.steering_angle = self.cmd_steer
         now = self.get_clock().now().nanoseconds * 10**-9
-        self.get_logger().info(f'Publishing cmd:{now}')
         self.ackermann_publisher.publish(ackermann_command)
         duration = self.get_clock().now().nanoseconds * 10**-9 
-        self.get_logger().info(f'Done publishing:{duration},\t took:{duration-now}s')
+        self.get_logger().info(f'Done publishing: took:{duration-now}s')
 
 def main(args=None):
     rclpy.init(args=args)
