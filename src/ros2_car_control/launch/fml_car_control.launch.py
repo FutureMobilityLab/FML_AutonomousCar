@@ -46,12 +46,12 @@ def generate_launch_description():
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                              description='Flag to enable use_sim_time'),
-        launch.actions.ExecuteProcess(
-            cmd=['ros2', 'bag', 'record', '/ref_point', '/cmd_ackermann',
-                 '/amcl_pose', '/odometry/filtered', '/odom', '/imu',
-                 '/accel/filtered', '/rear_wss'],
-            output='screen'
-        ),
+        # launch.actions.ExecuteProcess(
+        #     cmd=['ros2', 'bag', 'record', '/ref_point', '/cmd_ackermann',
+        #          '/amcl_pose', '/odometry/filtered', '/odom', '/imu',
+        #          '/accel/filtered', '/rear_wss'],
+        #     output='screen'
+        # ),
         optical_wss_node,
         traxxas_driver_node,
         car_controller_node,

@@ -18,13 +18,12 @@ class StanleyController():
     def get_commands(self,x,y,yaw,v):
         distance_to_waypoint = []
 
-        front_axle_x = x + self.L/2.0 * np.cos(yaw)
-        front_axle_y = y + self.L/2.0 * np.sin(yaw)
+        front_axle = np.array([[x + self.L/2.0 * np.cos(yaw), y + self.L/2.0 * np.sin(yaw)]])
         now = time.time()
         print(f"Getting closest waypoint:{now}")
-        for i in range(len(self.waypoints.x)):
-            distance_to_waypoint.append(np.sqrt((front_axle_x - self.waypoints.x[i])**2 + (front_axle_y - self.waypoints.y[i])**2))
-            nearest_waypoint_index = distance_to_waypoint.index(min(distance_to_waypoint))
+        waypoints = np.array([[self.waypoints.x, self.waypoints.y]])
+        dist = np.norm(front_axle - waypoints,axis=0)
+        nearest_waypoint_index = np.argmin(dist)
         print(f"Done getting closest waypoint, took: {time.time() - now}s")
         now = time.time()
 
