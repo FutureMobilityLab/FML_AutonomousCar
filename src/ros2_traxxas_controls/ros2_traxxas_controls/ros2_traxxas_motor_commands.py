@@ -2,7 +2,7 @@ import rclpy
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node, QoSProfile
 from ackermann_msgs.msg import AckermannDriveStamped
-from geometry_msgs.msg import TwistWithCovarianceStamped
+from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 from board import SCL, SDA
 import busio
@@ -23,7 +23,7 @@ class MotorCommands(Node):
             AckermannDriveStamped, "cmd_ackermann", self.ackermann_callback, FMLCarQoS
         )
         self.speed_subscription = self.create_subscription(
-            TwistWithCovarianceStamped, "rear_wss", self.odom_callback, FMLCarQoS
+            Odometry, "rear_wss", self.odom_callback, FMLCarQoS
         )
         self.accel_subscription = self.create_subscription(
             Imu, "imu", self.accel_callback, FMLCarQoS
