@@ -33,6 +33,10 @@ void AS5600Driver::handleInput()
   double vel_raw = as5600_->getVelocity();
   vel = fir_filter.filter(vel_raw);
   message.twist.twist.linear.x = vel;
+  // Compute covariance with assumption that variance is the peak-to-peak
+  // when the vehicle is not moving and the steering angle is changed.
+  double vel_peak_to_peak = 0.12;
+  message.twist.covariance[0] = {vel_peak_to_peak * vel_peak_to_peak};
   // message.twist.twist.linear.x = current_velocity;
   message.twist.twist.angular.z = getYawRate();
   // std::cout << "YAW RATE:" << message.twist.twist.angular.z << std::endl;
