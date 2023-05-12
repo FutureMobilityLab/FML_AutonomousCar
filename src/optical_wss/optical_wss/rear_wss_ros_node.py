@@ -3,7 +3,7 @@ import rclpy
 from rclpy.node import Node
 import serial
 
-from geometry_msgs.msg import TwistWithCovariance
+from geometry_msgs.msg import TwistWithCovarianceStamped
 
 PI = 3.14159265359
 
@@ -34,7 +34,7 @@ class RearWss(Node):
         self.rr_wss = 0  # [m/s]
 
         self.twist_publisher = self.create_publisher(
-            TwistWithCovariance, "rear_wss", 10
+            TwistWithCovarianceStamped, "rear_wss", 10
         )
 
         # Wait until we receive from the arduino that the connection is complete.
@@ -89,21 +89,21 @@ class RearWss(Node):
 
         # It is not guaranteed that msgs will contain messages. Publish the
         # velocity anyway.
-        twist = TwistWithCovariance()
+        twist = TwistWithCovarianceStamped()
         twist.header.stamp = self.get_clock().now().to_msg()
-        twist.twist.linear.x = (self.rr_wss + self.rl_wss) / 2
+        twist.twist.twist.linear.x = (self.rr_wss + self.rl_wss) / 2
         # Set linear x velocity covariance by assuming variance is the WSS
         # resolution.
         wss_velocity_resolution = (
             1 / self.sample_rate * PI / self.num_slots * self.wheel_radius
         )
-        twist.covariance[0] = wss_velocity_resolution**2
-        twist.twist.angular.z = (self.rr_wss - self.rl_wss) / self.track
+        twist.twist.covariance[0] = wss_velocity_resolution**2
+        twist.twist.twist.angular.z = (self.rr_wss - self.rl_wss) / self.track
         # Set yaw rate covariance by assuming variance is WSS yaw rate resolution.
         # TODO: This assumes no correlation between yaw rate and velocity which is
         # very wrong. But I do not know how to compute this.
         wss_yaw_rate_resolution = wss_velocity_resolution / self.track
-        twist.covariance[35] = wss_yaw_rate_resolution**2
+        twist.twist.covariance[35] = wss_yaw_rate_resolution**2
         self.twist_publisher.publish(twist)
         self.serial_connection.flush()
 
