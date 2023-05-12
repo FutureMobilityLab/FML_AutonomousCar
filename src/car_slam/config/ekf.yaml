@@ -38,14 +38,14 @@ ekf_filter_node:
         odom0_config: [false, false, false,
                        false, false, false,
                        true,  false, false,
-                       false, false, true,
+                       false, false, false,
                        false, false, false]
 
         odom1: optical_wss
         odom1_config: [false, false, false,
                        false, false, false,
                         true, false, false,
-                       false, false,  true,
+                       false, false, false,
                        false, false, false] 
 
         imu0: imu
