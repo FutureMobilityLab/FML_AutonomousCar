@@ -5,6 +5,8 @@ import serial
 
 from geometry_msgs.msg import TwistWithCovariance
 
+PI = 3.14159265359
+
 
 class RearWss(Node):
     """Ros2 node for rear optical wheel speed sensors. This connects directly
@@ -21,8 +23,10 @@ class RearWss(Node):
         self.serial_connection.reset_input_buffer()
         self.msg_buffer = ""
 
+        # Sensor parameters.
         self.wheel_radius = 0.057  # [m]
         self.track = 0.28  # [m]
+        self.num_slots = 72
         # Store previous values between publications. This is like a zero-order
         # hold. The arduino is not guaranteed to publish both sensor readings
         # everytime.
@@ -43,7 +47,8 @@ class RearWss(Node):
 
         # Begin sensor loop.
         self.time_of_last_msg = self.get_clock().now().nanoseconds * 1e-9
-        self.wss_timer = self.create_timer(0.05, self.get_wss)
+        self.sample_rate = 0.05
+        self.wss_timer = self.create_timer(self.sample_rate, self.get_wss)
 
     def get_wss(self):
         new_msg = self.serial_connection.read_all().decode("utf-8")
@@ -87,7 +92,18 @@ class RearWss(Node):
         twist = TwistWithCovariance()
         twist.header.stamp = self.get_clock().now().to_msg()
         twist.twist.linear.x = (self.rr_wss + self.rl_wss) / 2
+        # Set linear x velocity covariance by assuming variance is the WSS
+        # resolution.
+        wss_velocity_resolution = (
+            1 / self.sample_rate * PI / self.num_slots * self.wheel_radius
+        )
+        twist.covariance[0] = wss_velocity_resolution**2
         twist.twist.angular.z = (self.rr_wss - self.rl_wss) / self.track
+        # Set yaw rate covariance by assuming variance is WSS yaw rate resolution.
+        # TODO: This assumes no correlation between yaw rate and velocity which is
+        # very wrong. But I do not know how to compute this.
+        wss_yaw_rate_resolution = wss_velocity_resolution / self.track
+        twist.covariance[35] = wss_yaw_rate_resolution**2
         self.twist_publisher.publish(twist)
         self.serial_connection.flush()
 
