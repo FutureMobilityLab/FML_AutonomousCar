@@ -7,9 +7,9 @@
 int RearLeftState; // 1 for HIGH, 0 for LOW
 int RearRightState; // 1 for HIGH, 0 for LOW
 unsigned long startTime;
-// Assume there are 20 slots in the disk and each tick is either a rise or fall of the interrupt.
-const float RADPERTICK = 2*PI / 40;
-const unsigned long SAMPLETIME = 100000; // [us]
+// Assume there are 72 slots in the disk and each tick is either a rise or fall of the interrupt.
+const float RADPERTICK = 2*PI / 144;
+const unsigned long SAMPLETIME = 50000; // [us]
 
 void setup() {
   // put your setup code here, to run once:
