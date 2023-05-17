@@ -1,10 +1,17 @@
+import argparse
 import launch
 from launch.substitutions import LaunchConfiguration
 import launch_ros
 import os
+import sys
 
 
 def generate_launch_description():
+    parser = argparse.ArgumentParser(description="Controller launch file.")
+
+    parser.add_argument("--bag", type=bool, default=False, help="Record a rosbag.")
+    args = parser.parse_args(sys.argv[4:])
+
     # For finding yaml config files for optical wss package.
     wss_pkg_share = launch_ros.substitutions.FindPackageShare(
         package="optical_wss"
@@ -49,14 +56,19 @@ def generate_launch_description():
         name="waypoints",
         output="screen",
     )
-
-    return launch.LaunchDescription(
-        [
-            launch.actions.DeclareLaunchArgument(
-                name="use_sim_time",
-                default_value="False",
-                description="Flag to enable use_sim_time",
-            ),
+    launch_description = [
+        launch.actions.DeclareLaunchArgument(
+            name="use_sim_time",
+            default_value="False",
+            description="Flag to enable use_sim_time",
+        ),
+        optical_wss_node,
+        traxxas_driver_node,
+        car_controller_node,
+        waypoints_pub_node,
+    ]
+    if args.bag:
+        launch_description.append(
             launch.actions.ExecuteProcess(
                 cmd=[
                     "ros2",
@@ -72,10 +84,7 @@ def generate_launch_description():
                     "/rear_wss",
                 ],
                 output="screen",
-            ),
-            optical_wss_node,
-            traxxas_driver_node,
-            car_controller_node,
-            waypoints_pub_node,
-        ]
-    )
+            )
+        )
+
+    return launch.LaunchDescription(launch_description)
