@@ -36,7 +36,13 @@ class PurePursuitController:
         front_axle = np.array(
             [[x + self.L / 2.0 * np.cos(yaw), y + self.L / 2.0 * np.sin(yaw), yaw]]
         )
-        waypoints = np.array([self.waypoints.x, self.waypoints.y, self.waypoints.psi]).T
+        waypoints = np.hstack(
+            (
+                self.waypoints.x[np.newaxis].T,
+                self.waypoints.y[np.newaxis].T,
+                self.waypoints.psi[np.newaxis].T,
+            )
+        )
         dist = np.linalg.norm(front_axle[0, 0:2] - waypoints[:, 0:2], axis=0)
         closest_i = np.argmin(dist)
 

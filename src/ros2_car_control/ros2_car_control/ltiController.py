@@ -45,7 +45,13 @@ class LTIController:
         front_axle = np.array(
             [[x + self.lookahead * np.cos(yaw), y + self.lookahead * np.sin(yaw), yaw]]
         )
-        waypoints = np.array([self.waypoints.x, self.waypoints.y, self.waypoints.psi]).T
+        waypoints = np.hstack(
+            (
+                self.waypoints.x[np.newaxis].T,
+                self.waypoints.y[np.newaxis].T,
+                self.waypoints.psi[np.newaxis].T,
+            )
+        )
         closest_waypoint, _ = get_closest_waypoint(front_axle, waypoints)
 
         lateral_error, _ = get_lateral_errors(front_axle, closest_waypoint)
