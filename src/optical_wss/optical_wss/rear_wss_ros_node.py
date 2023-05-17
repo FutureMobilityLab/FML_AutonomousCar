@@ -88,7 +88,7 @@ class RearWss(Node):
         # It is not guaranteed that msgs will contain messages. Publish the
         # velocity anyway.
         odom = Odometry()
-        odom.head.frame_id = "base_link"
+        odom.header.frame_id = "base_link"
         odom.header.stamp = self.get_clock().now().to_msg()
         odom.twist.twist.linear.x = (self.rr_wss + self.rl_wss) / 2
         # Set linear x velocity covariance by assuming variance is the WSS
