@@ -37,13 +37,10 @@ def get_lateral_errors(
         reference yaw angle.
     """
 
-    print(f"pose:{pose}")
-    print(f"ref_pose:{reference_pose}")
     ref_to_axle = pose[0, 0:2] - reference_pose[0, 0:2]
     crosstrack_vector = np.array(
         [np.sin(reference_pose[0, 2]), -np.cos(reference_pose[0, 2])]
     )
-    crosstrack_err = -ref_to_axle.dot(crosstrack_vector)
-    print(f"xtrack_err:{crosstrack_err}")
+    crosstrack_err = ref_to_axle.dot(crosstrack_vector)
     yaw_err = pose[0, 2] - reference_pose[0, 2]
-    return crosstrack_err, yaw_err
+    return crosstrack_err, -yaw_err
