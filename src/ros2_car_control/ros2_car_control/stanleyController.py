@@ -42,7 +42,13 @@ class StanleyController:
         front_axle = np.array(
             [[x + self.L / 2.0 * np.cos(yaw), y + self.L / 2.0 * np.sin(yaw), yaw]]
         )
-        waypoints = np.array([self.waypoints.x, self.waypoints.y, self.waypoints.psi]).T
+        waypoints = np.hstack(
+            (
+                self.waypoints.x[np.newaxis].T,
+                self.waypoints.y[np.newaxis].T,
+                self.waypoints.psi[np.newaxis].T,
+            )
+        )
         closest_waypoint, _ = get_closest_waypoint(front_axle, waypoints)
 
         crosstrack_error, yaw_term = get_lateral_errors(front_axle, closest_waypoint)

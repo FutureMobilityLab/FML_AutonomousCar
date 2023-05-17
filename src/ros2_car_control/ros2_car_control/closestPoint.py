@@ -17,7 +17,7 @@ def get_closest_waypoint(
 
     dist = np.linalg.norm(pose[0, 0:2] - waypoints[:, 0:2], axis=0)
     closest_i = np.argmin(dist)
-    return waypoints[closest_i], closest_i
+    return waypoints[closest_i][np.newaxis], closest_i
 
 
 def get_lateral_errors(
@@ -39,6 +39,6 @@ def get_lateral_errors(
     crosstrack_vector = np.array(
         [np.sin(reference_pose[0, 2]), -np.cos(reference_pose[0, 2])]
     )
-    crosstrack_err = ref_to_axle.dot(crosstrack_vector)
+    crosstrack_err = -ref_to_axle.dot(crosstrack_vector)
     yaw_err = pose[0, 2] - reference_pose[0, 2]
     return crosstrack_err, yaw_err
