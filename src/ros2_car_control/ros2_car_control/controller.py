@@ -38,7 +38,7 @@ class Controller(Node):
         )
         self.waypoints = waypoints()
         self.cmd_timer = self.create_timer(0.05, self.controller)
-        self.marker_timer = self.create_timer(0.5, self.ref_point)
+        self.marker_timer = self.create_timer(0.05, self.ref_point)
         # self.pose_hist_timer = self.create_timer(0.25, self.pose_hist)
         self.declare_parameter("control_method", "hinf")
         self.control_method = self.get_parameter("control_method").value
