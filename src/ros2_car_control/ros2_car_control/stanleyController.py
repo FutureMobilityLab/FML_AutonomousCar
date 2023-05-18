@@ -32,7 +32,7 @@ class StanleyController:
         self.velocity_setpoint = ctrl_params.get("speed_setpoint")
 
         self.prev_steering_angle = 0.0
-        self.debug_bool = True
+        self.debug_bool = False
 
         self.waypoints = waypoints
 
