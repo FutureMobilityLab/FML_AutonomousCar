@@ -15,9 +15,7 @@ def get_closest_waypoint(
         The waypoint (X,Y,yaw) that is closest the position and its index in waypoints.
     """
 
-    print(f"waypoints shape:{np.shape(waypoints)}")
     dist = np.linalg.norm(pose[0, 0:2] - waypoints[:, 0:2], axis=1)
-    print(f"dist shape:{np.shape(dist)}")
     closest_i = np.argmin(dist)
     return waypoints[closest_i][np.newaxis], closest_i
 
