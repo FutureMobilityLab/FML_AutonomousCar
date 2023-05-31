@@ -6,7 +6,7 @@ This repo requires the installation of [ROS2 Humble Hawksbill](https://docs.ros.
 
 
 ```
-sudo apt install git -y && git clone git@github.com:GeorgeTMartin/FML_AutonomousCar.git
+sudo apt install git -y && git clone git@github.com:FutureMobilityLab/FML_AutonomousCar.git
 cd ./FML_AutonomousCar && git submodule update --init --recursive
 ```
 
