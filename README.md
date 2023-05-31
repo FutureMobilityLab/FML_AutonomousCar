@@ -15,6 +15,7 @@ NOTE: After cloning the repo, we need to initialize all of the [git submodules](
 ## Install Casadi & Acados
 
 ### Acados Dependencies Installation
+For Raspberry Pi, use the arm64 installation commands.
 ```
 #########################
 #   Arm64 Architecture  #
