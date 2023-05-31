@@ -19,12 +19,12 @@ NOTE: After cloning the repo, we need to initialize all of the [git submodules](
 #########################
 #   Arm64 Architecture  #
 #########################
-sudo apt install ./package/releases/arm64/fml-acados-deps_1.0-1_arm64.deb -y
+sudo apt install ./packages/releases/arm64/fml-acados-deps_1.0-1_arm64.deb -y
 
 #########################
 #   Amd64 Architecture  #
 #########################
-sudo apt install ./package/releases/amd64/fml-acados-deps_1.0-1_amd64.deb -y
+sudo apt install ./packages/releases/amd64/fml-acados-deps_1.0-1_amd64.deb -y
 ```
 
 NOTE: To remove the dependencies off the system run ... 
