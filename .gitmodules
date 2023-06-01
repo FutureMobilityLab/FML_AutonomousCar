@@ -1,9 +1,6 @@
 [submodule "src/ros2_mpu6050_driver"]
 	path = src/ros2_mpu6050_driver
 	url = https://github.com/hiwad-aziz/ros2_mpu6050_driver
-[submodule "src/ros2_car_control/python-path-planners"]
-	path = src/ros2_car_control/python-path-planners
-	url = https://github.com/JonnyD1117/python-path-planners
 [submodule "src/ros2_bno055"]
 	path = src/ros2_bno055
 	url = https://github.com/FutureMobilityLab/ros2_bno055
