@@ -4,7 +4,6 @@ Code and documentation for the Future Mobility Lab scale test vehicle used for S
 # Installation:
 This repo requires the installation of [ROS2 Humble Hawksbill](https://docs.ros.org/en/humble/index.html) on [Ubuntu 22.04 LTS Server or Ubuntu 22.04 LTS Desktop](https://releases.ubuntu.com/jammy/) running on a Raspberry Pi 4b with 8 GB RAM.
 
-
 ```
 sudo apt install git -y && git clone git@github.com:FutureMobilityLab/FML_AutonomousCar.git
 cd ./FML_AutonomousCar && git submodule update --init --recursive
@@ -13,6 +12,8 @@ cd ./FML_AutonomousCar && git submodule update --init --recursive
 NOTE: After cloning the repo, we need to initialize all of the [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) by using the `git submodule` command to pull in all of the external repositories that this project depends on being installed before building our ROS2 environment.
 
 ## Install Casadi & Acados
+
+Casadi and Acados is only required to run the Model Predictive Controller (MPC). You can skip this part if you do not plan on running the MPC.
 
 ### Acados Dependencies Installation
 For Raspberry Pi, use the arm64 installation commands.
@@ -69,7 +70,7 @@ cmake -DACADOS_WITH_QPOASES=ON ..
 make install -j4
 ```
 
-Find Absolute Path to ACADOS Root folder, replace following lines <acados_root>
+Find Absolute Path to ACADOS Root folder, replace following lines <acados_root> (ie. /home/boba/acados)
 
 ```
 pip install -e <acados_root>/interfaces/acados_template --no-deps
@@ -77,8 +78,6 @@ pip install -e <acados_root>/interfaces/acados_template --no-deps
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"<acados_root>/lib"
 export ACADOS_SOURCE_DIR="<acados_root>"
 ```
-
-
 
 ## Install ROS2 Humble Hawksbill 
 
@@ -107,7 +106,6 @@ echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 ```
 
 ### Install ROS2 on Desktop
-
 ```
 sudo apt update
 sudo apt upgrade
@@ -118,7 +116,7 @@ echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 
 ## Install ROS2 Dependencies 
 
-The Debian package that installs all of the external dependencies this repo uses is  CPU architecture specific. Most desktop/laptops with Intel or AMD CPUs are `amd64` while raspberry pis are `arm64/aarch64`. NOTE: (Apple Silicon is also `arm64`)
+The Debian package that installs all of the external dependencies this repo uses is CPU architecture specific. Most desktop/laptops with Intel or AMD CPUs are `amd64` while raspberry pis (ie. Raspberry Pi 4 Model B) are `arm64/aarch64`. NOTE: (Apple Silicon is also `arm64`)
 
 To determine which architecture your system has run the following command ... 
 
@@ -148,14 +146,14 @@ sudo apt purge fml-autonomous-veh-deps
 
 ## Build ROS2 Workspace 
 
-**IMPORTANT!!!: Before you continue, reboot the system change into the FML repo directory and then run the following command.**
+**IMPORTANT!!!: Before you continue, reboot the system and change into the FML repo directory and then run the following command.**
 
-then run ... 
 ```
 colcon build
 ```
 
 ## Post Install Preparation
+This project uses the I2C protocol to communicate with most of its sensors and actuators. Raspberry Pi 4 Model B has dedicated I2C pins (GPIO 2 & 3, a.k.a. pins 3 & 5).
 Check USB/I2C authority, and update write access if not permitted (generally it will not be):
 ```
 ls -l /dev |grep ttyUSB && ls -l /dev |grep i2c-1
@@ -164,6 +162,15 @@ ls -l /dev |grep ttyUSB && ls -l /dev |grep i2c-1
 sudo chmod 666 /dev/ttyUSB0  
 sudo chmod 666 /dev/i2c-1
 ```
+
+If you are using the BNO055 sensor there is a known problem with raspberry Pi's. Raspberry Pi I2C hardware does not fully support clock stretching. One ["fix"](https://learn.adafruit.com/circuitpython-on-raspberrypi-linux/i2c-clock-stretching) is to lower the baud rate of the I2C pins, but this often results in large spikes in the data and limits the update rate of reading the sensor. A better solution is to use [GPIO overlays](https://learn.adafruit.com/raspberry-pi-i2c-clock-stretching-fixes/software-i2c) to convert some of Raspberry Pi's GPIO pins into I2C pins. The instructions in these links require you to modify `/boot/config.txt`, however if you are using Ubuntu 22 you will not have this file and instead you should modify `/boot/firmware/config.txt`. You can add the following lines:
+
+```
+dtoverlay=i2c-gpio,bus=3,i2c_gpio_sda=17,i2c_gpio_scl=27,i2c_gpio_delay_us=2
+```
+The `i2c_gpio_sda` and `i2c_gpio_scl` do not need to be these specific pins. Use whichever are available on your Raspberry Pi 4. You also may not need the `i2c_gpio_delay_us` argument. After making these changes reboot your device. You can verify that the BNO055 is detected and which address it is using by calling `i2cdetect -y 3`.
+
+> A note on BNO055 breakout boards: If you are using ADAFruit's breakout board please refer to their documentation to make sure the BNO055 is configured to use i2c. If you are using the WCMCU-055 breakout board (it's purple and has VCC, GND, ATX, LRX, I2C, INT, RES, and BOOT pinouts) you will need to bridge the S0 and S1 pins to negative. This will configure the device to use I2C. You will also need to use 3.3v to power the board, not the 5v power.
 
 Prior to running, it is necessary to set all rmw implementations to fast rtps:
 ```
