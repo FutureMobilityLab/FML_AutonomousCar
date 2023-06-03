@@ -1,6 +1,3 @@
-[submodule "src/ros2_bno055"]
-	path = src/ros2_bno055
-	url = https://github.com/FutureMobilityLab/ros2_bno055
 [submodule "src/ros2_mpu6050_driver"]
 	path = src/ros2_mpu6050_driver
 	url = https://github.com/FutureMobilityLab/ros2_mpu6050_driver
