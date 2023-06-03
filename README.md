@@ -194,7 +194,7 @@ The FML Autonomous Car operates on a principle of distributed computing, and as 
 
 ## Robot Configuration
 ```
-ros2 launch car_slam fml_car_display.launch.py
+ros2 launch car_slam laptop_viewer.launch.py
 ```
 Use this launch file to test the configuration of the car, and verify that the sensors, robot model, and general structure of the car are correct before moving onto the next step. This launch file opens Rviz2 and provides a quick format to test ros2 topics and validate links and transforms.
 
@@ -215,7 +215,7 @@ This will save the map .pgm and .yaml files to the current directory.
 ## Testing
 Copy the .pgm and .yaml map files into the car_slam config folder. [TODO: Explain Naming Process and config for loading maps]. Then, run:
 ```
-ros2 launch car_slam fml_car_localization.launch.py
+ros2 launch car_slam localization.launch.py
 ```
 On the localization module. To run the test, run the controller launch file on the control module:
 ```
