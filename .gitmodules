@@ -1,3 +1,6 @@
 [submodule "src/ros2_mpu6050_driver"]
 	path = src/ros2_mpu6050_driver
 	url = https://github.com/FutureMobilityLab/ros2_mpu6050_driver
+[submodule "src/ros2_bno055_sensor"]
+	path = src/ros2_bno055_sensor
+	url = https://github.com/FutureMobilityLab/ros2_bno055_sensor
