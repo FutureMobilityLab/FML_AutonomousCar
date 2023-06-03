@@ -143,6 +143,17 @@ NOTE: To remove the dependencies off the system run ...
 sudo apt purge fml-autonomous-veh-deps
 ```
 
+## Setup Raspberry Pi 4 to use BNO055 Sensor
+If you are using the BNO055 sensor there is a known problem with Raspberry Pi. Raspberry Pi I2C hardware does not fully support clock stretching. One ["fix"](https://learn.adafruit.com/circuitpython-on-raspberrypi-linux/i2c-clock-stretching) is to lower the baud rate of the I2C pins, but this often results in large spikes in the data and limits the update rate of reading the sensor. A better solution is to use [GPIO overlays](https://learn.adafruit.com/raspberry-pi-i2c-clock-stretching-fixes/software-i2c) to convert some of Raspberry Pi's GPIO pins into I2C pins. The instructions in these links require you to modify `/boot/config.txt`, however if you are using Ubuntu 22 you will not have this file and instead you should modify `/boot/firmware/config.txt`. You can add the following lines:
+
+```
+dtoverlay=i2c-gpio,bus=3,i2c_gpio_sda=17,i2c_gpio_scl=27,i2c_gpio_delay_us=2
+```
+The `i2c_gpio_sda` and `i2c_gpio_scl` do not need to be these specific pins. Use whichever are available on your Raspberry Pi 4. You also may not need the `i2c_gpio_delay_us` argument. After making these changes reboot your device. You can verify that the BNO055 is detected and which address it is using by calling `i2cdetect -y 3`.
+
+> A note on BNO055 breakout boards: If you are using ADAFruit's breakout board please refer to their documentation to make sure the BNO055 is configured to use i2c. If you are using the WCMCU-055 breakout board (it's purple and has VCC, GND, ATX, LRX, I2C, INT, RES, and BOOT pinouts) you will need to bridge the S0 and S1 pins to negative. This will configure the device to use I2C. You will also need to use 3.3v to power the board, not the 5v power.
+
+Once you have setup the Raspberry Pi to connect with the BNO055 over I2C, please follow the install instructions in the README for the ros2_bno055_sensor submodule. Mainly you will have to (1) clone the submodules if you have not already done so, and (2) apply a software patch. After this you are ready to build.
 
 ## Build ROS2 Workspace 
 
@@ -162,15 +173,6 @@ ls -l /dev |grep ttyUSB && ls -l /dev |grep i2c-1
 sudo chmod 666 /dev/ttyUSB0  
 sudo chmod 666 /dev/i2c-1
 ```
-
-If you are using the BNO055 sensor there is a known problem with raspberry Pi's. Raspberry Pi I2C hardware does not fully support clock stretching. One ["fix"](https://learn.adafruit.com/circuitpython-on-raspberrypi-linux/i2c-clock-stretching) is to lower the baud rate of the I2C pins, but this often results in large spikes in the data and limits the update rate of reading the sensor. A better solution is to use [GPIO overlays](https://learn.adafruit.com/raspberry-pi-i2c-clock-stretching-fixes/software-i2c) to convert some of Raspberry Pi's GPIO pins into I2C pins. The instructions in these links require you to modify `/boot/config.txt`, however if you are using Ubuntu 22 you will not have this file and instead you should modify `/boot/firmware/config.txt`. You can add the following lines:
-
-```
-dtoverlay=i2c-gpio,bus=3,i2c_gpio_sda=17,i2c_gpio_scl=27,i2c_gpio_delay_us=2
-```
-The `i2c_gpio_sda` and `i2c_gpio_scl` do not need to be these specific pins. Use whichever are available on your Raspberry Pi 4. You also may not need the `i2c_gpio_delay_us` argument. After making these changes reboot your device. You can verify that the BNO055 is detected and which address it is using by calling `i2cdetect -y 3`.
-
-> A note on BNO055 breakout boards: If you are using ADAFruit's breakout board please refer to their documentation to make sure the BNO055 is configured to use i2c. If you are using the WCMCU-055 breakout board (it's purple and has VCC, GND, ATX, LRX, I2C, INT, RES, and BOOT pinouts) you will need to bridge the S0 and S1 pins to negative. This will configure the device to use I2C. You will also need to use 3.3v to power the board, not the 5v power.
 
 Prior to running, it is necessary to set all rmw implementations to fast rtps:
 ```
