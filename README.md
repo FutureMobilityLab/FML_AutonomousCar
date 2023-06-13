@@ -245,5 +245,5 @@ alias rpi-{hia or hig}="ssh {USERNAME}@{COMPUTER}-rpi4.local"
 ```
 At the FML_AutonomousCar Root Directory, setup the car parameters for running. This can also be added directly to ./bashrc but is kept in an alias to minimally alter the system when not running the car.
 ```
-alias fml="export RMW_IMPLEMENTATION=rmw_fastrtps_cpp && source ./install/setup> && sudo chmod 777 /dev/ttyUSB0 && sudo chmod 777 /dev/i2c-1"
+alias fml="export RMW_IMPLEMENTATION=rmw_fastrtps_cpp && source ./install/setup.bash && sudo chmod 777 /dev/ttyUSB0 && sudo chmod 777 /dev/i2c-1"
 ```
