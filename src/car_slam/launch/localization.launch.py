@@ -8,6 +8,9 @@ def generate_launch_description():
     pkg_share = launch_ros.substitutions.FindPackageShare(package="car_slam").find(
         "car_slam"
     )
+    wss_pkg_share = launch_ros.substitutions.FindPackageShare(
+        package="optical_wss"
+    ).find("optical_wss")
     default_model_path = os.path.join(pkg_share, "src/description/car_description.urdf")
 
     robot_state_publisher_node = launch_ros.actions.Node(
@@ -55,6 +58,12 @@ def generate_launch_description():
         name="as5600driver_node",
         output="screen",
         emulate_tty=True,
+    )
+    optical_wss_node = launch_ros.actions.Node(
+        package="optical_wss",
+        executable="optical_wss",
+        name="optical_wss",
+        parameters=[{"use_sim_time": LaunchConfiguration("use_sim_time")}],
     )
     robot_localization_node = launch_ros.actions.Node(
         package="robot_localization",
@@ -159,6 +168,7 @@ def generate_launch_description():
             # mpu6050driver_node,
             bno055driver_node,
             as5600driver_node,
+            optical_wss_node,
             rplidar_node,
             robot_localization_node,
             nav2_map_server_node,
