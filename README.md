@@ -192,6 +192,84 @@ fml
 ## Format
 The FML Autonomous Car operates on a principle of distributed computing, and as such has functionalities split across the two required Raspberry Pi units. Therefore it is necessary to configure both SBC's with the instructions above or otherwise generate two copies of the same configured drive. When running, the Raspberry Pi's and remote laptop each have a unique purpose. The laptop sends a remote heartbeat signal, that will direct the car to kill all motor commands on loss of connection. One Raspberry Pi handles all localization and pose estimation, while the other determines control outputs and commands the motors. For ease of understanding, one unit can be considered the 'Here I Am' module and the other as the 'Here I Go' module.
 
+## Networking two Raspberry Pis over ethernet
+With two Raspberry Pis you will want all ROS communication to go through an ethernet connection rather over wifi. For easy workflows, it would also be nice to have both Raspberry Pis connected to the internet. This can be achieved by having both connected over ethernet and to the wifi. This will allow a laptop to ssh into either computer. To set this up, there are several resources available on the internet.
+
+You will need to consider one of the Raspberry Pis as the network sharer. It doesn't matter which, but we prefer to use the Pi that will run localization rather than the one that runs control.
+
+### Setup the localization (Here I Am) Raspberry Pi network
+First you will setup a new connection (you can change the con-name if you wish) that enables internet sharing and sets a static IP address: 
+```
+nmcli connection add type ethernet ifname eth0 ipv4.method shared con-name local
+```
+The shared IPv4 method does multiple things:
+
+- enables IP forwarding for the interface;
+- adds firewall rules and enables masquerading;
+- starts dnsmasq as a DHCP and DNS server.
+
+You can check the status of the network devices:
+```
+nmcli d
+```
+
+10.42.0.1/24  is the default IP address set by NetworkManager. You may need to change this if it conflicts with an existing IP address:
+```
+nmcli connection modify local ipv4.addresses 192.168.42.1/24
+```
+
+You can verify the IP address for `eth0` by running `ifconfig`.
+
+Remember to activate again the connection profile after any change to apply the new values:
+```
+nmcli connection up local
+
+ip -o addr show enp1s0
+```
+
+To verify the connected devices you can run `nmcli d` or to verify the connections, run `ncmli c`.
+
+### Setup the control (Here I Go) Raspberry Pi network
+
+run `sudo nano /etc/netplan/50-cloud-init.yaml` to open and edit the netplan yaml configuration file. You may have a different name in `/etc/netplan/` or multiple, but try to find the one with wifi and ethernet. 
+
+Inside this file, modify it so you have: 
+```                                        
+# This file is generated from information provided by the datasource.  Changes
+# to it will not persist across an instance reboot.  To disable cloud-init's
+# network configuration capabilities, write a file
+# /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg with the following:
+# network: {config: disabled}
+network:
+    version: 2
+    ethernets:
+        renderer: NetworkManager
+        eth0:
+           dhcp4: no
+           addresses:
+               - 10.42.0.2/24
+           routes:
+               - to: default
+                 via: 10.42.0.1
+           nameservers:
+                 addresses: [10.42.0.1]
+    wifis:
+        renderer: NetworkManager
+        wlan0:
+            access-points:
+                 "WifiName":
+                    password: "wifi_password"
+            dhcp4: true
+            optional: true
+```
+Note: yaml uses strict indentations, so take care to keep everything indented the same amount.
+
+After saving, run `sudo apply netplan`.
+
+Verify that the ethernet device is running with `nmcli d`. If you do not see the ethernet device as green (connected) you will need to turn on that connection. Do this with `nmcli c up <name-of-ethernet-connection`. For understanding the usage of `nmcli` run `nmcli --help`, `nmcli c --help`, `nmcli d --help`.
+
+You should now be able to ping each Pi from the other Pi over ethernet. Use the IP addresses for each. You can run `ifconfig` to find those IP addresses.
+
 ## Robot Configuration
 ```
 ros2 launch car_slam laptop_viewer.launch.py
@@ -245,5 +323,5 @@ alias rpi-{hia or hig}="ssh {USERNAME}@{COMPUTER}-rpi4.local"
 ```
 At the FML_AutonomousCar Root Directory, setup the car parameters for running. This can also be added directly to ./bashrc but is kept in an alias to minimally alter the system when not running the car.
 ```
-alias fml="export RMW_IMPLEMENTATION=rmw_fastrtps_cpp && source ./install/setup> && sudo chmod 777 /dev/ttyUSB0 && sudo chmod 777 /dev/i2c-1"
+alias fml="export RMW_IMPLEMENTATION=rmw_fastrtps_cpp && source ./install/setup.bash && sudo chmod 777 /dev/ttyUSB0 && sudo chmod 777 /dev/i2c-1"
 ```
