@@ -264,7 +264,7 @@ class Controller(Node):
             > self.heartbeat_timeout
         ):
             # self.heartbeat_alarm = 1
-            # self.get_logger().info(f'HEARTBEAT ALARM ACTIVE')
+            self.get_logger().info(f"HEARTBEAT ALARM ACTIVE")
             pass
 
         last_waypoint_dist = np.linalg.norm(
@@ -281,6 +281,10 @@ class Controller(Node):
             # enough to end of line
             self.cmd_steer = 0.0
             self.cmd_speed = 0.0
+            self.get_logger().info(
+                "Odometry unsafe, heartbeat failed, run flag disabled, or close to "
+                "end of line."
+            )
         else:
             # now = self.get_clock().now().nanoseconds * 10**-9
             (
