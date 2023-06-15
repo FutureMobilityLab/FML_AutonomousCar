@@ -11,6 +11,9 @@ from ros2_car_control.mpcController import MPCController
 from ros2_car_control.ltiController import LTIController
 from ros2_car_control.purePursuitController import PurePursuitController
 from ros2_car_control.fetchWaypoints import waypoints
+from tf2_ros import TransformException
+from tf2_ros.buffer import Buffer
+from tf2_ros.transform_listener import TransformListener
 from visualization_msgs.msg import Marker, MarkerArray
 from tf_transformations import quaternion_from_euler
 import numpy as np
@@ -23,6 +26,10 @@ class Controller(Node):
         self.odometry_subscriber = self.create_subscription(
             Odometry, "odometry/filtered", self.odometry_callback, FMLCarQoS
         )
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
+        self.odom_frame = ""
+        self.map_frame = "map"
         self.heartbeat_subscriber = self.create_subscription(
             String, "heartbeat", self.heartbeat_callback, FMLCarQoS
         )
@@ -197,6 +204,7 @@ class Controller(Node):
         [_, _, self.yaw] = euler_from_quaternion(quaternion_pose)
         self.x = msg.pose.pose.position.x
         self.y = msg.pose.pose.position.y
+        self.odom_frame = msg.header.frame_id
         self.pose_hist_array_x.append(self.x)
         self.pose_hist_array_y.append(self.y)
         self.pose_hist_array_psi.append(self.yaw)
@@ -258,6 +266,15 @@ class Controller(Node):
         # self.get_logger().info(f"Done publishing markers took:{now - duration}s")
 
     def controller(self):
+        from_frame = self.odom_frame
+        to_frame = self.map_frame
+        try:
+            t = self.tf_buffer.lookup_transform(to_frame, from_frame, rclpy.time.Time())
+        except TransformException as ex:
+            self.get_logger().info(
+                f"Could not transform {to_frame} to {from_frame}: {ex}"
+            )
+            return
         # if (
         #     self.get_clock().now().nanoseconds * 10**-9
         #     - self.heartbeat_last_time * 10**-9
@@ -267,9 +284,9 @@ class Controller(Node):
         #     self.get_logger().info(f"HEARTBEAT ALARM ACTIVE")
         #     pass
 
-        last_waypoint_dist = np.linalg.norm(
-            [self.waypoints.x[-1] - self.x, self.waypoints.y[-1] - self.y]
-        )
+        # last_waypoint_dist = np.linalg.norm(
+        #     [self.waypoints.x[-1] - self.x, self.waypoints.y[-1] - self.y]
+        # )
 
         # if (
         #     self.v > self.v_max
@@ -287,12 +304,21 @@ class Controller(Node):
         #     )
         # else:
         # now = self.get_clock().now().nanoseconds * 10**-9
+        quaternion_pose = [
+            t.transform.rotation.x,
+            t.transform.rotation.y,
+            t.transform.rotation.z,
+            t.transform.rotation.w,
+        ]
+        [_, _, yaw] = euler_from_quaternion(quaternion_pose)
         (
             self.cmd_steer,
             self.cmd_speed,
             self.reference_point_x,
             self.reference_point_y,
-        ) = self.controller_function.get_commands(self.x, self.y, self.yaw, self.v)
+        ) = self.controller_function.get_commands(
+            t.transform.translation.x, t.transform.translation.y, yaw, self.v
+        )
         # duration = self.get_clock().now().nanoseconds * 10**-9
         # self.get_logger().info(
         #     f"Done computing controller cmd took:{duration - now}s"
