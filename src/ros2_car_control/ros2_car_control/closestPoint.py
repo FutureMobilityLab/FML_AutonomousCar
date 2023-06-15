@@ -16,6 +16,7 @@ def get_closest_waypoint(
     """
 
     dist = np.linalg.norm(pose[0, 0:2] - waypoints[:, 0:2], axis=1)
+    print(f"shape(dist){np.shape(dist)}")
     closest_i = np.argmin(dist)
     return waypoints[closest_i][np.newaxis], closest_i
 
