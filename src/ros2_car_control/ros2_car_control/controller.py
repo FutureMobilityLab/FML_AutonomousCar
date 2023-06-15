@@ -26,9 +26,6 @@ class Controller(Node):
         self.heartbeat_subscriber = self.create_subscription(
             String, "heartbeat", self.heartbeat_callback, FMLCarQoS
         )
-        self.pose_subscriber = self.create_subscription(
-            PoseWithCovarianceStamped, "amcl_pose", self.pose_callback, FMLCarQoS
-        )
         self.ackermann_publisher = self.create_publisher(
             AckermannDriveStamped, "cmd_ackermann", FMLCarQoS
         )
@@ -190,8 +187,6 @@ class Controller(Node):
 
     def odometry_callback(self, msg):
         self.v = msg.twist.twist.linear.x
-
-    def pose_callback(self, msg):
         orientations = msg.pose.pose.orientation
         quaternion_pose = [
             orientations.x,
@@ -205,10 +200,6 @@ class Controller(Node):
         self.pose_hist_array_x.append(self.x)
         self.pose_hist_array_y.append(self.y)
         self.pose_hist_array_psi.append(self.yaw)
-        # self.get_logger().info(f"Pose history list len:{len(self.pose_hist_array_x)}")
-        if self.run_flag == 0:
-            self.run_flag = 1  # Allow run after telemetry first captured
-            # self.get_logger().info(f"TELEMETRY ONLINE -- PERMITTING CONTROL START")
 
     def heartbeat_callback(self, msg):
         self.heartbeat_last_time = self.get_clock().now().nanoseconds
