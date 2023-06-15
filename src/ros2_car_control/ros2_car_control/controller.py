@@ -258,45 +258,45 @@ class Controller(Node):
         # self.get_logger().info(f"Done publishing markers took:{now - duration}s")
 
     def controller(self):
-        if (
-            self.get_clock().now().nanoseconds * 10**-9
-            - self.heartbeat_last_time * 10**-9
-            > self.heartbeat_timeout
-        ):
-            # self.heartbeat_alarm = 1
-            self.get_logger().info(f"HEARTBEAT ALARM ACTIVE")
-            pass
+        # if (
+        #     self.get_clock().now().nanoseconds * 10**-9
+        #     - self.heartbeat_last_time * 10**-9
+        #     > self.heartbeat_timeout
+        # ):
+        #     # self.heartbeat_alarm = 1
+        #     self.get_logger().info(f"HEARTBEAT ALARM ACTIVE")
+        #     pass
 
         last_waypoint_dist = np.linalg.norm(
             [self.waypoints.x[-1] - self.x, self.waypoints.y[-1] - self.y]
         )
 
-        if (
-            self.v > self.v_max
-            or self.heartbeat_alarm == 1
-            or self.run_flag == 0
-            or last_waypoint_dist < self.final_thresh
-        ):
-            # If odometry unsafe, heartbeat fails, run flag disabled, or close
-            # enough to end of line
-            self.cmd_steer = 0.0
-            self.cmd_speed = 0.0
-            self.get_logger().info(
-                "Odometry unsafe, heartbeat failed, run flag disabled, or close to "
-                "end of line."
-            )
-        else:
-            # now = self.get_clock().now().nanoseconds * 10**-9
-            (
-                self.cmd_steer,
-                self.cmd_speed,
-                self.reference_point_x,
-                self.reference_point_y,
-            ) = self.controller_function.get_commands(self.x, self.y, self.yaw, self.v)
-            # duration = self.get_clock().now().nanoseconds * 10**-9
-            # self.get_logger().info(
-            #     f"Done computing controller cmd took:{duration - now}s"
-            # )
+        # if (
+        #     self.v > self.v_max
+        #     or self.heartbeat_alarm == 1
+        #     or self.run_flag == 0
+        #     or last_waypoint_dist < self.final_thresh
+        # ):
+        #     # If odometry unsafe, heartbeat fails, run flag disabled, or close
+        #     # enough to end of line
+        #     self.cmd_steer = 0.0
+        #     self.cmd_speed = 0.0
+        #     self.get_logger().info(
+        #         "Odometry unsafe, heartbeat failed, run flag disabled, or close to "
+        #         "end of line."
+        #     )
+        # else:
+        # now = self.get_clock().now().nanoseconds * 10**-9
+        (
+            self.cmd_steer,
+            self.cmd_speed,
+            self.reference_point_x,
+            self.reference_point_y,
+        ) = self.controller_function.get_commands(self.x, self.y, self.yaw, self.v)
+        # duration = self.get_clock().now().nanoseconds * 10**-9
+        # self.get_logger().info(
+        #     f"Done computing controller cmd took:{duration - now}s"
+        # )
 
         # Clip steer angle to max steer.
         max_steer = self.get_parameter("max_steer").value
