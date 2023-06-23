@@ -49,7 +49,7 @@ class StanleyController:
                 self.waypoints.psi[np.newaxis].T,
             )
         )
-        closest_waypoint, closest_i = get_closest_waypoint(front_axle, waypoints)
+        closest_waypoint, _ = get_closest_waypoint(front_axle, waypoints)
 
         crosstrack_error, yaw_term = get_lateral_errors(front_axle, closest_waypoint)
 
