@@ -93,30 +93,30 @@ class MotorCommands(Node):
             self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired
         )  # converts to register value ()
 
-        # if ThrottleDesired > 40:
-        #     self.timeoutCount += 1
-        #     if self.timeoutCount > 20:
-        #         ThrottleRegisterVal = self.throttle_idle
-        #         self.get_logger().info(
-        #             "***MAX THROTTLE TIMEOUT - SETTING TO IDLE AND QUITTING***"
-        #         )
-        #         raise SystemExit
-        # else:
-        #     self.timeoutCount = 0
+        if ThrottleDesired > 40:
+            self.timeoutCount += 1
+            if self.timeoutCount > 20:
+                ThrottleRegisterVal = self.throttle_idle
+                self.get_logger().info(
+                    "***MAX THROTTLE TIMEOUT - SETTING TO IDLE AND QUITTING***"
+                )
+                raise SystemExit
+        else:
+            self.timeoutCount = 0
 
         if abs(self.a) > self.max_accel and np.sign(self.a) == np.sign(self.v):
             self.errorIntegrated = self.errorIntegrated
             self.get_logger().info("***EXCESSIVE ACCELERATION - HOLDING INTEGRAL***")
 
-        # if ThrottleDesired > 20 and self.v < 0.02:
-        #     self.timeoutCount += 1
-        #     if self.timeoutCount > 20:
-        #         ThrottleRegisterVal = self.throttle_idle
-        #         self.get_logger().info(
-        #             "*** THROTTLE ACTIVE BUT NO MOTION - ASSUMED COLLISION - "
-        #             "SETTING IDLE AND QUITTING"
-        #         )
-        #         raise SystemExit
+        if ThrottleDesired > 20 and self.v < 0.02:
+            self.timeoutCount += 1
+            if self.timeoutCount > 20:
+                ThrottleRegisterVal = self.throttle_idle
+                self.get_logger().info(
+                    "*** THROTTLE ACTIVE BUT NO MOTION - ASSUMED COLLISION - "
+                    "SETTING IDLE AND QUITTING"
+                )
+                raise SystemExit
 
         return ThrottleRegisterVal
 
