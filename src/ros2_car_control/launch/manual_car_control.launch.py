@@ -6,19 +6,9 @@ import os
 
 def generate_launch_description():
     # For finding yaml config files for optical wss package.
-    # wss_pkg_share = launch_ros.substitutions.FindPackageShare(
-    #    package='optical_wss').find('optical_wss')
-    # For finding yaml config files for traxxas controls package.
     trxs_pkg_share = launch_ros.substitutions.FindPackageShare(
         package="ros2_traxxas_controls"
     ).find("ros2_traxxas_controls")
-
-    # optical_wss_node = launch_ros.actions.Node(
-    #     package="optical_wss",
-    #     executable="optical_wss",
-    #     name="optical_wss",
-    #     parameters=[{"use_sim_time": LaunchConfiguration("use_sim_time")}],
-    # )
 
     traxxas_driver_node = launch_ros.actions.Node(
         package="ros2_traxxas_controls",
@@ -38,7 +28,6 @@ def generate_launch_description():
                 default_value="False",
                 description="Flag to enable use_sim_time",
             ),
-            # optical_wss_node,
             traxxas_driver_node,
         ]
     )
