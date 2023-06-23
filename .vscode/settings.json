@@ -84,5 +84,8 @@
         "any": "cpp",
         "regex": "cpp"
     },
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "cSpell.words": [
+        "hinf"
+    ]
 }
