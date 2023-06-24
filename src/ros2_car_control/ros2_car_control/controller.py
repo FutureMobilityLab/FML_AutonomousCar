@@ -62,6 +62,7 @@ class Controller(Node):
         self.declare_parameter("heartbeat_timeout", 1.0)
         self.declare_parameter("max_steer", 0.65)
         self.declare_parameter("speed_setpoint", 1.0)
+        self.declare_parameter("a_max", 1.0)
 
         # Get generic parameter values.
         self.control_method = self.get_parameter("control_method").value
@@ -70,6 +71,7 @@ class Controller(Node):
         control_params = {
             "max_steer": self.get_parameter("max_steer").value,
             "speed_setpoint": self.get_parameter("speed_setpoint").value,
+            "max_accel": self.get_parameter("a_max").value,
         }
 
         # Define safety-check flags.
