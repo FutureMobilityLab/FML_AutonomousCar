@@ -39,6 +39,7 @@ class MotorCommands(Node):
         self.declare_parameter("throttle_register_revr", 3276)
         self.declare_parameter("max_steer_angle", 0.65)
         self.declare_parameter("max_accel", 5.0)
+        self.declare_parameter("crash_accel", 10.0)
         # Overrrides Parameters if Config File is Passed
         self.Kp = self.get_parameter("kp").value
         self.Ki = self.get_parameter("ki").value
@@ -48,6 +49,7 @@ class MotorCommands(Node):
         self.throttle_revr = self.get_parameter("throttle_register_revr").value
         self.max_steer_angle = self.get_parameter("max_steer_angle").value
         self.max_accel = self.get_parameter("max_accel").value
+        self.crash_accel = self.get_parameter("crash_accel").value
         # Unchanging Parameters
         self.throttle_pcnt_increment = (self.throttle_full - self.throttle_idle) / 100
         self.errorIntegrated = 0
@@ -108,6 +110,13 @@ class MotorCommands(Node):
             self.errorIntegrated = self.errorIntegrated
             self.get_logger().info("***EXCESSIVE ACCELERATION - HOLDING INTEGRAL***")
 
+        if abs(self.a) > self.crash_accel:
+            ThrottleRegisterVal = self.throttle_idle
+            self.get_logger().info(
+                f"*** GOT {self.a} M/S^2 - ASSUMED COLLISION - SETTING IDLE AND QUITTING"
+            )
+            raise SystemExit
+
         if ThrottleDesired > 20 and self.v < 0.02:
             self.timeoutCount += 1
             if self.timeoutCount > 20:
@@ -163,6 +172,7 @@ def main(args=None):
         rclpy.spin(motor_commands)
     except KeyboardInterrupt:
         pass
+    # SystemExit is used to indicate a system failure in LoopPID().
     except SystemExit:
         pass
     except ExternalShutdownException:
