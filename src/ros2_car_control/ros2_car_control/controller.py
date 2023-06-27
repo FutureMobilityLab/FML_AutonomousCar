@@ -17,6 +17,7 @@ from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
 from visualization_msgs.msg import Marker
 import numpy as np
+import sys
 
 
 class Controller(Node):
@@ -308,11 +309,10 @@ def main(args=None):
     except SystemExit:
         pass
     except ExternalShutdownException:
-        pass
-
-    # Destroy the node explicitly
-    car_controller.destroy_node()
-    rclpy.shutdown()
+        sys.exit(1)
+    finally:
+        car_controller.destroy_node()
+        rclpy.try_shutdown()
 
 
 if __name__ == "__main__":
