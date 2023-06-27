@@ -269,25 +269,26 @@ class Controller(Node):
         ):
             self.heartbeat_alarm = 1
             self.get_logger().info("HEARTBEAT ALARM ACTIVE")
-            pass
+            self.cmd_steer = 0.0
+            self.cmd_speed = 0.0
 
         # last_waypoint_dist = np.linalg.norm(
         #     [self.waypoints.x[-1] - self.x, self.waypoints.y[-1] - self.y]
         # )
 
-        if (
-            self.v > self.v_max
-            or self.heartbeat_alarm == 1
-            or self.run_flag == 0
-            # or last_waypoint_dist < self.final_thresh
-        ):
-            # Overwrite commands to steer straight and stop.
+        # Handle each error separately for clear info message.
+        if self.v > self.v_max:
             self.cmd_steer = 0.0
             self.cmd_speed = 0.0
-            self.get_logger().info(
-                "Speed unsafe, heartbeat failed, run flag disabled, or close to "
-                "end of line."
-            )
+            self.get_logger().info("Speed unsafe")
+        if self.run_flag == 0:
+            self.cmd_steer = 0.0
+            self.cmd_speed = 0.0
+            self.get_logger().info("Run flag disabled")
+        # if last_waypoint_dist < self.final_thresh:
+        #     self.cmd_steer = 0.0
+        #     self.cmd_speed = 0.0
+        #     self.get_logger().info("Close to end of line.")
 
         # Publish controller command.
         ackermann_command = AckermannDriveStamped()
