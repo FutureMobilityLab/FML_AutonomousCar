@@ -256,7 +256,7 @@ class Controller(Node):
         # Clip steer angle to max steer.
         max_steer = self.get_parameter("max_steer").value
         self.cmd_steer = np.clip(self.cmd_steer, -max_steer, max_steer)
-        if self.cmd_steer != max_steer:
+        if abs(self.cmd_steer) >= max_steer:
             self.get_logger().warning(
                 f"Steering saturated. Requested < |{max_steer}|, but got {self.cmd_steer}"
             )
