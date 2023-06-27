@@ -1,6 +1,6 @@
 import numpy as np
 from acados_template import AcadosOcpSolver
-from utilities import get_accel_dist, get_closest_waypoint, get_speed_cmd
+from ros2_car_control.utilities import get_accel_dist, get_closest_waypoint, get_speed_cmd
 
 
 class MPCController:
