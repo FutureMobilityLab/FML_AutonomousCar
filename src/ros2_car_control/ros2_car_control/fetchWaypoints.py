@@ -54,8 +54,12 @@ class waypoints:
         y_diffs = np.diff(self.y)
         self.psi = np.arctan2(y_diffs, x_diffs)
         self.psi = np.append(self.psi, self.psi[-1])
-        # print(f"First point: [{self.x[1]},{self.y[1]}]")
-        # print(f"Last point: [{self.x[-1]},{self.y[-1]}]")
+
+        # Convert to arrays.
+        self.x = np.array(self.x)
+        self.y = np.array(self.y)
+        self.psi = np.array(self.psi)
+        self.d = np.array(self.d)
 
 
 if __name__ == "__main__":
