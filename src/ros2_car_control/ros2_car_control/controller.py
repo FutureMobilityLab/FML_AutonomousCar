@@ -208,7 +208,7 @@ class Controller(Node):
         pose_stamped.header.frame_id = "map"
         pose_stamped.header.stamp = self.get_clock().now().to_msg()
         pose_stamped.pose = pose
-        self.pose_publisher.publish(self.pose_markers)
+        self.pose_publisher.publish(pose_stamped)
 
     def controller(self):
         """Publish current_pose, ref_point marker, and control command."""
