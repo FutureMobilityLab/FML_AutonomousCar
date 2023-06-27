@@ -26,7 +26,7 @@ class MotorCommands(Node):
             Odometry, "rear_wss", self.odom_callback, FMLCarQoS
         )
         self.accel_subscription = self.create_subscription(
-            Imu, "imu", self.accel_callback, FMLCarQoS
+            Imu, "imu/data", self.accel_callback, FMLCarQoS
         )
         self.command_subscription  # prevents unused variable warning
         self.speed_subscription
