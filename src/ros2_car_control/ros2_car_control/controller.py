@@ -1,6 +1,7 @@
 import rclpy
-from rclpy.node import Node, QoSProfile
+from rclpy.executors import ExternalShutdownException
 from rclpy.duration import Duration
+from rclpy.node import Node, QoSProfile
 from nav_msgs.msg import Odometry
 from tf_transformations import euler_from_quaternion
 from ackermann_msgs.msg import AckermannDriveStamped
@@ -300,7 +301,14 @@ def main(args=None):
 
     car_controller = Controller()
 
-    rclpy.spin(car_controller)
+    try:
+        rclpy.spin(car_controller)
+    except KeyboardInterrupt:
+        pass
+    except SystemExit:
+        pass
+    except ExternalShutdownException:
+        pass
 
     # Destroy the node explicitly
     car_controller.destroy_node()
