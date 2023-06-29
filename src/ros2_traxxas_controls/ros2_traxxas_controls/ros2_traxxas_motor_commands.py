@@ -23,10 +23,10 @@ class MotorCommands(Node):
             AckermannDriveStamped, "cmd_ackermann", self.ackermann_callback, FMLCarQoS
         )
         self.speed_subscription = self.create_subscription(
-            Odometry, "rear_wss", self.odom_callback, FMLCarQoS
+            Odometry, "rear_wss", self.rear_wss_callback, FMLCarQoS
         )
         self.accel_subscription = self.create_subscription(
-            Imu, "imu", self.accel_callback, FMLCarQoS
+            Imu, "imu/data", self.accel_callback, FMLCarQoS
         )
         self.command_subscription  # prevents unused variable warning
         self.speed_subscription
@@ -39,6 +39,7 @@ class MotorCommands(Node):
         self.declare_parameter("throttle_register_revr", 3276)
         self.declare_parameter("max_steer_angle", 0.65)
         self.declare_parameter("max_accel", 5.0)
+        self.declare_parameter("crash_accel", 10.0)
         # Overrrides Parameters if Config File is Passed
         self.Kp = self.get_parameter("kp").value
         self.Ki = self.get_parameter("ki").value
@@ -48,6 +49,7 @@ class MotorCommands(Node):
         self.throttle_revr = self.get_parameter("throttle_register_revr").value
         self.max_steer_angle = self.get_parameter("max_steer_angle").value
         self.max_accel = self.get_parameter("max_accel").value
+        self.crash_accel = self.get_parameter("crash_accel").value
         # Unchanging Parameters
         self.throttle_pcnt_increment = (self.throttle_full - self.throttle_idle) / 100
         self.errorIntegrated = 0
@@ -93,14 +95,12 @@ class MotorCommands(Node):
             self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired
         )  # converts to register value ()
 
-        if ThrottleDesired > 40:
-            self.timeoutCount += 1
-            if self.timeoutCount > 20:
-                ThrottleRegisterVal = self.throttle_idle
-                self.get_logger().info(
-                    "***MAX THROTTLE TIMEOUT - SETTING TO IDLE AND QUITTING***"
-                )
-                raise SystemExit
+        if ThrottleDesired > 20:
+            ThrottleRegisterVal = self.throttle_idle
+            self.get_logger().info(
+                "***MAX THROTTLE - SETTING TO IDLE AND QUITTING***"
+            )
+            raise SystemExit
         else:
             self.timeoutCount = 0
 
@@ -108,7 +108,14 @@ class MotorCommands(Node):
             self.errorIntegrated = self.errorIntegrated
             self.get_logger().info("***EXCESSIVE ACCELERATION - HOLDING INTEGRAL***")
 
-        if ThrottleDesired > 20 and self.v < 0.02:
+        if abs(self.a) > self.crash_accel:
+            ThrottleRegisterVal = self.throttle_idle
+            self.get_logger().info(
+                f"*** GOT {self.a} M/S^2 - ASSUMED COLLISION - SETTING IDLE AND QUITTING"
+            )
+            raise SystemExit
+
+        if ThrottleDesired > 5 and self.v < 0.02:
             self.timeoutCount += 1
             if self.timeoutCount > 20:
                 ThrottleRegisterVal = self.throttle_idle
@@ -143,13 +150,14 @@ class MotorCommands(Node):
         pca.channels[1].duty_cycle = ThrottleCMDClipped
         pca.deinit()
 
-    def odom_callback(self, msg):
+    def rear_wss_callback(self, msg):
         self.v = msg.twist.twist.linear.x
 
     def accel_callback(self, msg):
         self.a = msg.linear_acceleration.x
 
     def ackermann_callback(self, ackermann_cmd):
+        """When a new command is received send a steer and throttle command."""
         self.ackermann_cmd = ackermann_cmd
         self.CMDtoMotor()
 
@@ -163,6 +171,7 @@ def main(args=None):
         rclpy.spin(motor_commands)
     except KeyboardInterrupt:
         pass
+    # SystemExit is used to indicate a system failure in LoopPID().
     except SystemExit:
         pass
     except ExternalShutdownException:

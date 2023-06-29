@@ -42,3 +42,25 @@ def get_lateral_errors(
     crosstrack_err = ref_to_axle.dot(crosstrack_vector)
     yaw_err = pose[0, 2] - reference_pose[0, 2]
     return crosstrack_err, -yaw_err
+
+
+def get_accel_dist(max_velocity, max_accel):
+    """Get the distance at which the max velocity is reached with constant max accel."""
+    return max_velocity**2 / 2 / max_accel
+
+
+def get_speed_cmd(dist, dist_accel, dist_decel, max_accel, max_velocity):
+    """Get the speed command assuming a constant acceleration period until the max
+    velocity is reached and a constant deceleration until at rest."""
+    if dist > dist_accel and dist < dist_decel:
+        speed_cmd = max_velocity
+    elif dist < dist_accel:
+        # Offset the beginning of the ramp to get the vehicle to move at start.
+        speed_cmd = np.sqrt(2 * max_accel * dist) + 0.1
+    # Inflate distance so that deceleration ends with 0 earlier.
+    elif dist + 0.2 > dist_decel:
+        speed_cmd_sqrd = max_velocity**2 - 2 * max_accel * (dist + 0.2 - dist_decel)
+        # Prevent sqrt of a negative.
+        speed_cmd_sqrd = max(speed_cmd_sqrd, 0)
+        speed_cmd = np.sqrt(speed_cmd_sqrd)
+    return np.clip(speed_cmd, 0, max_velocity)

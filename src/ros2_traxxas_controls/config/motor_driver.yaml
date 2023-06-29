@@ -8,3 +8,4 @@ motor_driver:
     throttle_register_revr: 3276
     max_steer_angle: 0.65 # radians
     max_accel: 5.0 #m/s^2
+    crash_accel: 10.0 # m/s^2
