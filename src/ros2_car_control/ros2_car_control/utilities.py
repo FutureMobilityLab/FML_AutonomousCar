@@ -55,7 +55,12 @@ def get_speed_cmd(dist, dist_accel, dist_decel, max_accel, max_velocity):
     if dist > dist_accel and dist < dist_decel:
         speed_cmd = max_velocity
     elif dist < dist_accel:
-        speed_cmd = np.sqrt(2 * max_accel * dist)
-    elif dist > dist_decel:
-        speed_cmd = np.sqrt(max_velocity**2 - 2 * max_accel * (dist - dist_decel))
+        # Offset the beginning of the ramp to get the vehicle to move at start.
+        speed_cmd = np.sqrt(2 * max_accel * dist) + 0.1
+    # Inflate distance so that deceleration ends with 0 earlier.
+    elif dist + 0.2 > dist_decel:
+        speed_cmd_sqrd = max_velocity**2 - 2 * max_accel * (dist + 0.2 - dist_decel)
+        # Prevent sqrt of a negative.
+        speed_cmd_sqrd = max(speed_cmd_sqrd, 0)
+        speed_cmd = np.sqrt(speed_cmd_sqrd)
     return np.clip(speed_cmd, 0, max_velocity)
