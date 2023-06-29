@@ -23,7 +23,7 @@ class MotorCommands(Node):
             AckermannDriveStamped, "cmd_ackermann", self.ackermann_callback, FMLCarQoS
         )
         self.speed_subscription = self.create_subscription(
-            Odometry, "rear_wss", self.odom_callback, FMLCarQoS
+            Odometry, "rear_wss", self.rear_wss_callback, FMLCarQoS
         )
         self.accel_subscription = self.create_subscription(
             Imu, "imu/data", self.accel_callback, FMLCarQoS
@@ -95,14 +95,12 @@ class MotorCommands(Node):
             self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired
         )  # converts to register value ()
 
-        if ThrottleDesired > 40:
-            self.timeoutCount += 1
-            if self.timeoutCount > 20:
-                ThrottleRegisterVal = self.throttle_idle
-                self.get_logger().info(
-                    "***MAX THROTTLE TIMEOUT - SETTING TO IDLE AND QUITTING***"
-                )
-                raise SystemExit
+        if ThrottleDesired > 20:
+            ThrottleRegisterVal = self.throttle_idle
+            self.get_logger().info(
+                "***MAX THROTTLE - SETTING TO IDLE AND QUITTING***"
+            )
+            raise SystemExit
         else:
             self.timeoutCount = 0
 
@@ -117,7 +115,7 @@ class MotorCommands(Node):
             )
             raise SystemExit
 
-        if ThrottleDesired > 20 and self.v < 0.02:
+        if ThrottleDesired > 5 and self.v < 0.02:
             self.timeoutCount += 1
             if self.timeoutCount > 20:
                 ThrottleRegisterVal = self.throttle_idle
@@ -152,13 +150,14 @@ class MotorCommands(Node):
         pca.channels[1].duty_cycle = ThrottleCMDClipped
         pca.deinit()
 
-    def odom_callback(self, msg):
+    def rear_wss_callback(self, msg):
         self.v = msg.twist.twist.linear.x
 
     def accel_callback(self, msg):
         self.a = msg.linear_acceleration.x
 
     def ackermann_callback(self, ackermann_cmd):
+        """When a new command is received send a steer and throttle command."""
         self.ackermann_cmd = ackermann_cmd
         self.CMDtoMotor()
 
