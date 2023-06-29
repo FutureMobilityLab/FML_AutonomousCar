@@ -86,6 +86,7 @@
     },
     "cmake.configureOnOpen": false,
     "cSpell.words": [
+        "decel",
         "hinf"
     ]
 }

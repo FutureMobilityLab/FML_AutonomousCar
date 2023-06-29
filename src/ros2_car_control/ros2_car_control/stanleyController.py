@@ -1,7 +1,12 @@
 """Python implementation of Stanley lateral controller as a Class. Intended to be used
 by ROS2 Node Controller in controller.py."""
 
-from ros2_car_control.closestPoint import get_closest_waypoint, get_lateral_errors
+from ros2_car_control.utilities import (
+    get_closest_waypoint,
+    get_lateral_errors,
+    get_accel_dist,
+    get_speed_cmd,
+)
 
 from typing import Dict, Tuple
 import numpy as np
@@ -30,11 +35,14 @@ class StanleyController:
         self.k_soft = ctrl_params.get("k_soft")  # softening_gain
         self.L = ctrl_params.get("L")  # wheelbase
         self.velocity_setpoint = ctrl_params.get("speed_setpoint")
+        self.max_accel = ctrl_params.get("max_accel")
 
         self.prev_steering_angle = 0.0
         self.debug_bool = False
 
         self.waypoints = waypoints
+        self.d_accel = get_accel_dist(self.velocity_setpoint, self.max_accel)
+        self.d_decel = self.waypoints.d[-1] - self.d_accel
 
     def get_commands(
         self, x: float, y: float, yaw: float, v: float
@@ -49,7 +57,7 @@ class StanleyController:
                 self.waypoints.psi[np.newaxis].T,
             )
         )
-        closest_waypoint, _ = get_closest_waypoint(front_axle, waypoints)
+        closest_waypoint, closest_i = get_closest_waypoint(front_axle, waypoints)
 
         crosstrack_error, yaw_term = get_lateral_errors(front_axle, closest_waypoint)
 
@@ -63,7 +71,11 @@ class StanleyController:
 
         self.prev_steering_angle = steering_angle
 
-        speed_cmd = self.velocity_setpoint
+        # Ramp up or down velocity based on distance traveled.
+        d = self.waypoints.d[closest_i]
+        speed_cmd = get_speed_cmd(
+            d, self.d_accel, self.d_decel, self.max_accel, self.velocity_setpoint
+        )
 
         if self.debug_bool:
             print("Psi: " + str(yaw_term) + "\tTangent Term: " + str(tangent_term))

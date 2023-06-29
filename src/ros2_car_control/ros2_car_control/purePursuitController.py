@@ -1,7 +1,7 @@
 """Python implementation of Pure Pursuit lateral controller as a Class. Intended to be
 used by ROS2 Node Controller in controller.py."""
 
-from ros2_car_control.closestPoint import get_closest_waypoint, get_lateral_errors
+from ros2_car_control.utilities import get_accel_dist, get_speed_cmd
 import numpy as np
 from typing import Dict, Tuple
 
@@ -22,12 +22,15 @@ class PurePursuitController:
         self.L = ctrl_params.get("L")  # wheelbase
         self.max_steer = ctrl_params.get("max_steer")  # max_steer
         self.velocity_setpoint = ctrl_params.get("speed_setpoint")
+        self.max_accel = ctrl_params.get("max_accel")
         self.lookahead_dist = ctrl_params.get("lookahead")
 
         self.prev_steering_angle = 0.0
         self.debug_bool = False
 
         self.waypoints = waypoints
+        self.d_accel = get_accel_dist(self.velocity_setpoint, self.max_accel)
+        self.d_decel = self.waypoints.d[-1] - self.d_accel
 
     def get_commands(
         self, x: float, y: float, yaw: float, v: float
@@ -58,7 +61,11 @@ class PurePursuitController:
                 point_ref_index = i
                 break
 
-        speed_cmd = self.velocity_setpoint
+        # Ramp up or down velocity based on distance traveled.
+        d = self.waypoints.d[closest_i]
+        speed_cmd = get_speed_cmd(
+            d, self.d_accel, self.d_decel, self.max_accel, self.velocity_setpoint
+        )
 
         return (
             steering_angle,

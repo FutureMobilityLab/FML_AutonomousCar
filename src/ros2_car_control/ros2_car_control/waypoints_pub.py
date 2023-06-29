@@ -1,9 +1,11 @@
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from ros2_car_control.fetchWaypoints import waypoints
 from visualization_msgs.msg import Marker, MarkerArray
 from rclpy.duration import Duration
 from tf_transformations import quaternion_from_euler
+import sys
 
 
 class WaypointPublisher(Node):
@@ -49,10 +51,17 @@ def main(args=None):
 
     waypoint_publisher = WaypointPublisher()
 
-    rclpy.spin(waypoint_publisher)
-
-    waypoint_publisher.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(waypoint_publisher)
+    except KeyboardInterrupt:
+        pass
+    except SystemExit:
+        pass
+    except ExternalShutdownException:
+        sys.exit(1)
+    finally:
+        waypoint_publisher.destroy_node()
+        rclpy.try_shutdown()
 
 
 if __name__ == '__main__':

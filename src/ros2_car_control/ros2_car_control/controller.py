@@ -1,6 +1,7 @@
 import rclpy
-from rclpy.node import Node, QoSProfile
+from rclpy.executors import ExternalShutdownException
 from rclpy.duration import Duration
+from rclpy.node import Node, QoSProfile
 from nav_msgs.msg import Odometry
 from tf_transformations import euler_from_quaternion
 from ackermann_msgs.msg import AckermannDriveStamped
@@ -16,6 +17,7 @@ from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
 from visualization_msgs.msg import Marker
 import numpy as np
+import sys
 
 
 class Controller(Node):
@@ -62,6 +64,7 @@ class Controller(Node):
         self.declare_parameter("heartbeat_timeout", 1.0)
         self.declare_parameter("max_steer", 0.65)
         self.declare_parameter("speed_setpoint", 1.0)
+        self.declare_parameter("a_max", 1.0)
 
         # Get generic parameter values.
         self.control_method = self.get_parameter("control_method").value
@@ -70,6 +73,7 @@ class Controller(Node):
         control_params = {
             "max_steer": self.get_parameter("max_steer").value,
             "speed_setpoint": self.get_parameter("speed_setpoint").value,
+            "max_accel": self.get_parameter("a_max").value,
         }
 
         # Define safety-check flags.
@@ -205,7 +209,7 @@ class Controller(Node):
         pose_stamped.header.frame_id = "map"
         pose_stamped.header.stamp = self.get_clock().now().to_msg()
         pose_stamped.pose = pose
-        self.pose_publisher.publish(self.pose_markers)
+        self.pose_publisher.publish(pose_stamped)
 
     def controller(self):
         """Publish current_pose, ref_point marker, and control command."""
@@ -252,9 +256,9 @@ class Controller(Node):
         # Clip steer angle to max steer.
         max_steer = self.get_parameter("max_steer").value
         self.cmd_steer = np.clip(self.cmd_steer, -max_steer, max_steer)
-        if self.cmd_steer != max_steer:
+        if abs(self.cmd_steer) >= max_steer:
             self.get_logger().warning(
-                f"Steering saturated. Requested {max_steer}, but got {self.cmd_steer}"
+                f"Steering saturated. Requested < |{max_steer}|, but got {self.cmd_steer}"
             )
 
         # Raise heartbeat_alarm if heartbeat hasn't been received.
@@ -265,25 +269,26 @@ class Controller(Node):
         ):
             self.heartbeat_alarm = 1
             self.get_logger().info("HEARTBEAT ALARM ACTIVE")
-            pass
+            self.cmd_steer = 0.0
+            self.cmd_speed = 0.0
 
         # last_waypoint_dist = np.linalg.norm(
         #     [self.waypoints.x[-1] - self.x, self.waypoints.y[-1] - self.y]
         # )
 
-        if (
-            self.v > self.v_max
-            or self.heartbeat_alarm == 1
-            or self.run_flag == 0
-            # or last_waypoint_dist < self.final_thresh
-        ):
-            # Overwrite commands to steer straight and stop.
+        # Handle each error separately for clear info message.
+        if self.v > self.v_max:
             self.cmd_steer = 0.0
             self.cmd_speed = 0.0
-            self.get_logger().info(
-                "Speed unsafe, heartbeat failed, run flag disabled, or close to "
-                "end of line."
-            )
+            self.get_logger().info("Speed unsafe")
+        if self.run_flag == 0:
+            self.cmd_steer = 0.0
+            self.cmd_speed = 0.0
+            self.get_logger().info("Run flag disabled")
+        # if last_waypoint_dist < self.final_thresh:
+        #     self.cmd_steer = 0.0
+        #     self.cmd_speed = 0.0
+        #     self.get_logger().info("Close to end of line.")
 
         # Publish controller command.
         ackermann_command = AckermannDriveStamped()
@@ -298,11 +303,17 @@ def main(args=None):
 
     car_controller = Controller()
 
-    rclpy.spin(car_controller)
-
-    # Destroy the node explicitly
-    car_controller.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(car_controller)
+    except KeyboardInterrupt:
+        pass
+    except SystemExit:
+        pass
+    except ExternalShutdownException:
+        sys.exit(1)
+    finally:
+        car_controller.destroy_node()
+        rclpy.try_shutdown()
 
 
 if __name__ == "__main__":

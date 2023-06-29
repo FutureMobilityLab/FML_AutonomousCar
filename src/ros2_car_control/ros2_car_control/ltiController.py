@@ -1,7 +1,12 @@
 """Python implementation of a Linear Time Invariant lateral controller as a Class. 
 Intended to be used by ROS2 Node Controller in controller.py."""
 
-from ros2_car_control.closestPoint import get_closest_waypoint, get_lateral_errors
+from ros2_car_control.utilities import (
+    get_closest_waypoint,
+    get_lateral_errors,
+    get_accel_dist,
+    get_speed_cmd,
+)
 
 import numpy as np
 from typing import Dict, Tuple
@@ -30,8 +35,11 @@ class LTIController:
         n_GcX = ctrl_params.get("n_GcX")  # Number of controller states
         self.waypoints = waypoints
         self.lookahead = ctrl_params.get("lookahead")
-        self.v = ctrl_params.get("speed_setpoint")  # Velocity Setpoint
+        self.velocity_setpoint = ctrl_params.get("speed_setpoint")
         self.max_steer = ctrl_params.get("max_steer")
+        self.max_accel = ctrl_params.get("max_accel")
+        self.d_accel = get_accel_dist(self.velocity_setpoint, self.max_accel)
+        self.d_decel = self.waypoints.d[-1] - self.d_accel
 
         self.Gc_states = np.zeros((n_GcX, 1))
         self.GcA = np.array(ctrl_params.get("GcA")).reshape(n_GcX, n_GcX)
@@ -52,7 +60,7 @@ class LTIController:
                 self.waypoints.psi[np.newaxis].T,
             )
         )
-        closest_waypoint, _ = get_closest_waypoint(front_axle, waypoints)
+        closest_waypoint, closest_i = get_closest_waypoint(front_axle, waypoints)
 
         lateral_error, _ = get_lateral_errors(front_axle, closest_waypoint)
 
@@ -63,7 +71,13 @@ class LTIController:
             abs(steering_angle) < self.max_steer
         ):  # Attempting to prevent wind-up which occurs immediately with controller
             self.Gc_states = new_Gc_states
-        speed_cmd = self.v
+
+        # Ramp up or down velocity based on distance traveled.
+        d = self.waypoints.d[closest_i]
+        speed_cmd = get_speed_cmd(
+            d, self.d_accel, self.d_decel, self.max_accel, self.velocity_setpoint
+        )
+
         return (
             steering_angle,
             speed_cmd,
