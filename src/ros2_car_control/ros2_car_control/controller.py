@@ -34,9 +34,9 @@ class Controller(Node):
         self.map_frame = "map"
 
         # Subscribe to heartbeat for guaranteeing healthy communication with laptop.
-        self.heartbeat_subscriber = self.create_subscription(
-            String, "heartbeat", self.heartbeat_callback, FMLCarQoS
-        )
+        # self.heartbeat_subscriber = self.create_subscription(
+        #     String, "heartbeat", self.heartbeat_callback, FMLCarQoS
+        # )
 
         # Subscribe to odometry for current velocity.
         self.v = 0.0
@@ -172,9 +172,9 @@ class Controller(Node):
         # Start timers.
         self.cmd_timer = self.create_timer(ctrl_sample_time, self.controller)
 
-    def heartbeat_callback(self, msg):
-        # When a heartbeat is received, update the time it was received.
-        self.heartbeat_last_time = self.get_clock().now().nanoseconds
+    # def heartbeat_callback(self, msg):
+    #     # When a heartbeat is received, update the time it was received.
+    #     self.heartbeat_last_time = self.get_clock().now().nanoseconds
 
     def odometry_callback(self, msg):
         self.v = msg.twist.twist.linear.x
@@ -261,16 +261,16 @@ class Controller(Node):
                 f"Steering saturated. Requested < |{max_steer}|, but got {self.cmd_steer}"
             )
 
-        # Raise heartbeat_alarm if heartbeat hasn't been received.
-        if (
-            self.get_clock().now().nanoseconds * 10**-9
-            - self.heartbeat_last_time * 10**-9
-            > self.heartbeat_timeout
-        ):
-            self.heartbeat_alarm = 1
-            self.get_logger().info("HEARTBEAT ALARM ACTIVE")
-            self.cmd_steer = 0.0
-            self.cmd_speed = 0.0
+        # # Raise heartbeat_alarm if heartbeat hasn't been received.
+        # if (
+        #     self.get_clock().now().nanoseconds * 10**-9
+        #     - self.heartbeat_last_time * 10**-9
+        #     > self.heartbeat_timeout
+        # ):
+        #     self.heartbeat_alarm = 1
+        #     self.get_logger().info("HEARTBEAT ALARM ACTIVE")
+        #     self.cmd_steer = 0.0
+        #     self.cmd_speed = 0.0
 
         # last_waypoint_dist = np.linalg.norm(
         #     [self.waypoints.x[-1] - self.x, self.waypoints.y[-1] - self.y]
