@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 import serial
+import sys
 
 from nav_msgs.msg import Odometry
 
@@ -112,11 +114,17 @@ def main(args=None):
 
     rear_wss = RearWss()
 
-    rclpy.spin(rear_wss)
-
-    # Destroy the node explicitly
-    rear_wss.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(rear_wss)
+    except KeyboardInterrupt:
+        pass
+    except SystemExit:
+        pass
+    except ExternalShutdownException:
+        sys.exit(1)
+    finally:
+        rear_wss.destroy_node()
+        rclpy.try_shutdown()
 
 
 if __name__ == "__main__":
