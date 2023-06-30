@@ -67,6 +67,7 @@ class LTIController:
         closest_waypoint, closest_i = get_closest_waypoint(lookahead_point, waypoints)
 
         lateral_error, _ = get_lateral_errors(lookahead_point, closest_waypoint)
+        lateral_error = np.array([[lateral_error]])
         temp = self.GcA @ self.Gc_states
         temp2 = self.GcB @ lateral_error
         new_Gc_states = self.GcA @ self.Gc_states + self.GcB @ lateral_error
