@@ -86,4 +86,5 @@ class StanleyController:
             speed_cmd,
             closest_waypoint[0, 0],
             closest_waypoint[0, 1],
+            closest_waypoint[0, 2]
         )

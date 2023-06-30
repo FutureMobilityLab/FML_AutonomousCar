@@ -123,4 +123,4 @@ class MPCController:
             d, self.d_accel, self.d_decel, self.max_accel, self.velocity_setpoint
         )
 
-        return steering_angle, speed_cmd, self.xrefs[start_ref], self.yrefs[start_ref]
+        return steering_angle, speed_cmd, self.xrefs[start_ref], self.yrefs[start_ref], self.psirefs[start_ref]
