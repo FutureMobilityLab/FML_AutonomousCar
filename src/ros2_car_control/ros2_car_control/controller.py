@@ -3,7 +3,7 @@ from rclpy.executors import ExternalShutdownException
 from rclpy.duration import Duration
 from rclpy.node import Node, QoSProfile
 from nav_msgs.msg import Odometry
-from tf_transformations import euler_from_quaternion
+from tf_transformations import euler_from_quaternion, quaternion_from_euler
 from ackermann_msgs.msg import AckermannDriveStamped
 from geometry_msgs.msg import Pose, PoseStamped
 from std_msgs.msg import String
@@ -87,6 +87,7 @@ class Controller(Node):
         self.waypoints = waypoints()
         self.reference_point_x = 0.0
         self.reference_point_y = 0.0
+        self.reference_point_psi = 0.0
 
         # Define and get controller-specific parameters.
         match self.control_method:
@@ -192,10 +193,14 @@ class Controller(Node):
         ref_point_marker.id = 1
         ref_point_marker.pose.position.x = self.reference_point_x
         ref_point_marker.pose.position.y = self.reference_point_y
+        (qx, qy, qz, qw) = quaternion_from_euler(0.0, 0.0, self.reference_point_psi)
+        ref_point_marker.pose.orientation.x = qx
+        ref_point_marker.pose.orientation.y = qy
+        ref_point_marker.pose.orientation.z = qz
+        ref_point_marker.pose.orientation.w = qw
         ref_point_marker.scale.x = 0.1
         ref_point_marker.scale.y = 0.1
         ref_point_marker.scale.z = 0.1
-        ref_point_marker.pose.orientation.w = 1.0
         ref_point_marker.frame_locked = False
         ref_point_marker.color.a = 1.0
         ref_point_marker.color.r = 1.0
@@ -250,6 +255,7 @@ class Controller(Node):
             self.cmd_speed,
             self.reference_point_x,
             self.reference_point_y,
+            self.reference_point_psi
         ) = self.controller_function.get_commands(
             current_pose.position.x, current_pose.position.y, yaw, self.v
         )
