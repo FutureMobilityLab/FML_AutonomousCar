@@ -283,10 +283,10 @@ class Controller(Node):
         # )
 
         # Handle each error separately for clear info message.
-        if self.v > self.v_max:
-            self.cmd_steer = 0.0
-            self.cmd_speed = 0.0
-            self.get_logger().info("Speed unsafe")
+        # if self.v > self.v_max:
+        #     self.cmd_steer = 0.0
+        #     self.cmd_speed = 0.0
+        #     self.get_logger().info("Speed unsafe")
         if self.run_flag == 0:
             self.cmd_steer = 0.0
             self.cmd_speed = 0.0
