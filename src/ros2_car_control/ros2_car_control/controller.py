@@ -208,11 +208,11 @@ class Controller(Node):
 
         self.point_ref_publisher.publish(ref_point_marker)
 
-    def publish_current_pose(self, pose):
+    def publish_current_pose(self, pose, time_stamp):
         """Publish the vehicle's pose."""
         pose_stamped = PoseStamped()
         pose_stamped.header.frame_id = "map"
-        pose_stamped.header.stamp = self.get_clock().now().to_msg()
+        pose_stamped.header.stamp = time_stamp
         pose_stamped.pose = pose
         self.pose_publisher.publish(pose_stamped)
 
@@ -229,6 +229,7 @@ class Controller(Node):
                 f"Could not transform {to_frame} to {from_frame}: {ex}"
             )
             return
+        current_pose_time_stamp = t.header.stamp
         quaternion_pose = [
             t.transform.rotation.x,
             t.transform.rotation.y,
@@ -244,7 +245,7 @@ class Controller(Node):
         current_pose.orientation.y = t.transform.rotation.y
         current_pose.orientation.z = t.transform.rotation.z
         current_pose.orientation.w = t.transform.rotation.w
-        self.publish_current_pose(current_pose)
+        self.publish_current_pose(current_pose, current_pose_time_stamp)
 
         # Publish reference point marker.
         self.publish_ref_point_marker()
