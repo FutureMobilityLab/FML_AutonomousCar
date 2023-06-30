@@ -43,13 +43,9 @@ class LTIController:
 
         self.Gc_states = np.zeros((n_GcX, 1))
         self.GcA = np.array(ctrl_params.get("GcA")).reshape(n_GcX, n_GcX)
-        print(f"GcA:{self.GcA}")
         self.GcB = np.array(ctrl_params.get("GcB")).reshape(n_GcX, 1)
-        print(f"GcB:{self.GcB}")
         self.GcC = np.array(ctrl_params.get("GcC")).reshape(1, n_GcX)
-        print(f"GcC:{self.GcC}")
         self.GcD = np.array(ctrl_params.get("GcD")).reshape(1, 1)
-        print(f"GcD:{self.GcD}")
 
     def get_commands(
         self, x: float, y: float, yaw: float, v: float
@@ -68,8 +64,6 @@ class LTIController:
 
         lateral_error, _ = get_lateral_errors(lookahead_point, closest_waypoint)
         lateral_error = np.array([[lateral_error]])
-        temp = self.GcA @ self.Gc_states
-        temp2 = self.GcB @ lateral_error
         new_Gc_states = self.GcA @ self.Gc_states + self.GcB @ lateral_error
         steering_angle = float(self.GcC @ self.Gc_states + self.GcD @ lateral_error)
 
