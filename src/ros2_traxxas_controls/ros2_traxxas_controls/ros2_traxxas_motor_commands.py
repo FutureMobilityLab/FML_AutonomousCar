@@ -144,7 +144,7 @@ class MotorCommands(Node):
         """Send throttle command to Traxxas speed controller over i2c."""
         ThrottleCMD = self.getThrottleCmd(self.ackermann_cmd)
         ThrottleCMDClipped = np.clip(ThrottleCMD, self.throttle_revr, self.throttle_full)
-        self.throttleChannel.duty_cycle = ThrottleCMDClipped
+        self.throttleChannel.duty_cycle = int(ThrottleCMDClipped)
         # self.pca.deinit()
 
     def rear_wss_callback(self, msg: Odometry) -> None:
