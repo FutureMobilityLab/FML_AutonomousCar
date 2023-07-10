@@ -87,19 +87,19 @@ class MotorCommands(Node):
             self.get_logger().info("***INTEGRATOR TIMEOUT - RESETTING INTEGRAL***")
         else:
             self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
-        # ThrottleDesired = (
-        #     self.Kp * error + self.Ki * self.errorIntegrated + self.Kt * abs(steerangle)
-        # )
-        ThrottleDesired = 0.5
+        ThrottleDesired = (
+            self.Kp * error + self.Ki * self.errorIntegrated + self.Kt * abs(steerangle)
+        )
         if self.debugBool:
             self.get_logger().info(
                 f"Measured Velocity: {self.v}\tError: {error}\tThrottle Out:"
                 f" {ThrottleDesired}"
             )
 
-        ThrottleRegisterVal = (
-            self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired
-        )  # converts to register value ()
+        # ThrottleRegisterVal = (
+        #     self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired
+        # )  # converts to register value ()
+        ThrottleRegisterVal = 5160
 
         # if ThrottleDesired > 20:
         #     ThrottleRegisterVal = self.throttle_idle
@@ -184,6 +184,8 @@ def main(args=None):
     except SystemExit:
         pass
     except ExternalShutdownException:
+        pass
+    except RuntimeError:
         pass
 
     # Before shutting down, send zero steer command and idle throttle command.
