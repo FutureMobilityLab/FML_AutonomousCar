@@ -109,10 +109,11 @@ class MotorCommands(Node):
                 f" {ThrottleDesired}"
             )
 
-        # ThrottleRegisterVal = (
-        #     self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired
-        # )  # converts to register value ()
-        ThrottleRegisterVal = self.getThrottleFfwd(desired_speed)
+        fbRegisterVal = (
+            self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired
+        )  # converts to register value ()
+        ffwdRegisterVal = self.getThrottleFfwd(desired_speed)
+        ThrottleRegisterVal = ffwdRegisterVal + fbRegisterVal
 
         # if ThrottleDesired > 20:
         #     ThrottleRegisterVal = self.throttle_idle
@@ -152,36 +153,28 @@ class MotorCommands(Node):
             self.max_steer_angle,
         )
         self.TraxxasServo.angle = (steeringClipped * 180.0 / 3.14159265) + 90.0
-        # self.pca.deinit()
 
     def sendThrottleCmd(self) -> None:
         """Send throttle command to Traxxas speed controller over i2c."""
         ThrottleCMD = self.getThrottleCmd(self.ackermann_cmd)
         ThrottleCMDClipped = np.clip(ThrottleCMD, self.throttle_revr, self.throttle_full)
         self.throttleChannel.duty_cycle = int(ThrottleCMDClipped)
-        # self.pca.deinit()
 
     def rear_wss_callback(self, msg: Odometry) -> None:
+        # On 7/10/2023, the odom message is 1-5 ms delayed.
         self.v = msg.twist.twist.linear.x
-        odom_time = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
-        now_time = self.get_clock().now().nanoseconds * 1e-9
-        self.get_logger().info(f"Odom delay: {now_time - odom_time} s.")
 
     def accel_callback(self, msg: Imu) -> None:
         self.accel_x = msg.linear_acceleration.x
 
     def ackermann_callback(self, msg: AckermannDriveStamped) -> None:
         """When a new command is received send a steer and throttle command."""
+        # On 7/10/2023, the cmd message is 1-5 ms delayed.
         self.ackermann_cmd = msg
-        cmd_time = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
-        now_time = self.get_clock().now().nanoseconds * 1e-9
-        self.get_logger().info(f"Command delay: {now_time - cmd_time} s.")
+        # Sending the servo command takes 3-4 ms.
         self.sendServoCmd()
-        servo_time = self.get_clock().now().nanoseconds * 1e-9
-        self.get_logger().info(f"Servo delay:{servo_time - now_time}s")
+        # Sending the throttle command takes 7-10 ms.
         self.sendThrottleCmd()
-        throttle_time = self.get_clock().now().nanoseconds * 1e-9
-        self.get_logger().info(f"Throttle delay:{throttle_time - servo_time}s")
 
 
 def main(args=None):
