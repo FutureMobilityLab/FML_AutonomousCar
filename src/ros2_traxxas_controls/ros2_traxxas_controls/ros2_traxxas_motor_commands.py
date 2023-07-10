@@ -104,9 +104,7 @@ class MotorCommands(Node):
             self.Kp * error + self.Ki * self.errorIntegrated + self.Kt * abs(steerangle)
         )
 
-        fbRegisterVal = (
-            self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired
-        )  # converts to register value ()
+        fbRegisterVal = self.throttle_pcnt_increment * ThrottleDesired
         ffwdRegisterVal = self.getThrottleFfwd(desired_speed)
         ThrottleRegisterVal = ffwdRegisterVal + fbRegisterVal
 
