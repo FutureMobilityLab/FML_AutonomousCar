@@ -34,7 +34,7 @@ class MotorCommands(Node):
         self.declare_parameter("ki", 20.0)
         self.declare_parameter("kt", 2.0)
         self.declare_parameter("throttle_register_idle", 4915)
-        self.declare_parameter("throttle_0_mps", 5160)
+        self.declare_parameter("throttle_register_0_mps", 5160)
         self.declare_parameter("throttle_register_full", 6335)
         self.declare_parameter("throttle_register_revr", 3276)
         self.declare_parameter("max_steer_angle", 0.65)
@@ -45,7 +45,7 @@ class MotorCommands(Node):
         self.Ki = self.get_parameter("ki").value
         self.Kt = self.get_parameter("kt").value
         self.throttle_idle = self.get_parameter("throttle_register_idle").value
-        self.throttle_0_mps = self.get_parameter("throttle_0_mps").value
+        self.throttle_0_mps = self.get_parameter("throttle_register_0_mps").value
         self.throttle_full = self.get_parameter("throttle_register_full").value
         self.throttle_revr = self.get_parameter("throttle_register_revr").value
         self.max_steer_angle = self.get_parameter("max_steer_angle").value
@@ -103,17 +103,19 @@ class MotorCommands(Node):
         ThrottleDesired = (
             self.Kp * error + self.Ki * self.errorIntegrated + self.Kt * abs(steerangle)
         )
-        if self.debugBool:
-            self.get_logger().info(
-                f"Measured Velocity: {self.v}\tError: {error}\tThrottle Out:"
-                f" {ThrottleDesired}"
-            )
 
         fbRegisterVal = (
             self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired
         )  # converts to register value ()
         ffwdRegisterVal = self.getThrottleFfwd(desired_speed)
         ThrottleRegisterVal = ffwdRegisterVal + fbRegisterVal
+
+        if self.debugBool:
+            self.get_logger().info(
+                f"Measured Velocity: {self.v:.2f}\tFeedforward: {ffwdRegisterVal}\t"
+                f"Error: {error:.2f}\tThrottle Out: {ThrottleDesired:.2f}\t"
+                f"Register {ThrottleRegisterVal:.0f} "
+            )
 
         # if ThrottleDesired > 20:
         #     ThrottleRegisterVal = self.throttle_idle
