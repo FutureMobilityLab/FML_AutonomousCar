@@ -98,6 +98,9 @@ class MotorCommands(Node):
         error = desired_speed - self.v
         steerangle = AckermannCMD.drive.steering_angle
         integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
+
+        # A good check to make the integrator robust against software faults that 
+        # could cause large loop delays.
         if integratorTimeStep > 0.5:
             self.errorIntegrated = 0.0
             self.get_logger().info("***INTEGRATOR TIMEOUT - RESETTING INTEGRAL***")
@@ -118,6 +121,7 @@ class MotorCommands(Node):
                 f"Register {ThrottleRegisterVal:.0f} "
             )
 
+        # A useful check to prevent unintended high velocities.
         if ThrottleRegisterVal >= self.throttle_register_max:
             ThrottleRegisterVal = self.throttle_idle
             self.get_logger().info(
@@ -125,10 +129,12 @@ class MotorCommands(Node):
             )
             raise SystemExit
 
+        # A useful check to prevent excessive integral windup.
         if abs(self.accel_x) > self.max_accel and np.sign(self.accel_x) == np.sign(self.v):
             self.errorIntegrated = self.errorIntegrated
             self.get_logger().info("***EXCESSIVE ACCELERATION - HOLDING INTEGRAL***")
 
+        # A useful check to prevent acceleration after crash.
         if abs(self.accel_x) > self.crash_accel:
             ThrottleRegisterVal = self.throttle_idle
             self.get_logger().info(
@@ -136,6 +142,7 @@ class MotorCommands(Node):
             )
             raise SystemExit
 
+        # A useful check to be robust against rear wheel speed sensor failures.
         if ThrottleDesired > 5 and self.v < 0.02:
             self.timeoutCount += 1
             if self.timeoutCount > 20:
