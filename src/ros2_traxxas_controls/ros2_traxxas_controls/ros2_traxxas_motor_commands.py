@@ -158,7 +158,7 @@ class MotorCommands(Node):
     def ackermann_callback(self, msg: AckermannDriveStamped) -> None:
         """When a new command is received send a steer and throttle command."""
         self.ackermann_cmd = msg
-        cmd_time = msg.header.stamp.nanosec * 1e-9
+        cmd_time = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
         now_time = self.get_clock().now().nanoseconds * 1e-9
         self.get_logger().info(f"Delay in command received: {now_time - cmd_time} s.")
         self.sendServoCmd()
