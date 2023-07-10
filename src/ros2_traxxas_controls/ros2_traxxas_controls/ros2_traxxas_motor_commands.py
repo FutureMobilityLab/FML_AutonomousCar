@@ -34,6 +34,7 @@ class MotorCommands(Node):
         self.declare_parameter("ki", 20.0)
         self.declare_parameter("kt", 2.0)
         self.declare_parameter("throttle_register_idle", 4915)
+        self.declare_parameter("throttle_0_mps", 5160)
         self.declare_parameter("throttle_register_full", 6335)
         self.declare_parameter("throttle_register_revr", 3276)
         self.declare_parameter("max_steer_angle", 0.65)
@@ -44,13 +45,14 @@ class MotorCommands(Node):
         self.Ki = self.get_parameter("ki").value
         self.Kt = self.get_parameter("kt").value
         self.throttle_idle = self.get_parameter("throttle_register_idle").value
+        self.throttle_0_mps = self.get_parameter("throttle_0_mps").value
         self.throttle_full = self.get_parameter("throttle_register_full").value
         self.throttle_revr = self.get_parameter("throttle_register_revr").value
         self.max_steer_angle = self.get_parameter("max_steer_angle").value
         self.max_accel = self.get_parameter("max_accel").value
         self.crash_accel = self.get_parameter("crash_accel").value
         # Unchanging Parameters
-        self.throttle_pcnt_increment = (self.throttle_full - self.throttle_idle) / 100
+        self.throttle_pcnt_increment = (self.throttle_full - self.throttle_0_mps) / 100
         self.errorIntegrated = 0
         tempTimeStamp = self.get_clock().now()
         tempTimemsg = tempTimeStamp.to_msg()
@@ -72,14 +74,25 @@ class MotorCommands(Node):
         self.TraxxasServo = servo.Servo(self.pca.channels[0])
         self.throttleChannel = self.pca.channels[1]
 
+        # Feedforward lookup table. This is identified by requesting a throttle
+        # and measuring the velocity when the vehicle is lifted. Thisshould be enough
+        # to overcome the motor+driveline resistances.
+        self.ffwdVelocities = [0.0,1.1,1.1,1.5,1.7,2.1,2.4,2.7,3.0,3.5,3.9,4.3]
+        self.ffwdRegVals = [5160,5170,5270,5280,5320,5330,5360,5380,5400,5420,5430,5450]
+
     def getTimeDiff(self, timestamp):
         timeNow = timestamp.sec + timestamp.nanosec * 10**-9
         timediff = timeNow - self.timeLastLooped
         self.timeLastLooped = timeNow
         return timediff
 
+    def getThrottleFfwd(self, speed: float) -> int:
+        """Compute a throttle register value that will achieve the steady-state velocity."""
+        return np.interp(speed,self.ffwdVelocities,self.ffwdRegVals)
+    
     def getThrottleCmd(self, AckermannCMD: AckermannDriveStamped):
-        error = AckermannCMD.drive.speed - self.v
+        desired_speed = AckermannCMD.drive.speed
+        error = desired_speed - self.v
         steerangle = AckermannCMD.drive.steering_angle
         integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
         if integratorTimeStep > 0.5:
@@ -99,7 +112,7 @@ class MotorCommands(Node):
         # ThrottleRegisterVal = (
         #     self.throttle_idle + self.throttle_pcnt_increment * ThrottleDesired
         # )  # converts to register value ()
-        ThrottleRegisterVal = 5160
+        ThrottleRegisterVal = self.getThrottleFfwd(desired_speed)
 
         # if ThrottleDesired > 20:
         #     ThrottleRegisterVal = self.throttle_idle
