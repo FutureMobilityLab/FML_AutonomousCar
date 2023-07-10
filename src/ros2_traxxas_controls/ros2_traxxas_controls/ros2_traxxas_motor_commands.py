@@ -87,9 +87,10 @@ class MotorCommands(Node):
             self.get_logger().info("***INTEGRATOR TIMEOUT - RESETTING INTEGRAL***")
         else:
             self.errorIntegrated = self.errorIntegrated + error * integratorTimeStep
-        ThrottleDesired = (
-            self.Kp * error + self.Ki * self.errorIntegrated + self.Kt * abs(steerangle)
-        )
+        # ThrottleDesired = (
+        #     self.Kp * error + self.Ki * self.errorIntegrated + self.Kt * abs(steerangle)
+        # )
+        ThrottleDesired = 0.5
         if self.debugBool:
             self.get_logger().info(
                 f"Measured Velocity: {self.v}\tError: {error}\tThrottle Out:"
