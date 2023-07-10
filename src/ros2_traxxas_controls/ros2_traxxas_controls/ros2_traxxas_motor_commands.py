@@ -48,6 +48,9 @@ class MotorCommands(Node):
         self.throttle_0_mps = self.get_parameter("throttle_register_0_mps").value
         self.throttle_full = self.get_parameter("throttle_register_full").value
         self.throttle_revr = self.get_parameter("throttle_register_revr").value
+        # Experimental value used to detect faults. This amount of throttle will likely
+        # result in > 4 m/s.
+        self.throttle_register_max = 5600
         self.max_steer_angle = self.get_parameter("max_steer_angle").value
         self.max_accel = self.get_parameter("max_accel").value
         self.crash_accel = self.get_parameter("crash_accel").value
@@ -115,12 +118,12 @@ class MotorCommands(Node):
                 f"Register {ThrottleRegisterVal:.0f} "
             )
 
-        # if ThrottleDesired > 20:
-        #     ThrottleRegisterVal = self.throttle_idle
-        #     self.get_logger().info(
-        #         "***MAX THROTTLE - SETTING TO IDLE AND QUITTING***"
-        #     )
-        #     raise SystemExit
+        if ThrottleRegisterVal >= self.throttle_register_max:
+            ThrottleRegisterVal = self.throttle_idle
+            self.get_logger().info(
+                "***MAX THROTTLE - SETTING TO IDLE AND QUITTING***"
+            )
+            raise SystemExit
 
         if abs(self.accel_x) > self.max_accel and np.sign(self.accel_x) == np.sign(self.v):
             self.errorIntegrated = self.errorIntegrated
@@ -133,15 +136,15 @@ class MotorCommands(Node):
             )
             raise SystemExit
 
-        # if ThrottleDesired > 5 and self.v < 0.02:
-        #     self.timeoutCount += 1
-        #     if self.timeoutCount > 20:
-        #         ThrottleRegisterVal = self.throttle_idle
-        #         self.get_logger().info(
-        #             "*** THROTTLE ACTIVE BUT NO MOTION - ASSUMED COLLISION - "
-        #             "SETTING IDLE AND QUITTING"
-        #         )
-        #         raise SystemExit
+        if ThrottleDesired > 5 and self.v < 0.02:
+            self.timeoutCount += 1
+            if self.timeoutCount > 20:
+                ThrottleRegisterVal = self.throttle_idle
+                self.get_logger().info(
+                    "*** THROTTLE ACTIVE BUT NO MOTION - ASSUMED COLLISION - "
+                    "SETTING IDLE AND QUITTING"
+                )
+                raise SystemExit
 
         return ThrottleRegisterVal
 
@@ -200,13 +203,14 @@ def main(args=None):
     pca.frequency = 50
     TraxxasServo = servo.Servo(pca.channels[0])
     TraxxasServo.angle = 90
-    pca.deinit
+    pca.deinit()
 
     i2c = busio.I2C(SCL, SDA)
     pca = PCA9685(i2c)
     pca.frequency = 50
     pca.channels[1].duty_cycle = motor_commands.throttle_idle
     pca.deinit()
+
     rclpy.logging.get_logger("EXITCMD").info(
         f"""FINAL THROTTLE: {motor_commands.throttle_idle}   FINAL STEER: {TraxxasServo.angle}"""
     )
