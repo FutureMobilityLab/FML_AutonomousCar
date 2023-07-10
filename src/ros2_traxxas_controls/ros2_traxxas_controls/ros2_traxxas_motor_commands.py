@@ -138,7 +138,7 @@ class MotorCommands(Node):
             self.max_steer_angle,
         )
         self.TraxxasServo.angle = (steeringClipped * 180.0 / 3.14159265) + 90.0
-        self.pca.deinit()
+        # self.pca.deinit()
 
     def sendThrottleCmd(self) -> None:
         """Send throttle command to Traxxas speed controller over i2c."""
@@ -147,7 +147,7 @@ class MotorCommands(Node):
             np.clip(ThrottleCMD, self.throttle_revr, self.throttle_full)
         )
         self.throttleChannel.duty_cycle = ThrottleCMDClipped
-        self.pca.deinit()
+        # self.pca.deinit()
 
     def rear_wss_callback(self, msg: Odometry) -> None:
         self.v = msg.twist.twist.linear.x
