@@ -143,14 +143,15 @@ class MotorCommands(Node):
     def sendThrottleCmd(self) -> None:
         """Send throttle command to Traxxas speed controller over i2c."""
         ThrottleCMD = self.getThrottleCmd(self.ackermann_cmd)
-        ThrottleCMDClipped = int(
-            np.clip(ThrottleCMD, self.throttle_revr, self.throttle_full)
-        )
+        ThrottleCMDClipped = np.clip(ThrottleCMD, self.throttle_revr, self.throttle_full)
         self.throttleChannel.duty_cycle = ThrottleCMDClipped
         # self.pca.deinit()
 
     def rear_wss_callback(self, msg: Odometry) -> None:
         self.v = msg.twist.twist.linear.x
+        odom_time = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
+        now_time = self.get_clock().now().nanoseconds * 1e-9
+        self.get_logger().info(f"Odom delay: {now_time - odom_time} s.")
 
     def accel_callback(self, msg: Imu) -> None:
         self.accel_x = msg.linear_acceleration.x
@@ -160,7 +161,7 @@ class MotorCommands(Node):
         self.ackermann_cmd = msg
         cmd_time = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
         now_time = self.get_clock().now().nanoseconds * 1e-9
-        self.get_logger().info(f"Delay in command received: {now_time - cmd_time} s.")
+        self.get_logger().info(f"Command delay: {now_time - cmd_time} s.")
         self.sendServoCmd()
         servo_time = self.get_clock().now().nanoseconds * 1e-9
         self.get_logger().info(f"Servo delay:{servo_time - now_time}s")
