@@ -11,14 +11,11 @@ from adafruit_pca9685 import PCA9685
 import numpy as np
 
 
-def boundedSignal(x, lower, upper):
-    return lower if x < lower else upper if x > upper else x
-
-
 class MotorCommands(Node):
     def __init__(self):
         super().__init__("motor_driver")
         FMLCarQoS = QoSProfile(history=1, depth=1, reliability=2, durability=2)
+
         self.command_subscription = self.create_subscription(
             AckermannDriveStamped, "cmd_ackermann", self.ackermann_callback, FMLCarQoS
         )
@@ -28,8 +25,10 @@ class MotorCommands(Node):
         self.accel_subscription = self.create_subscription(
             Imu, "imu/data", self.accel_callback, FMLCarQoS
         )
+        self.accel_x = 0
         self.command_subscription  # prevents unused variable warning
         self.speed_subscription
+
         # Sets Default Parameters
         self.declare_parameter("kp", 10.0)
         self.declare_parameter("ki", 20.0)
@@ -57,7 +56,6 @@ class MotorCommands(Node):
         tempTimemsg = tempTimeStamp.to_msg()
         self.timeoutCount = 0
         self.timeLastLooped = tempTimemsg.sec + tempTimemsg.nanosec * 10**-9
-        self.a = 0
         self.v = 0
         self.debugBool = False
         self.get_logger().info(
@@ -67,13 +65,20 @@ class MotorCommands(Node):
         Kt: {self.Kt}"""
         )
 
+        # Setup I2C bus interface and PCA9685 class instance.
+        i2c = busio.I2C(SCL, SDA)
+        self.pca = PCA9685(i2c)
+        self.pca.frequency = 50
+        self.TraxxasServo = servo.Servo(self.pca.channels[0])
+        self.throttleChannel = self.pca.channels[1]
+
     def getTimeDiff(self, timestamp):
         timeNow = timestamp.sec + timestamp.nanosec * 10**-9
         timediff = timeNow - self.timeLastLooped
         self.timeLastLooped = timeNow
         return timediff
 
-    def LoopPID(self, AckermannCMD):
+    def getThrottleCmd(self, AckermannCMD: AckermannDriveStamped):
         error = AckermannCMD.drive.speed - self.v
         steerangle = AckermannCMD.drive.steering_angle
         integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
@@ -102,14 +107,14 @@ class MotorCommands(Node):
         #     )
         #     raise SystemExit
 
-        if abs(self.a) > self.max_accel and np.sign(self.a) == np.sign(self.v):
+        if abs(self.accel_x) > self.max_accel and np.sign(self.accel_x) == np.sign(self.v):
             self.errorIntegrated = self.errorIntegrated
             self.get_logger().info("***EXCESSIVE ACCELERATION - HOLDING INTEGRAL***")
 
-        if abs(self.a) > self.crash_accel:
+        if abs(self.accel_x) > self.crash_accel:
             ThrottleRegisterVal = self.throttle_idle
             self.get_logger().info(
-                f"*** GOT {self.a} M/S^2 - ASSUMED COLLISION - SETTING IDLE AND QUITTING"
+                f"*** GOT {self.accel_x} M/S^2 - ASSUMED COLLISION - SETTING IDLE AND QUITTING"
             )
             raise SystemExit
 
@@ -125,39 +130,43 @@ class MotorCommands(Node):
 
         return ThrottleRegisterVal
 
-    def CMDtoMotor(self):
-        i2c = busio.I2C(SCL, SDA)
-        pca = PCA9685(i2c)
-        pca.frequency = 50
-        TraxxasServo = servo.Servo(pca.channels[0])
-        steeringClipped = boundedSignal(
+    def sendServoCmd(self) -> None:
+        """Send servo angle to Traxxas servo."""
+        steeringClipped = np.clip(
             self.ackermann_cmd.drive.steering_angle,
             -self.max_steer_angle,
             self.max_steer_angle,
         )
-        TraxxasServo.angle = (steeringClipped * 180.0 / 3.14159265) + 90.0
-        pca.deinit()
+        self.TraxxasServo.angle = (steeringClipped * 180.0 / 3.14159265) + 90.0
+        self.pca.deinit()
 
-        i2c = busio.I2C(SCL, SDA)
-        pca = PCA9685(i2c)
-        pca.frequency = 50
-        ThrottleCMD = self.LoopPID(self.ackermann_cmd)
+    def sendThrottleCmd(self) -> None:
+        """Send throttle command to Traxxas speed controller over i2c."""
+        ThrottleCMD = self.getThrottleCmd(self.ackermann_cmd)
         ThrottleCMDClipped = int(
-            boundedSignal(ThrottleCMD, self.throttle_revr, self.throttle_full)
+            np.clip(ThrottleCMD, self.throttle_revr, self.throttle_full)
         )
-        pca.channels[1].duty_cycle = ThrottleCMDClipped
-        pca.deinit()
+        self.throttleChannel.duty_cycle = ThrottleCMDClipped
+        self.pca.deinit()
 
-    def rear_wss_callback(self, msg):
+    def rear_wss_callback(self, msg: Odometry) -> None:
         self.v = msg.twist.twist.linear.x
 
-    def accel_callback(self, msg):
-        self.a = msg.linear_acceleration.x
+    def accel_callback(self, msg: Imu) -> None:
+        self.accel_x = msg.linear_acceleration.x
 
-    def ackermann_callback(self, ackermann_cmd):
+    def ackermann_callback(self, msg: AckermannDriveStamped) -> None:
         """When a new command is received send a steer and throttle command."""
-        self.ackermann_cmd = ackermann_cmd
-        self.CMDtoMotor()
+        self.ackermann_cmd = msg
+        cmd_time = msg.header.stamp.nanosec * 1e-9
+        now_time = self.get_clock().now().nanoseconds * 1e-9
+        self.get_logger().info(f"Delay in command received: {now_time - cmd_time} s.")
+        self.sendServoCmd()
+        servo_time = self.get_clock().now().nanoseconds * 1e-9
+        self.get_logger().info(f"Servo delay:{servo_time - now_time}s")
+        self.sendThrottleCmd()
+        throttle_time = self.get_clock().now().nanoseconds * 1e-9
+        self.get_logger().info(f"Throttle delay:{throttle_time - servo_time}s")
 
 
 def main(args=None):
@@ -169,11 +178,13 @@ def main(args=None):
         rclpy.spin(motor_commands)
     except KeyboardInterrupt:
         pass
-    # SystemExit is used to indicate a system failure in LoopPID().
+    # SystemExit is used to indicate a system failure in getThrottleCmd().
     except SystemExit:
         pass
     except ExternalShutdownException:
         pass
+
+    # Before shutting down, send zero steer command and idle throttle command.
     i2c = busio.I2C(SCL, SDA)
     pca = PCA9685(i2c)
     pca.frequency = 50
