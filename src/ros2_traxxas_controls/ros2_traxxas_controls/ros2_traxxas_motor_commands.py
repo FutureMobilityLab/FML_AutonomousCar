@@ -62,7 +62,7 @@ class MotorCommands(Node):
         self.timeoutCount = 0
         self.timeLastLooped = tempTimemsg.sec + tempTimemsg.nanosec * 10**-9
         self.v = 0
-        self.debugBool = True
+        self.debugBool = False
         self.get_logger().info(
             f"""Motor PI Control Gains:
         Kp: {self.Kp}
