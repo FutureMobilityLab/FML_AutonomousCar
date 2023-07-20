@@ -55,6 +55,7 @@ def generate_launch_description():
                     "record",
                     "/ref_point",
                     "/cmd_ackermann",
+                    "/current_pose",
                     "/amcl_pose",
                     "/odometry/filtered",
                     "/odom",

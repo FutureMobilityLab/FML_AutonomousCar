@@ -50,7 +50,7 @@ class LTIController:
     def get_commands(
         self, x: float, y: float, yaw: float, v: float
     ) -> Tuple[float, float, float, float]:
-        front_axle = np.array(
+        lookahead_point = np.array(
             [[x + self.lookahead * np.cos(yaw), y + self.lookahead * np.sin(yaw), yaw]]
         )
         waypoints = np.hstack(
@@ -60,10 +60,10 @@ class LTIController:
                 self.waypoints.psi[np.newaxis].T,
             )
         )
-        closest_waypoint, closest_i = get_closest_waypoint(front_axle, waypoints)
+        closest_waypoint, closest_i = get_closest_waypoint(lookahead_point, waypoints)
 
-        lateral_error, _ = get_lateral_errors(front_axle, closest_waypoint)
-
+        lateral_error, _ = get_lateral_errors(lookahead_point, closest_waypoint)
+        lateral_error = np.array([[lateral_error]])
         new_Gc_states = self.GcA @ self.Gc_states + self.GcB @ lateral_error
         steering_angle = float(self.GcC @ self.Gc_states + self.GcD @ lateral_error)
 
@@ -83,4 +83,5 @@ class LTIController:
             speed_cmd,
             closest_waypoint[0, 0],
             closest_waypoint[0, 1],
+            closest_waypoint[0, 2]
         )
