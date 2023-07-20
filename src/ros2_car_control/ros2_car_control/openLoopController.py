@@ -42,7 +42,7 @@ class OpenLoopChirp:
             speed_cmd = np.clip(self.max_accel * t, 0, self.velocity_setpoint)
         # Perform chirp steer maneuver.
         elif now >= self.chirp_start_time and now < self.chirp_end_time:
-            t = now - self.start_time
+            t = now - self.chirp_start_time
             amp = self.startAmp + self.ampRate * t
             phase = self.chirpRate / 2 * t**2 + self.startFreq * t
             steering_angle = amp * np.sin(2 * np.pi * phase)
