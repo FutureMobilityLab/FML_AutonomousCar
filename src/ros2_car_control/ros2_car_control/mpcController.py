@@ -1,6 +1,11 @@
-import numpy as np
 from acados_template import AcadosOcpSolver
-from ros2_car_control.utilities import get_accel_dist, get_closest_waypoint, get_speed_cmd
+import numpy as np
+from ros2_car_control.utilities import (
+    get_accel_dist,
+    get_closest_waypoint,
+    get_speed_cmd,
+)
+from typing import Tuple
 
 
 class MPCController:
@@ -45,10 +50,12 @@ class MPCController:
         self.Nsim = int(self.srefs[-1] * self.N / (self.velocity_setpoint * self.Tf))
         self.ds = self.velocity_setpoint * self.Tf / self.N
 
-    def get_commands(self, pose_x, pose_y, pose_psi, v):
-        self.pose_x = pose_x
-        self.pose_y = pose_y
-        self.pose_psi = pose_psi
+    def get_commands(
+        self, x: float, y: float, yaw: float, v: float
+    ) -> Tuple[float, float, float, float, float]:
+        self.pose_x = x
+        self.pose_y = y
+        self.pose_psi = yaw
         # Get Nearest Reference Point
         x0 = np.array([self.pose_x, self.pose_y, 0, 0, 0, self.pose_psi, 0])
         self.acados_solver.set(0, "lbx", x0)
@@ -115,7 +122,7 @@ class MPCController:
                 self.waypoints.psi[np.newaxis].T,
             )
         )
-        pose = np.array([[pose_x, pose_y]])
+        pose = np.array([[x, y]])
         _, closest_i = get_closest_waypoint(pose, waypoints)
         # Ramp up or down velocity based on distance traveled.
         d = self.waypoints.d[closest_i]
@@ -123,4 +130,10 @@ class MPCController:
             d, self.d_accel, self.d_decel, self.max_accel, self.velocity_setpoint
         )
 
-        return steering_angle, speed_cmd, self.xrefs[start_ref], self.yrefs[start_ref], self.psirefs[start_ref]
+        return (
+            steering_angle,
+            speed_cmd,
+            self.xrefs[start_ref],
+            self.yrefs[start_ref],
+            self.psirefs[start_ref],
+        )

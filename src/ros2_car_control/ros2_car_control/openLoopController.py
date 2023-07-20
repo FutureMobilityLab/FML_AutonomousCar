@@ -32,7 +32,7 @@ class OpenLoopChirp:
 
     def get_commands(
         self, x: float, y: float, yaw: float, v: float
-    ) -> Tuple[float, float, float, float]:
+    ) -> Tuple[float, float, float, float, float]:
         now = self.ctrl_clock.now().nanoseconds * 10**-9
 
         # Steer straight while accelerating to velocity setpoint.
@@ -54,4 +54,4 @@ class OpenLoopChirp:
             speed_cmd = self.velocity_setpoint - t * self.max_accel
             speed_cmd = np.clip(speed_cmd, 0, self.velocity_setpoint)
 
-        return (steering_angle, speed_cmd, 0.0, 0.0)
+        return (steering_angle, speed_cmd, 0.0, 0.0, 0.0)

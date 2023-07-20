@@ -34,7 +34,7 @@ class PurePursuitController:
 
     def get_commands(
         self, x: float, y: float, yaw: float, v: float
-    ) -> Tuple[float, float, float, float]:
+    ) -> Tuple[float, float, float, float, float]:
         # Get path point closest to the vehicle.
         front_axle = np.array(
             [[x + self.L / 2.0 * np.cos(yaw), y + self.L / 2.0 * np.sin(yaw), yaw]]
@@ -72,5 +72,5 @@ class PurePursuitController:
             speed_cmd,
             self.waypoints.x[point_ref_index],
             self.waypoints.y[point_ref_index],
-            self.waypoints.psi[point_ref_index]
+            self.waypoints.psi[point_ref_index],
         )
