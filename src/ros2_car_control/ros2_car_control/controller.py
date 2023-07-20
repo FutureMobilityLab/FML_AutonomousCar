@@ -165,8 +165,8 @@ class Controller(Node):
             case "open_chirp":
                 self.declare_parameter("open_chirp_start_frequency_hz", 0.0)
                 self.declare_parameter("open_chirp_end_frequency_hz", 4.0)
-                self.declare_parameter("open_chirp_start_amplitude_rad", 1.0)
-                self.declare_parameter("open_chirp_end_amplitude_rad", 0.5)
+                self.declare_parameter("open_chirp_start_amplitude_rad", 0.5)
+                self.declare_parameter("open_chirp_end_amplitude_rad", 0.25)
                 self.declare_parameter("open_chirp_duration_s", 4.0)
                 open_chirp_params = {
                     "start_frequency_hz": self.get_parameter(
