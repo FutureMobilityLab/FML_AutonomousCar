@@ -2,12 +2,13 @@ controller:
   ros__parameters:
     speed_setpoint: 1.0       # m/s
     max_speed: 2.0            # m/s
+    max_accel: 1.0            # m/s/s
     heartbeat_timeout: 0.5    # seconds
     max_steer: 0.65           # radians
 
     wheelbase: .404           # m
 
-    control_method: "stanley" # controller type SELECT FROM: stanley | youla | mpc | hinf | pp
+    control_method: "open_chirp" # controller type SELECT FROM: stanley | youla | mpc | hinf | pp | open_chirp
 
     stanley_k: 1.0              # stanley controller gain
     stanley_k_soft: 1.0         # stanley softening gain
@@ -40,6 +41,12 @@ controller:
     hinf_GcC: [0.901, -0.1636, 0.2208, -0.2615, 0.9054, 30.0826]
     hinf_GcD: [0.0556]
     hinf_lookahead: 2.0        # m
+
+    open_chirp_start_frequency_hz: 0.0
+    open_chirp_end_frequency_hz: 4.0
+    open_chirp_start_amplitude_rad: 1.0
+    open_chirp_end_amplitude_rad: 0.5
+    open_chirp_duration_s: 4.0
 
     waypoints: "waypoints.json"             # json title of waypoints
 

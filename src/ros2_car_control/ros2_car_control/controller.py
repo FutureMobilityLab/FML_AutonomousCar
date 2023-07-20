@@ -10,6 +10,7 @@ from std_msgs.msg import String
 from ros2_car_control.stanleyController import StanleyController
 from ros2_car_control.mpcController import MPCController
 from ros2_car_control.ltiController import LTIController
+from ros2_car_control.openLoopController import OpenLoopChirp
 from ros2_car_control.purePursuitController import PurePursuitController
 from ros2_car_control.fetchWaypoints import waypoints
 from tf2_ros import TransformException
@@ -60,11 +61,11 @@ class Controller(Node):
 
         # Define generic node parameters.
         self.declare_parameter("control_method", "stanley")
-        self.declare_parameter("v_max", 2.0)
+        self.declare_parameter("max_speed", 2.0)
         self.declare_parameter("heartbeat_timeout", 1.0)
         self.declare_parameter("max_steer", 0.65)
         self.declare_parameter("speed_setpoint", 1.0)
-        self.declare_parameter("a_max", 1.0)
+        self.declare_parameter("max_accel", 1.0)
 
         # Get generic parameter values.
         self.control_method = self.get_parameter("control_method").value
@@ -73,7 +74,7 @@ class Controller(Node):
         control_params = {
             "max_steer": self.get_parameter("max_steer").value,
             "speed_setpoint": self.get_parameter("speed_setpoint").value,
-            "max_accel": self.get_parameter("a_max").value,
+            "max_accel": self.get_parameter("max_accel").value,
         }
 
         # Define safety-check flags.
@@ -161,6 +162,30 @@ class Controller(Node):
                 }
                 control_params.update(mpc_params)
                 self.controller_function = MPCController(self.waypoints, control_params)
+            case "open_chirp":
+                self.declare_parameter("open_chirp_start_frequency_hz", 0.0)
+                self.declare_parameter("open_chirp_end_frequency_hz", 4.0)
+                self.declare_parameter("open_chirp_start_amplitude_rad", 1.0)
+                self.declare_parameter("open_chirp_end_amplitude_rad", 0.5)
+                self.declare_parameter("open_chirp_duration_s", 4.0)
+                open_chirp_params = {
+                    "start_frequency_hz": self.get_parameter(
+                        "open_chirp_start_frequency_hz"
+                    ),
+                    "end_frequency_hz": self.get_parameter(
+                        "open_chirp_end_frequency_hz"
+                    ),
+                    "start_amplitude_rad": self.get_parameter(
+                        "open_chirp_start_amplitude_rad"
+                    ),
+                    "end_amplitude_rad": self.get_parameter(
+                        "open_chirp_end_amplitude_rad"
+                    ),
+                    "duration_s": self.get_parameter("open_chirp_duration_s"),
+                    "controller_clock": self.get_clock(),
+                }
+                control_params.update(open_chirp_params)
+                self.controller_function = OpenLoopChirp(control_params)
 
         # Log controller configuration.
         self.get_logger().info(
