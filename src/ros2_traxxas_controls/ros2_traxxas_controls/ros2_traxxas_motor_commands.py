@@ -152,11 +152,12 @@ class MotorCommands(Node):
 
         # A useful check to prevent unintended high velocities.
         if ThrottleRegisterVal >= self.throttle_register_max:
-            ThrottleRegisterVal = self.throttle_idle
             self.get_logger().info(
                 "***MAX THROTTLE - SETTING TO IDLE AND QUITTING:"
-                f"requested {ThrottleRegisterVal}."
+                f"requested {ThrottleRegisterVal} when max is "
+                f"{self.throttle_register_max}***"
             )
+            ThrottleRegisterVal = self.throttle_idle
             raise SystemExit
 
         # A useful check to prevent excessive integral windup.
