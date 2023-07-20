@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import rclpy
-from rclpy.node import Node
+from rclpy.executors import ExternalShutdownException
+from rclpy.node import Node, QoSProfile
 import serial
+import sys
 
 from nav_msgs.msg import Odometry
 
@@ -17,6 +19,7 @@ class RearWss(Node):
 
     def __init__(self):
         super().__init__("rear_wss")
+        FMLCarQoS = QoSProfile(history=1, depth=1, reliability=2, durability=2)
         # Setup serial connection with 9600 baud rate and a timeout of 1 sec.
         self.serial_connection = serial.Serial("/dev/ttyACM0", 115200, timeout=1)
         # Reset the input buffer to clear incomplete data.
@@ -33,7 +36,7 @@ class RearWss(Node):
         self.rl_wss = 0  # [m/s]
         self.rr_wss = 0  # [m/s]
 
-        self.odom_publisher = self.create_publisher(Odometry, "rear_wss", 10)
+        self.odom_publisher = self.create_publisher(Odometry, "rear_wss", FMLCarQoS)
 
         # Wait until we receive from the arduino that the connection is complete.
         msg = ""
@@ -112,11 +115,17 @@ def main(args=None):
 
     rear_wss = RearWss()
 
-    rclpy.spin(rear_wss)
-
-    # Destroy the node explicitly
-    rear_wss.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(rear_wss)
+    except KeyboardInterrupt:
+        pass
+    except SystemExit:
+        pass
+    except ExternalShutdownException:
+        sys.exit(1)
+    finally:
+        rear_wss.destroy_node()
+        rclpy.try_shutdown()
 
 
 if __name__ == "__main__":

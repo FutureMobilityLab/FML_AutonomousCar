@@ -1,11 +1,12 @@
 motor_driver:
   ros__parameters:
-    kp: 2.5
-    ki: 7.5
-    kt: 5.0
+    kp: 3.0
+    ki: 5.0
+    kt: 1.0
     throttle_register_full: 6553
     throttle_register_idle: 4915
+    throttle_register_0_mps: 5160
     throttle_register_revr: 3276
     max_steer_angle: 0.65 # radians
-    max_accel: 5.0 #m/s^2
+    max_accel: 5.0 # m/s^2
     crash_accel: 10.0 # m/s^2

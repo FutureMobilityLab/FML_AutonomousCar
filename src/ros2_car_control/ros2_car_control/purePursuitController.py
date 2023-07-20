@@ -72,4 +72,5 @@ class PurePursuitController:
             speed_cmd,
             self.waypoints.x[point_ref_index],
             self.waypoints.y[point_ref_index],
+            self.waypoints.psi[point_ref_index]
         )
