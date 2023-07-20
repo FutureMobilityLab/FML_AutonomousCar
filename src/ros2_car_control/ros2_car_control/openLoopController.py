@@ -19,8 +19,7 @@ class OpenLoopChirp:
         self.max_accel = ctrl_params.get("max_accel")
 
         # Compute start and end times for acceleration, chirp, and deceleration.
-        now = self.ctrl_clock.now()
-        now = now.seconds + now.nanoseconds * 10**-9
+        now = self.ctrl_clock.now().nanoseconds * 10**-9
         accel_duration = self.velocity_setpoint / self.max_accel
         settling_time = 0.5
         self.accel_start_time = now
@@ -34,8 +33,7 @@ class OpenLoopChirp:
     def get_commands(
         self, x: float, y: float, yaw: float, v: float
     ) -> Tuple[float, float, float, float]:
-        now = self.ctrl_clock.now()
-        now = now.seconds + now.nanoseconds * 10**-9
+        now = self.ctrl_clock.now().nanoseconds * 10**-9
 
         # Steer straight while accelerating to velocity setpoint.
         if now >= self.accel_start_time and now < self.chirp_start_time:
