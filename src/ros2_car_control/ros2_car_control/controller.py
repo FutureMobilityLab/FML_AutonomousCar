@@ -69,7 +69,7 @@ class Controller(Node):
 
         # Get generic parameter values.
         self.control_method = self.get_parameter("control_method").value
-        self.v_max = self.get_parameter("v_max").value
+        self.max_speed = self.get_parameter("max_speed").value
         self.heartbeat_timeout = self.get_parameter("heartbeat_timeout").value
         control_params = {
             "max_steer": self.get_parameter("max_steer").value,
@@ -302,7 +302,7 @@ class Controller(Node):
         # )
 
         # Handle each error separately for clear info message.
-        if self.v > self.v_max:
+        if self.v > self.max_speed:
             self.cmd_steer = 0.0
             self.cmd_speed = 0.0
             self.get_logger().info("Speed unsafe")
