@@ -168,6 +168,7 @@ class Controller(Node):
                 self.declare_parameter("open_chirp_start_amplitude_rad", 0.5)
                 self.declare_parameter("open_chirp_end_amplitude_rad", 0.25)
                 self.declare_parameter("open_chirp_duration_s", 4.0)
+                self.declare_parameter("open_chirp_settling_time_s", 1.0)
                 open_chirp_params = {
                     "start_frequency_hz": self.get_parameter(
                         "open_chirp_start_frequency_hz"
@@ -182,6 +183,9 @@ class Controller(Node):
                         "open_chirp_end_amplitude_rad"
                     ).value,
                     "duration_s": self.get_parameter("open_chirp_duration_s").value,
+                    "settling_time_s": self.get_parameter(
+                        "open_chirp_settling_time_s"
+                    ).value,
                     "controller_clock": self.get_clock(),
                 }
                 control_params.update(open_chirp_params)

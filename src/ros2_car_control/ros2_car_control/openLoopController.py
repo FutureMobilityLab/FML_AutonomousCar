@@ -17,11 +17,11 @@ class OpenLoopChirp:
         self.ctrl_clock = ctrl_params.get("controller_clock")
         self.velocity_setpoint = ctrl_params.get("speed_setpoint")
         self.max_accel = ctrl_params.get("max_accel")
+        settling_time = ctrl_params.get("settling_time_s")
 
         # Compute start and end times for acceleration, chirp, and deceleration.
         now = self.ctrl_clock.now().nanoseconds * 10**-9
         accel_duration = self.velocity_setpoint / self.max_accel
-        settling_time = 0.5
         self.accel_start_time = now
         self.chirp_start_time = now + accel_duration + settling_time
         self.chirp_end_time = self.chirp_start_time + duration

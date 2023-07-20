@@ -47,6 +47,7 @@ controller:
     open_chirp_start_amplitude_rad: 0.5
     open_chirp_end_amplitude_rad: 0.25
     open_chirp_duration_s: 4.0
+    open_chirp_settling_time_s: 1.0
 
     waypoints: "waypoints.json"             # json title of waypoints
 
