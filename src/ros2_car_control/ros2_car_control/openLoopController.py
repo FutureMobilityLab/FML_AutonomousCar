@@ -54,4 +54,4 @@ class OpenLoopChirp:
             speed_cmd = self.velocity_setpoint - t * self.max_accel
             speed_cmd = np.clip(speed_cmd, 0, self.velocity_setpoint)
 
-        return (steering_angle, speed_cmd, 0, 0)
+        return (steering_angle, speed_cmd, 0.0, 0.0)
