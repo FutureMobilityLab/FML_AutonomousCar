@@ -171,17 +171,17 @@ class Controller(Node):
                 open_chirp_params = {
                     "start_frequency_hz": self.get_parameter(
                         "open_chirp_start_frequency_hz"
-                    ),
+                    ).value,
                     "end_frequency_hz": self.get_parameter(
                         "open_chirp_end_frequency_hz"
-                    ),
+                    ).value,
                     "start_amplitude_rad": self.get_parameter(
                         "open_chirp_start_amplitude_rad"
-                    ),
+                    ).value,
                     "end_amplitude_rad": self.get_parameter(
                         "open_chirp_end_amplitude_rad"
-                    ),
-                    "duration_s": self.get_parameter("open_chirp_duration_s"),
+                    ).value,
+                    "duration_s": self.get_parameter("open_chirp_duration_s").value,
                     "controller_clock": self.get_clock(),
                 }
                 control_params.update(open_chirp_params)
