@@ -10,6 +10,7 @@ from std_msgs.msg import String
 from ros2_car_control.stanleyController import StanleyController
 from ros2_car_control.mpcController import MPCController
 from ros2_car_control.ltiController import LTIController
+from ros2_car_control.openLoopController import OpenLoopChirp
 from ros2_car_control.purePursuitController import PurePursuitController
 from ros2_car_control.fetchWaypoints import waypoints
 from tf2_ros import TransformException
@@ -60,20 +61,20 @@ class Controller(Node):
 
         # Define generic node parameters.
         self.declare_parameter("control_method", "stanley")
-        self.declare_parameter("v_max", 2.0)
+        self.declare_parameter("max_speed", 2.0)
         self.declare_parameter("heartbeat_timeout", 1.0)
         self.declare_parameter("max_steer", 0.65)
         self.declare_parameter("speed_setpoint", 1.0)
-        self.declare_parameter("a_max", 1.0)
+        self.declare_parameter("max_accel", 1.0)
 
         # Get generic parameter values.
         self.control_method = self.get_parameter("control_method").value
-        self.v_max = self.get_parameter("v_max").value
+        self.max_speed = self.get_parameter("max_speed").value
         self.heartbeat_timeout = self.get_parameter("heartbeat_timeout").value
         control_params = {
             "max_steer": self.get_parameter("max_steer").value,
             "speed_setpoint": self.get_parameter("speed_setpoint").value,
-            "max_accel": self.get_parameter("a_max").value,
+            "max_accel": self.get_parameter("max_accel").value,
         }
 
         # Define safety-check flags.
@@ -162,6 +163,34 @@ class Controller(Node):
                 }
                 control_params.update(mpc_params)
                 self.controller_function = MPCController(self.waypoints, control_params)
+            case "open_chirp":
+                self.declare_parameter("open_chirp_start_frequency_hz", 0.0)
+                self.declare_parameter("open_chirp_end_frequency_hz", 4.0)
+                self.declare_parameter("open_chirp_start_amplitude_rad", 0.5)
+                self.declare_parameter("open_chirp_end_amplitude_rad", 0.25)
+                self.declare_parameter("open_chirp_duration_s", 4.0)
+                self.declare_parameter("open_chirp_settling_time_s", 1.0)
+                open_chirp_params = {
+                    "start_frequency_hz": self.get_parameter(
+                        "open_chirp_start_frequency_hz"
+                    ).value,
+                    "end_frequency_hz": self.get_parameter(
+                        "open_chirp_end_frequency_hz"
+                    ).value,
+                    "start_amplitude_rad": self.get_parameter(
+                        "open_chirp_start_amplitude_rad"
+                    ).value,
+                    "end_amplitude_rad": self.get_parameter(
+                        "open_chirp_end_amplitude_rad"
+                    ).value,
+                    "duration_s": self.get_parameter("open_chirp_duration_s").value,
+                    "settling_time_s": self.get_parameter(
+                        "open_chirp_settling_time_s"
+                    ).value,
+                    "controller_clock": self.get_clock(),
+                }
+                control_params.update(open_chirp_params)
+                self.controller_function = OpenLoopChirp(control_params)
 
         # Log controller configuration.
         self.get_logger().info(
@@ -256,7 +285,7 @@ class Controller(Node):
             self.cmd_speed,
             self.reference_point_x,
             self.reference_point_y,
-            self.reference_point_psi
+            self.reference_point_psi,
         ) = self.controller_function.get_commands(
             current_pose.position.x, current_pose.position.y, yaw, self.v
         )
@@ -284,10 +313,10 @@ class Controller(Node):
         # )
 
         # Handle each error separately for clear info message.
-        # if self.v > self.v_max:
-        #     self.cmd_steer = 0.0
-        #     self.cmd_speed = 0.0
-        #     self.get_logger().info("Speed unsafe")
+        if self.v > self.max_speed:
+            self.cmd_steer = 0.0
+            self.cmd_speed = 0.0
+            self.get_logger().info("Speed unsafe")
         if self.run_flag == 0:
             self.cmd_steer = 0.0
             self.cmd_speed = 0.0

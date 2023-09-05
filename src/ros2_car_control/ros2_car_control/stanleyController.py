@@ -46,7 +46,7 @@ class StanleyController:
 
     def get_commands(
         self, x: float, y: float, yaw: float, v: float
-    ) -> Tuple[float, float, float, float]:
+    ) -> Tuple[float, float, float, float, float]:
         front_axle = np.array(
             [[x + self.L / 2.0 * np.cos(yaw), y + self.L / 2.0 * np.sin(yaw), yaw]]
         )
@@ -86,5 +86,5 @@ class StanleyController:
             speed_cmd,
             closest_waypoint[0, 0],
             closest_waypoint[0, 1],
-            closest_waypoint[0, 2]
+            closest_waypoint[0, 2],
         )

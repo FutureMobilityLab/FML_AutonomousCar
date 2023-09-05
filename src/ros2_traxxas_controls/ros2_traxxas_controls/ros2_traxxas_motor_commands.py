@@ -40,6 +40,7 @@ class MotorCommands(Node):
         self.declare_parameter("max_steer_angle", 0.65)
         self.declare_parameter("max_accel", 5.0)
         self.declare_parameter("crash_accel", 10.0)
+        self.declare_parameter("max_throttle_register_val", 5600)
         # Overrrides Parameters if Config File is Passed
         self.Kp = self.get_parameter("kp").value
         self.Ki = self.get_parameter("ki").value
@@ -50,7 +51,9 @@ class MotorCommands(Node):
         self.throttle_revr = self.get_parameter("throttle_register_revr").value
         # Experimental value used to detect faults. This amount of throttle will likely
         # result in > 4 m/s.
-        self.throttle_register_max = 5600
+        self.throttle_register_max = self.get_parameter(
+            "max_throttle_register_val"
+        ).value
         self.max_steer_angle = self.get_parameter("max_steer_angle").value
         self.max_accel = self.get_parameter("max_accel").value
         self.crash_accel = self.get_parameter("crash_accel").value
@@ -80,8 +83,34 @@ class MotorCommands(Node):
         # Feedforward lookup table. This is identified by requesting a throttle
         # and measuring the velocity when the vehicle is lifted. Thisshould be enough
         # to overcome the motor+driveline resistances.
-        self.ffwdVelocities = [0.0,1.1,1.1,1.5,1.7,2.1,2.4,2.7,3.0,3.5,3.9,4.3]
-        self.ffwdRegVals = [5160,5170,5270,5280,5320,5330,5360,5380,5400,5420,5430,5450]
+        self.ffwdVelocities = [
+            0.0,
+            1.1,
+            1.1,
+            1.5,
+            1.7,
+            2.1,
+            2.4,
+            2.7,
+            3.0,
+            3.5,
+            3.9,
+            4.3,
+        ]
+        self.ffwdRegVals = [
+            5160,
+            5170,
+            5270,
+            5280,
+            5320,
+            5330,
+            5360,
+            5380,
+            5400,
+            5420,
+            5430,
+            5450,
+        ]
 
     def getTimeDiff(self, timestamp):
         timeNow = timestamp.sec + timestamp.nanosec * 10**-9
@@ -91,15 +120,15 @@ class MotorCommands(Node):
 
     def getThrottleFfwd(self, speed: float) -> int:
         """Compute a throttle register value that will achieve the steady-state velocity."""
-        return np.interp(speed,self.ffwdVelocities,self.ffwdRegVals)
-    
+        return np.interp(speed, self.ffwdVelocities, self.ffwdRegVals)
+
     def getThrottleCmd(self, AckermannCMD: AckermannDriveStamped):
         desired_speed = AckermannCMD.drive.speed
         error = desired_speed - self.v
         steerangle = AckermannCMD.drive.steering_angle
         integratorTimeStep = self.getTimeDiff(AckermannCMD.header.stamp)
 
-        # A good check to make the integrator robust against software faults that 
+        # A good check to make the integrator robust against software faults that
         # could cause large loop delays.
         if integratorTimeStep > 0.5:
             self.errorIntegrated = 0.0
@@ -123,14 +152,18 @@ class MotorCommands(Node):
 
         # A useful check to prevent unintended high velocities.
         if ThrottleRegisterVal >= self.throttle_register_max:
-            ThrottleRegisterVal = self.throttle_idle
             self.get_logger().info(
-                "***MAX THROTTLE - SETTING TO IDLE AND QUITTING***"
+                "***MAX THROTTLE - SETTING TO IDLE AND QUITTING:"
+                f"requested {ThrottleRegisterVal} when max is "
+                f"{self.throttle_register_max}***"
             )
+            ThrottleRegisterVal = self.throttle_idle
             raise SystemExit
 
         # A useful check to prevent excessive integral windup.
-        if abs(self.accel_x) > self.max_accel and np.sign(self.accel_x) == np.sign(self.v):
+        if abs(self.accel_x) > self.max_accel and np.sign(self.accel_x) == np.sign(
+            self.v
+        ):
             self.errorIntegrated = self.errorIntegrated
             self.get_logger().info("***EXCESSIVE ACCELERATION - HOLDING INTEGRAL***")
 
@@ -167,7 +200,9 @@ class MotorCommands(Node):
     def sendThrottleCmd(self) -> None:
         """Send throttle command to Traxxas speed controller over i2c."""
         ThrottleCMD = self.getThrottleCmd(self.ackermann_cmd)
-        ThrottleCMDClipped = np.clip(ThrottleCMD, self.throttle_revr, self.throttle_full)
+        ThrottleCMDClipped = np.clip(
+            ThrottleCMD, self.throttle_revr, self.throttle_full
+        )
         self.throttleChannel.duty_cycle = int(ThrottleCMDClipped)
 
     def rear_wss_callback(self, msg: Odometry) -> None:
