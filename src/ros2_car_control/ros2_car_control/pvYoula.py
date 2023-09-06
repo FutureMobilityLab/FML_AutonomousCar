@@ -416,6 +416,7 @@ class PVYoulaController:
     def get_commands(
         self, x: float, y: float, yaw: float, v: float
     ) -> Tuple[float, float, float, float, float]:
+        v = np.clip(v, 0.1, 5)
         lookahead_dist = self.lookahead_gain * v
         lookahead_point = np.array(
             [[x + lookahead_dist * np.cos(yaw), y + lookahead_dist * np.sin(yaw), yaw]]
