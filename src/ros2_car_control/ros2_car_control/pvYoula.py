@@ -56,6 +56,13 @@ class PVYoulaController:
             "tau_3": 1 / 0.87,
         }
 
+        # Compute first step of trapezoidal integration.
+        v = 0.5
+        lookahead_dist = self.lookahead_gain * v
+        A = self.compute_A_matrix(v, lookahead_dist)
+        # Assume initial error is 0.
+        self.prev_dx = A @ self.Gc_states
+
     def compute_A_matrix(self, long_vel: float, lookahead_dist: float) -> np.ndarray:
         """Compute the state space A matrix from the given parameters."""
         m = self.vehicle_params["mass_kg"]
@@ -416,7 +423,7 @@ class PVYoulaController:
     def get_commands(
         self, x: float, y: float, yaw: float, v: float
     ) -> Tuple[float, float, float, float, float]:
-        v = np.clip(v, 0.1, 5)
+        v = np.clip(v, 0.5, 5)
         lookahead_dist = self.lookahead_gain * v
         lookahead_point = np.array(
             [[x + lookahead_dist * np.cos(yaw), y + lookahead_dist * np.sin(yaw), yaw]]
@@ -438,17 +445,24 @@ class PVYoulaController:
         C = self.compute_C_matrix(v, lookahead_dist)
         D = np.array([[0]])
 
-        # Solve ODE using Heun's Method (explicit Trapezoidal rule).
+        # Solve ODE using trapezoidal integration:
+        #   x(n) = y(n-1) + K*T/2*u(n-1)
+        #   y(n) = x(n) + K*T/2*u(n)
+        #   ==> y(n) = y(n-1) + K*T/2*u(n-1) + K*T/2*u(n)
+        #   where u(n) is the state derivative, and y(n) is the state.
         dx = A @ self.Gc_states + B @ lateral_error
-        next_state_est = self.Gc_states + self.ctrl_sample_time * dx
-        next_dx_est = A @ next_state_est + B @ lateral_error
-        new_Gc_states = self.Gc_states + self.ctrl_sample_time / 2 * (dx + next_dx_est)
+        new_Gc_states = (
+            self.Gc_states
+            + self.ctrl_sample_time / 2 * self.prev_dx
+            + self.ctrl_sample_time / 2 * dx
+        )
         steering_angle = float(C @ new_Gc_states + D @ lateral_error)
 
         if (
             abs(steering_angle) < self.max_steer
         ):  # Attempting to prevent wind-up which occurs immediately with controller
             self.Gc_states = new_Gc_states
+            self.prev_dx = dx
 
         # Ramp up or down velocity based on distance traveled.
         d = self.waypoints.d[closest_i]
