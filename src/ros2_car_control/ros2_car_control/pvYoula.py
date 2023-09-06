@@ -31,7 +31,7 @@ class PVYoulaController:
     """
 
     def __init__(self, waypoints: np.ndarray, ctrl_params: Dict[str, float]):
-        n_GcX = ctrl_params.get("n_GcX")  # Number of controller states
+        n_GcX = int(ctrl_params.get("n_GcX"))  # Number of controller states
         self.waypoints = waypoints
         self.velocity_setpoint = ctrl_params.get("speed_setpoint")
         self.max_steer = ctrl_params.get("max_steer")
