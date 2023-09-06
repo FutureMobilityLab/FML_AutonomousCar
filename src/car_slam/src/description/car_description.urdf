@@ -29,7 +29,7 @@
   <joint name="laser_joint" type="fixed">
           <parent link="base_link"/>
           <child link="laser_frame"/>
-          <origin xyz="0.165 0 ${0.152-(base_height/2)}" rpy="0 0 3.14159"/>
+          <origin xyz="0.165 0 ${0.152-(base_height/2)}" rpy="0 0 4.712389"/>
   </joint>
 
   <link name="laser_frame">
