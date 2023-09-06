@@ -8,7 +8,7 @@ controller:
 
     wheelbase: .404           # m
 
-    control_method: "open_chirp" # controller type SELECT FROM: stanley | youla | mpc | hinf | pp | open_chirp
+    control_method: "PV_Youla" # controller type SELECT FROM: stanley | youla | mpc | hinf | pp | open_chirp | PV_Youla
 
     stanley_k: 1.0              # stanley controller gain
     stanley_k_soft: 1.0         # stanley softening gain
@@ -49,6 +49,9 @@ controller:
     open_chirp_duration_s: 10.0
     open_chirp_settling_time_s: 2.0
 
+    PV_Youla_n_Gcx: 5
+    PV_Youla_lookahead_gain: 0.8
+    
     waypoints: "waypoints.json"             # json title of waypoints
 
     

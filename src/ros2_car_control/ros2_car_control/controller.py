@@ -12,6 +12,7 @@ from ros2_car_control.mpcController import MPCController
 from ros2_car_control.ltiController import LTIController
 from ros2_car_control.openLoopController import OpenLoopChirp
 from ros2_car_control.purePursuitController import PurePursuitController
+from ros2_car_control.pvYoula import PVYoulaController
 from ros2_car_control.fetchWaypoints import waypoints
 from tf2_ros import TransformException
 from tf2_ros.buffer import Buffer
@@ -191,6 +192,20 @@ class Controller(Node):
                 }
                 control_params.update(open_chirp_params)
                 self.controller_function = OpenLoopChirp(control_params)
+            case "PV_Youla":
+                self.declare_parameter("PV_Youla_n_Gcx", 5)
+                self.declare_parameter("PV_Youla_lookahead_gain", 0.8)
+                pv_youla_params = {
+                    "n_Gcx": self.get_parameter("PV_Youla_n_Gcx").value,
+                    "ctrl_sample_time_s": ctrl_sample_time,
+                    "lookahead_gain": self.get_parameter(
+                        "PV_Youla_lookahead_gain"
+                    ).value,
+                }
+                control_params.update(pv_youla_params)
+                self.controller_function = PVYoulaController(
+                    self.waypoints, control_params
+                )
 
         # Log controller configuration.
         self.get_logger().info(
