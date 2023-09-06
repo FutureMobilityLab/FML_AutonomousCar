@@ -193,7 +193,7 @@ class Controller(Node):
                 control_params.update(open_chirp_params)
                 self.controller_function = OpenLoopChirp(control_params)
             case "PV_Youla":
-                self.declare_parameter("PV_Youla_n_Gcx", 5)
+                self.declare_parameter("PV_Youla_n_Gcx", 5.0)
                 self.declare_parameter("PV_Youla_lookahead_gain", 0.8)
                 pv_youla_params = {
                     "n_Gcx": self.get_parameter("PV_Youla_n_Gcx").value,

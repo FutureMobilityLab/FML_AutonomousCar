@@ -434,7 +434,7 @@ class PVYoulaController:
 
         A = self.compute_A_matrix(v, lookahead_dist)
         B = np.array([[0], [0], [0], [0], [1]])
-        C = self.compute_A_matrix(v, lookahead_dist)
+        C = self.compute_C_matrix(v, lookahead_dist)
         D = np.array([[0]])
 
         # Solve ODE using Heun's Method (explicit Trapezoidal rule).
